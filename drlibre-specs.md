@@ -12,7 +12,9 @@ existing rule, the change is stated in the new section.
 
 DrLibre is an appointment scheduling product for hospitals. Anyone can search hospitals,
 clinicians and specialties, see the next free appointment times, and book one without
-creating an account. Patients who have an account manage their appointments in a portal.
+signing in or choosing a password. Booking with an email address makes that person a
+patient with an account: they sign in through a link sent to that address and see all
+their appointments in a portal.
 Clinicians run their day, calendar and availability. Administrators manage the
 organisation, the waitlist and the audit log, and watch utilisation. Every write is
 recorded in an append-only audit log. Every concept is also available through a FHIR API.
@@ -21,12 +23,16 @@ recorded in an append-only audit log. Every concept is also available through a 
 
 | Actor | Signed in | What they do |
 | --- | --- | --- |
-| Visitor **[new]** | No | Searches, views public profiles and free slots, books as a guest |
-| Guest patient **[new]** | No, proves control of an email address | Books, then views, cancels or reschedules that booking through a link |
-| Patient | Yes | Books, reschedules, cancels, joins the waitlist, reads notifications, edits profile |
+| Visitor **[new]** | No | Searches, views public profiles and free slots, starts a booking and proves control of an email address to finish it |
+| Patient | Yes: by a sign-in link sent by email (passwordless, 24 hour session) **[new]**, or by password | Sees all own appointments, books, reschedules, cancels, joins the waitlist, reads notifications, edits profile |
 | Clinician | Yes | Works own agenda, updates appointment status, writes notes, manages own availability and time off |
 | Admin | Yes | Manages hospitals, departments, rooms, specialties, appointment types, users and clinicians; books for patients; manages waitlist; reads audit log and dashboard |
 | API client **[new]** | Token | Reads and writes through the FHIR API with the rights of the user the token belongs to |
+
+There is no separate guest **[new]**. A visitor who books becomes a patient the moment
+their email address is verified (section 7). A *passwordless patient* is a patient with no
+password. They have the same rights as any other patient and sign in through a link sent
+to their email address.
 
 The public word for Clinician is "provider". The domain name stays Clinician.
 
@@ -48,7 +54,7 @@ current application stores on the clinician.
 
 **User.** Email (unique, stored lower case), password hash, full name, role (Admin,
 Clinician, Patient), active flag, optional phone, optional date of birth, last login time.
-**[new]** A patient may exist without a password (a guest patient) and carries the time
+**[new]** A patient may have no password (a passwordless patient) and carries the time
 their email was verified.
 
 **Clinician profile.** One per Clinician user. Department, specialty, title, optional bio,
@@ -86,18 +92,23 @@ latest acceptable time (latest after earliest), status (`WAITING`, `OFFERED`, `B
 schedule changed, waitlist offered, waitlist booked), title, body, optional appointment,
 read time.
 
-**Audit log entry.** Actor (may be empty for failed logins and guest steps), action name,
+**Audit log entry.** Actor (may be empty for failed logins and for steps taken before an
+email address is verified), action name,
 entity type, entity id, metadata, time, correlation id. Entries are never changed or
 deleted.
 
 **Session.** A signed-in browser session: user, expiry, user agent. Only a hash of the
 session token is stored.
 
-**Booking hold [new].** A temporary reservation of one slot for a guest who is verifying
-their email: clinician, appointment type, start, end, guest details, expiry.
+**Booking hold [new].** A temporary reservation of one slot for a visitor who is verifying
+their email: clinician, appointment type, start, end, the details the visitor typed,
+expiry.
 
 **Verification code [new].** A one-time code sent to an email address: hashed code,
 email, purpose, expiry, attempts used.
+
+**Sign-in link [new].** A one-time link sent to a patient's email address: hashed token,
+patient, expiry, time used.
 
 ### 3.2 Relationships
 
@@ -166,7 +177,7 @@ time.
 
 ### 5.2 Placing an appointment
 
-All booking paths (patient, guest, staff, round robin, waitlist acceptance) run the same
+All booking paths (patient, staff, round robin, waitlist acceptance) run the same
 steps in this order and stop at the first failure:
 
 1. The type is active, the clinician's user is active, and both are in the same
@@ -187,10 +198,10 @@ The end time is never accepted from the caller.
 
 | Rule | Applies to | Violation |
 | --- | --- | --- |
-| Start is at least 120 minutes from now | Patients and guests, on book and reschedule | `lead_time_too_short` |
-| The appointment starts 24 hours or more from now | Patients and guests, on cancel and reschedule | `cancellation_window_closed` |
-| The patient holds fewer than 3 open online bookings (future, active, source `ONLINE` or `ROUND_ROBIN`) | Patients and guests, on book | `too_many_open_bookings` |
-| The type allows online booking | Patients and guests, on book and reschedule | `type_not_bookable_online` |
+| Start is at least 120 minutes from now | Patients, on book and reschedule | `lead_time_too_short` |
+| The appointment starts 24 hours or more from now | Patients, on cancel and reschedule | `cancellation_window_closed` |
+| The patient holds fewer than 3 open online bookings (future, active, source `ONLINE` or `ROUND_ROBIN`) | Patients, on book | `too_many_open_bookings` |
+| The type allows online booking | Patients, on book and reschedule | `type_not_bookable_online` |
 | The slot is exactly one of the free slots (5.1) | Everyone, on book and reschedule | `outside_availability` |
 
 Staff are bound only by availability and conflicts. The three numbers are policy
@@ -346,11 +357,14 @@ An out-of-range page shows the last page.
   appointment type.
 - **Specialty page:** the provider list filtered on that specialty.
 
-## 7. Booking without an account **[new]**
+## 7. Booking without signing in: passwordless patients **[new]**
 
-A visitor who picks a slot from search or a public page can book it without signing in.
+A visitor who picks a slot from search or a public page can book it without signing in
+and without ever choosing a password. There is no guest status: verifying an email
+address makes the visitor a patient with an account. A patient without a password is a
+*passwordless patient* and signs in through a link sent to their email address.
 
-### 7.1 Flow
+### 7.1 Booking flow
 
 1. **Choose.** Appointment type, then a named provider or "first available" in a
    department, then a slot.
@@ -362,76 +376,113 @@ A visitor who picks a slot from search or a public page can book it without sign
 4. **Verify.** A 6 digit code is sent to the email address. It is valid for 10 minutes
    and allows 5 attempts. A new code can be requested at most 3 times per hour per email.
 5. **Book.** With a correct code the appointment is placed (5.2) for the patient
-   identified by that email, with source `ONLINE` or `ROUND_ROBIN`. The hold is removed.
-6. **Confirmation.** A confirmation page and an email show the appointment, a booking
-   reference, a calendar file, and a link to manage the booking.
+   identified by that email (7.2), with source `ONLINE` or `ROUND_ROBIN`. The hold is
+   removed.
+6. **Signed in.** The correct code also signs the patient in with a 24 hour session
+   (7.3). The confirmation page shows the appointment and a calendar file, and links to
+   the patient's appointments. A confirmation email is sent.
 
-If the code is never entered, nothing is booked and the hold expires.
+If the code is never entered, nothing is booked, no account is created and the hold
+expires. A patient who is already signed in skips steps 2 to 4.
 
-### 7.2 Who the guest becomes
+### 7.2 The patient account
 
 - If no user has that email, a Patient user is created with the given name, birth date
-  and phone, no password, and the email marked verified.
-- If an active Patient user has that email, the booking is made for that patient. The
-  code proves control of the address. The visitor is not signed in to the portal.
+  and phone, no password, and the email marked verified. This is a passwordless patient.
+- If an active Patient user has that email, with or without a password, the booking is
+  made for that patient. The details typed in the form do not change the existing
+  profile.
 - If the email belongs to an Admin, a Clinician or an inactive user, the booking is
   refused with a generic message that does not reveal why.
 
-### 7.3 Rules for guests
+A passwordless patient is a Patient in every respect: same portal (section 8), same
+booking rules (5.3), same access rules. The only difference is how they sign in.
 
-Guests are patients for every booking rule in 5.3: 120 minute lead time, online-bookable
-types only, at most 3 open online bookings (counted per patient, so per verified email),
-24 hour window for cancelling and rescheduling.
+### 7.3 Signing in with an email link
 
-Additional limits, because the endpoints are public:
+1. On the sign-in page the patient enters their email address and asks for a sign-in
+   link.
+2. If the address belongs to an active Patient user, a link is sent to it. In every
+   other case nothing is sent. The page shows the same message either way, so it never
+   reveals whether an address has an account.
+3. The link is valid for 15 minutes and works once. Asking for a new link cancels the
+   earlier ones. At most 3 links per hour per email address.
+4. Opening the link shows a "Continue" button. The link is used only when the button is
+   pressed, so mail scanners that open links do not use it up. The patient then lands on
+   a clean address that no longer contains the link's token.
+5. The patient is signed in with a session that lasts 24 hours and is not extended.
+   After that they ask for a new link.
 
-- Holds and code requests are rate limited per email address and per network address.
+Rules:
+
+- Sign-in by link is for the Patient role only. Admins and clinicians sign in with a
+  password.
+- A patient who has a password may use either way. A session opened by link lasts 24
+  hours whichever kind of patient opened it.
+- Only a hash of the link's token is stored. The token never appears in logs.
+- An account exists once an email address has been verified in a booking (7.1). Asking
+  for a sign-in link with an address that has never booked creates nothing.
+
+### 7.4 What the session shows
+
+The patient lands on their appointments (section 8): every appointment booked with that
+email address, upcoming and past, each with
+
+- **whom:** the provider's name, title and specialty,
+- **when:** date, start and end time, in the hospital's time zone, which is named,
+- **where:** hospital name and address, department, and room when one is assigned,
+
+plus the appointment type and status. From there the patient has the whole patient
+portal: book again without retyping details or verifying, reschedule, cancel, download
+the calendar file, join the waitlist, read notifications and edit their profile. A
+passwordless patient has no password to change.
+
+### 7.5 Rules and limits
+
+The booking rules of 5.3 apply from the first booking: 120 minute lead time,
+online-bookable types only, at most 3 open online bookings per patient (so per verified
+email address), 24 hour window for cancelling and rescheduling.
+
+Additional limits, because these endpoints are public:
+
+- Holds, code requests and sign-in link requests are rate limited per email address and
+  per network address.
 - Responses never reveal whether an email address already has an account.
-- A hold or a booking never returns data about other appointments of that patient.
+- Before the code is verified, nothing about the patient or their other appointments is
+  returned.
 
-### 7.4 Managing a guest booking
+### 7.6 Email
 
-The link in the confirmation email opens the booking without a password. The link carries
-a random single-purpose token tied to that appointment; only its hash is stored. From
-there the guest can view the appointment, download the calendar file, cancel with a
-reason, or reschedule to another free slot of the same provider and type. The same can be
-reached by entering the booking reference and the email address, then a fresh code sent
-to that address.
-
-### 7.5 Claiming an account
-
-From the confirmation or manage page a guest can set a password (10 to 72 characters).
-The patient then signs in to the patient portal and sees all appointments booked with
-that email. Until then, the current application's rule holds: accounts are otherwise
-created by an admin.
-
-### 7.6 Messages to guests
-
-A guest has no portal inbox, so these are sent by email as well as stored as
-notifications: verification code, booking confirmation, reschedule, cancellation,
-reminder. Emails carry the time, the hospital and the provider name. They never carry the
-reason for the visit or clinical notes.
+A passwordless patient may not be signed in when something happens, so every patient
+notification is also sent by email: booking confirmation, reschedule, cancellation,
+reminder, waitlist offer. The verification code and the sign-in link are sent by email
+only. Emails about an appointment carry the time, the hospital and the provider name.
+They never carry the reason for the visit or clinical notes. Apart from the sign-in link
+email itself, emails link to the sign-in page and never contain a link that signs the
+reader in.
 
 ### 7.7 Audit
 
-Hold created, hold expired, code verification failed, booking made, guest patient created
-and account claimed are all audited. Before verification the actor is empty; after it,
-the actor is the patient.
+Hold created, hold expired, code verification failed, patient account created, booking
+made, sign-in link requested, sign-in link used and sign-in link refused are all audited,
+with the email domain only. Before verification the actor is empty; after it, the actor
+is the patient.
 
 ## 8. Patient portal **[existing]**
 
-For signed-in patients.
+For signed-in patients, whether they signed in by email link or by password.
 
 - **Home.** Greeting, the next upcoming appointment, count of unread notifications, a
   "Book an appointment" action.
 - **Book.** A four step wizard: service (appointment type, grouped by department),
   clinician (a named one or "first available"), time (week strip of free slots), review
   and confirm with an optional reason. **[new]** The wizard starts from the same search
-  and public pages as guests; a signed-in patient skips the details and verification
-  steps.
+  and public pages that visitors use; a signed-in patient skips the details and
+  verification steps.
 - **Appointments.** Two lists. Upcoming: status `BOOKED`, `CONFIRMED` or `CHECKED_IN` and
   not yet started, soonest first. Past: everything else, latest first. Each row shows
-  clinician, specialty, department, type, room, time, status and reason, and offers
+  whom (clinician and specialty), when (time, with the time zone named), where (hospital
+  name and address **[new]**, department, room), type, status and reason, and offers
   cancel and reschedule when the rules allow them.
 - **Reschedule.** Week strip of free slots for the same clinician and type.
 - **Cancel.** Confirmation dialog with a required reason.
@@ -443,7 +494,7 @@ For signed-in patients.
 - **Profile.** Name and email shown. Phone (7 to 20 characters of digits, spaces,
   `+ ( ) -`) and date of birth (a real date, not in the future) are editable; empty input
   clears them. Change password needs the current password and a different new one of 10
-  to 72 characters.
+  to 72 characters; passwordless patients do not see it **[new]**.
 
 ## 9. Clinician workspace **[existing]**
 
@@ -527,10 +578,11 @@ Created in the same transaction as the event, for the patient:
 | Reminder job | Appointment reminder | Appointment reminder |
 
 In-app notification text carries the time only: no names, reasons or emails.
+**[new]** Each notification is also sent to the patient by email (7.6).
 
 ## 12. Sign-in, sessions and access
 
-### 12.1 Sign-in **[existing]**
+### 12.1 Sign-in with a password **[existing]**
 
 - Email and password. Passwords are stored with a slow salted hash.
 - A wrong email and a wrong password give the same message and take the same time.
@@ -540,18 +592,23 @@ In-app notification text carries the time only: no names, reasons or emails.
 - Success, failure and lockout are audited with the email domain only.
 - After sign-in the user lands on their role's home: patient portal, clinician workspace
   or admin console.
+- **[new]** Patients may instead sign in with a link sent by email and no password
+  (7.3). Admins and clinicians cannot.
 
 ### 12.2 Sessions **[existing]**
 
 - A random token in a cookie that scripts cannot read, sent only to the same site, and
   only over HTTPS in production. The server stores a hash of the token.
-- Lifetime 12 hours for admins and 7 days for everyone else, extended to a full lifetime
-  whenever less than half remains.
+- After a password sign-in: lifetime 12 hours for admins and 7 days for everyone else,
+  extended to a full lifetime whenever less than half remains.
+- **[new]** After a sign-in by email link or by booking verification code: 24 hours,
+  never extended.
 - Sign-out deletes the session. A deactivated user's sessions stop working at once.
 
 ### 12.3 Access rules
 
-- Search, public pages, guest booking and guest manage links need no session **[new]**.
+- Search, public pages, the booking steps up to email verification, and asking for a
+  sign-in link need no session **[new]**.
 - Every other page needs a session; without one the user is sent to sign-in.
 - A signed-in user who opens another role's area gets a "forbidden" page.
 - All access checks run on the server for every read and write.
@@ -606,13 +663,11 @@ section 4. Every response carries the correlation id.
 | --- | --- | --- |
 | `GET /search/providers`, `/search/hospitals`, `/search/specialties` | Search with text, filters, sort, page and page size; each result includes its next availabilities | Anyone |
 | `GET /hospitals/{id}`, `GET /providers/{id}`, `GET /specialties/{id}` | Public detail | Anyone |
-| `POST /guest/holds` | Create a hold with guest details; sends the code | Anyone |
-| `POST /guest/holds/{id}/verify` | Submit the code; books | Anyone |
-| `POST /guest/holds/{id}/resend` | Send a new code | Anyone |
-| `POST /guest/access` | Booking reference and email; sends a code | Anyone |
-| `GET /guest/appointments/{token}` | View a guest booking | Link holder |
-| `POST /guest/appointments/{token}/cancel`, `/reschedule` | Manage a guest booking | Link holder |
-| `POST /guest/appointments/{token}/claim` | Set a password and claim the account | Link holder |
+| `POST /booking/holds` | Create a hold with the visitor's details; sends the code | Anyone |
+| `POST /booking/holds/{id}/verify` | Submit the code; books and opens a 24 hour session | Anyone |
+| `POST /booking/holds/{id}/resend` | Send a new code | Anyone |
+| `POST /auth/link` | Ask for a sign-in link for an email address; the answer is always the same | Anyone |
+| `POST /auth/link/verify` | Exchange the link's token for a 24 hour session | Link holder |
 
 ## 15. FHIR API **[new]**
 
@@ -690,7 +745,8 @@ clinician. The patient's reason maps to `Appointment.reasonCode.text`.
 | `Communication` | The recipient | The recipient may set `received`; no create or delete |
 | `AuditEvent` | Admin | none |
 
-Unauthenticated FHIR access is read-only. Guest booking is not offered through FHIR.
+Unauthenticated FHIR access is read-only. Booking without signing in is not offered through
+FHIR.
 Authenticated calls use a bearer token that belongs to one user; the token gives exactly
 that user's rights.
 
@@ -756,17 +812,28 @@ Decisions made while writing this specification. Each can be changed before the 
 3. **One department per clinician.** A clinician working at two hospitals is not
    specified.
 4. **Specialty is a managed list**, not free text, so it can be searched and filtered.
-5. **Guests verify an email address before the booking exists.** This is what stops
+5. **There is no guest.** Whoever books is a patient. A first booking creates a
+   passwordless patient account once the email address is verified.
+6. **An email address is verified before the booking exists.** This is what stops
    anonymous slot hoarding and what the 3 open bookings rule is counted on. It makes
    email delivery a requirement; the current application has in-app notifications only.
    Text messages are not specified.
-6. **Guest bookings keep the source `ONLINE` or `ROUND_ROBIN`**, so the online share
-   figure includes them. There is no separate "guest" source.
-7. **The waitlist needs an account.** Guests cannot join it.
-8. **FHIR version R4.** The token scheme (for example SMART on FHIR scopes) is open; the
-   requirement is only that a token carries one user's rights.
-9. **Search horizon 90 days, 3 slots per provider result, 10 minute hold.** These are
-   proposed values.
+7. **A code while booking, a link for signing in later.** The code keeps the visitor on
+   the page that holds the slot, also when they read email on another device. Both open
+   the same 24 hour session.
+8. **Sign-in by link is for patients only**, and its 24 hour session is never extended.
+   Staff keep passwords.
+9. **Emails never contain a link that signs the reader in**, except the sign-in link
+   email itself. A forwarded confirmation or reminder gives no access.
+10. **A passwordless patient cannot set a password.** Not specified. Patients with a
+    password are those an admin created.
+11. **Bookings made without signing in keep the source `ONLINE` or `ROUND_ROBIN`**, so the
+    online share figure includes them.
+12. **The waitlist needs a signed-in patient**, passwordless or not.
+13. **FHIR version R4.** The token scheme (for example SMART on FHIR scopes) is open; the
+    requirement is only that a token carries one user's rights.
+14. **Search horizon 90 days, 3 slots per provider result, 10 minute hold, 15 minute
+    sign-in link.** These are proposed values.
 
 Behaviour of the current application that this specification changes or leaves open:
 
@@ -778,5 +845,5 @@ Behaviour of the current application that this specification changes or leaves o
 - The reminder job runs only when an admin triggers it. This specification asks for a
   schedule as well.
 - The booking policy numbers are fixed in code. Making them editable is not specified.
-- There is no patient self-registration today. Section 7.5 adds account claiming; a
-  stand-alone sign-up page is not specified.
+- There is no patient self-registration today. Section 7 creates a patient account at the
+  first verified booking; a stand-alone sign-up page is not specified.

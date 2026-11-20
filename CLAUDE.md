@@ -1,0 +1,139 @@
+# DrLibre: agent instructions
+
+Card. Read whole. Body: `doc/engineering-conventions.md`, by section (§N). Product truth:
+`drlibre-specs.md`, by section number.
+
+## Modes, always on
+
+- **Ponytail** (skill `ponytail`, §1): smallest change that fully solves task. Ladder,
+  stop at first rung that holds. Never cut validation, error handling, security,
+  accessibility, requested behaviour. End reply: one line what skipped or unchecked, one
+  line risks.
+- **Impeccable** (skill `impeccable`) for any UI or UX change: Operate mode,
+  `drlibre-specs.md` section 16 is product truth until `PRODUCT.md` exists; read its
+  `reference/craft-floor.md` before a UI edit.
+- **Caveman** (skill `caveman`) for replies and stage outputs: answer first, no filler,
+  no hedging, no tool narration, technical terms and error strings exact. Artifacts stay
+  normal prose: code, comments, commits, plans, reviews, ADRs, README.
+
+Skills live in `.claude/skills/`, vendored and read-only (§13.1).
+
+## Project bindings
+
+- **Purpose:** appointment scheduling for several hospitals. Visitors search hospitals,
+  clinicians and specialties and book without an account; a verified email makes them a
+  passwordless patient. Clinicians and admins manage schedules, availability, time off,
+  waitlists. Every write audited. Every concept also served through a FHIR R4 API.
+- **Branch:** `main`. Solo repo, direct commits allowed (§12) until second contributor
+  or branch protection. Runs work on `fabro/run/<id>`, reach `main` squash-merged after
+  review.
+- **Risk classes (§13.1):** `doc/plans/**`, `doc/reviews/**`, `scratch/**` throwaway.
+  Rest product code. Unclassified = product.
+- **Stack:** Django, Python, uv. Rest unbound until task 01 records it here. `Makefile`:
+  `make setup` (uv, then locked sync), `make gate` (comment cap + escape hatches);
+  `make test`, `make lint`, `make mutate` print `not configured` until bound.
+- **Fresh checkout order:** `make setup`, then `make lint`, `make test`, `make gate`.
+- **Docs:** tasks `doc/backlog/NN-slug.md`, plans `doc/plans/YYYY-MM-DD-slug.md`, reviews
+  `doc/reviews/YYYY-MM-DD-slug.md`, decisions `doc/adr/NNNN-slug.md`, run log
+  `doc/retro.md`.
+- **Comment gate (§4.1):** `scripts/comment_cap.py` as Claude Code `PreToolUse` hook
+  (`.claude/settings.json`), as `make gate`, as git pre-commit after
+  `git config core.hooksPath .githooks`.
+
+## Domain vocabulary (§3), exact names everywhere
+
+Visitor (not signed in, searches, starts a booking), Patient (receives care, books; a
+passwordless patient has no password), Clinician (delivers care; public word "provider",
+domain name stays Clinician), Admin (manages every hospital), ApiClient (token, one
+user's rights), Hospital (owns departments, has a time zone), Department (owns
+clinicians, rooms, types), Specialty (managed list), User, ClinicianProfile, Room,
+AppointmentType (duration, buffer, room need), AvailabilityRule (weekly clinician
+availability), TimeOff, Appointment (patient + clinician + type + room, scheduled),
+WaitlistEntry (wants a freed slot), Notification, AuditLogEntry (append-only), Session,
+BookingHold (slot reserved while an email is verified), VerificationCode, SignInLink.
+
+## The card
+
+**Think**
+1. Understand first, then ladder: smallest sufficient change, right place. Best code =
+   none written.
+2. Comprehension is the constraint, not typing. Write for next reader's working memory.
+3. Plan before generating. Block plan not stateable in one sentence? Reject.
+4. Missing knowledge: look up. Missing information: fetch code. Missing capacity: write
+   state down.
+
+**Write**
+5. Name the role. Leave a beacon. One recognisable pattern per unit.
+6. Comment why, never what. 255 chars per block, hook-enforced.
+7. Test first; prove test can fail; mutate pure modules.
+8. Expected errors = values in contract. Throw only on broken invariant.
+
+**Ship**
+9. Never trust client, never log sensitive, pin everything, authorize server-side.
+10. Rebase not merge; small PRs; draft by default; ask before commit, push, merge.
+11. No AI authorship in git history. Disclose tooling in PR or tracker.
+12. Review diff, not chat. Nothing merges unread where it matters.
+
+## Rules while writing
+
+- **Naming (§3):** English, 3+ chars, no acronyms or shortened words, named constants.
+  Names state roles (`best_match`, `pending_jobs`), not types. `temp`, `data2`, single
+  letters beyond two lines: rename. Tests: `returns_X_when_Y`.
+- **Test placement (§10):** unbound; task 01 records it here.
+- **Comments (§4):** obvious in code first; else why; else delete. Changes with code?
+  Narration, delete. Docstrings count toward the cap.
+- **Size (§5):** functions < 50 lines, files < 300, callers above callees, variables
+  near use, ~3 args max.
+- **Types (§7):** fully typed, strictest checker setting, schema-derived boundary types.
+  Gate rejects `Any`, `cast`, bare `# type: ignore`, bare `# noqa`; a suppression names
+  its code.
+- **Architecture (§8):** domain logic pure (no I/O, no clock, no ORM); use cases own the
+  transaction and authorization; views and API endpoints thin, format only. Mappers
+  between wire and storage. One transaction per logical change, audit entry inside it.
+  Clock from request context. Abstraction needs second caller. Model unfinished without
+  full CRUDL + tests.
+- **Errors (§9):** expected = values in the contract; raise only on invariant break;
+  never swallow; never leak internals; structured logs with correlation id.
+- **Security (§11):** authorization from session, never payload; ORM or parameterized
+  queries only; no sensitive data in logs, URLs, model context; pin and verify deps; UTC
+  explicit; audit log append-only.
+- **Generation (§13):** session state not evidence; re-read, re-run. No `Co-Authored-By`,
+  no tool byline.
+
+## How work flows
+
+Process = `conventions-auto`; task = goal, one run per `doc/backlog/` file: toolchain,
+plan, architect gate, red, red proven, green, green proven, prove tests guard, refactor,
+lint + tests + gate, reviewer gate, address findings. Orchestrator verifies on host,
+squash-merges with Conventional Commit, updates `doc/backlog.md`, logs `doc/retro.md`,
+fixes process on repeat patterns.
+
+**Hand-applied gaps:** (1) fabro checkpoints carry "Generated with Fabro" and
+`Co-Authored-By: Fabro`; never merge run branch as-is, squash with hand-written message,
+disclose tooling in body. (2) "Red for right reason" judged by agent and reviewer; gate
+only proves suite fails. (3) Mutation testing waits for `make mutate`. (4) A reviewer
+"Later" list on a foundation layer becomes its own hardening task before the next layer.
+
+## Fabro gotchas (§13.6)
+
+- Agent stages = Claude Code over ACP on the Claude subscription. Fabro model, provider
+  and hook settings do not reach them; Claude Code reads this file, `.claude/skills/` and
+  `.claude/settings.json`.
+- Sandbox clones from GitHub. Unpushed files do not exist in a run; push process changes
+  before launch. Prompts and graph travel with the run.
+- `run` tables in `.fabro/project.toml` are ignored; image and token live in each
+  `workflow.toml`.
+- Final status reads `SUCCEEDED` even when a stage failed. Read the stage lines.
+- Command node scripts shell-quote templated values as one word. Literal commands.
+- Graph = process, not backlog. Features in `doc/backlog/`.
+- Generators write long comments the write-gate never sees; `make gate` catches.
+- Run ids from `fabro run -d` output; mistyped id makes `fabro wait` return at once.
+- No `fabro server restart` during a run; kills it. `fabro resume <id>`.
+- Laptop sleep kills sandboxes mid-run. Keep `caffeinate -i -s` running during runs.
+- Goal paths may be stale; `ls` them before launch.
+- `fabro run probe` (20 seconds) proves tools, skills, this file and the write-gate in the
+  sandbox. Run it after any process change, before a real task.
+
+## Done
+
+§14 before hand-off; say plainly what could not run and why.

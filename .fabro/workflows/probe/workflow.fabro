@@ -1,0 +1,19 @@
+digraph Probe {
+    graph [goal="Prove the harness path before a real run: toolchain, tools, CLAUDE.md, skills, write gate.", on_failure="exit"]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    setup [label="Toolchain", script="make setup"]
+
+    subgraph agents {
+        node [backend="acp", acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"]
+        probe [label="Probe", prompt="@prompts/probe.md", timeout="600s"]
+    }
+
+    // The agent reports on itself; the blocked file is checked on disk as well.
+    verify [label="Verify on disk", script="sh scripts/verdict.sh scratch/probe.verdict && test ! -e scratch/blocked.py"]
+
+    start -> setup -> probe -> verify -> exit
+}

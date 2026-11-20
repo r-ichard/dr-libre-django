@@ -1,0 +1,16 @@
+digraph HelloClaude {
+    graph [goal="Say hello through Claude Code running as an ACP agent"]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    greet [
+        label="Greet"
+        backend="acp"
+        acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"
+        prompt="Say hello in one sentence and name the model you are running as."
+    ]
+
+    start -> greet -> exit
+}

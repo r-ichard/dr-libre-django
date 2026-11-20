@@ -1,0 +1,15 @@
+_version = 1
+
+[workflow]
+graph = "workflow.fabro"
+
+# Auto-create pull requests on successful workflow runs.
+[run.pull_request]
+enabled = true
+draft = true
+# auto_merge = true
+
+# The server default (ollama-cloud) is over its monthly usage limit.
+[run.model]
+provider = "anthropic"
+name = "claude-sonnet-5.5"

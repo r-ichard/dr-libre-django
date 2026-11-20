@@ -1,0 +1,61 @@
+digraph ConventionsAuto {
+    graph [
+        goal="Pass the task with --goal or --goal-file.",
+        on_failure="exit",
+        max_node_visits=8
+    ]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    // Agents that install their own toolchain make the gates pass by luck.
+    setup [label="Toolchain", script="make setup"]
+
+    // Every agent stage is Claude Code over ACP on the Claude subscription (token in workflow.toml).
+    subgraph agents {
+        node [backend="acp", acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"]
+
+        // Think (card 1-4): the plan is reviewed by a second reader before any code is written
+        understand  [retry_target="understand", label="Understand and plan", prompt="@prompts/understand.md", max_visits=3, timeout="3600s"]
+        plan_review [retry_target="plan_review", label="Architect reviews the plan", prompt="@prompts/plan-review.md", max_visits=3, timeout="3600s"]
+
+        // Write (card 5-8): red, green, prove, refactor
+        red      [retry_target="red", label="Red: failing tests", prompt="@prompts/red.md", max_visits=3, timeout="3600s"]
+        green    [retry_target="green", label="Green: minimal code", prompt="@prompts/green.md", max_visits=4, timeout="5400s"]
+        prove    [retry_target="prove", label="Prove the tests guard", prompt="@prompts/prove.md", timeout="3600s"]
+        refactor [retry_target="refactor", label="Refactor simpler", prompt="@prompts/refactor.md", max_visits=4, timeout="3600s"]
+
+        // Ship (card 9-12): a second reader reads the diff, blocking findings loop back
+        review  [retry_target="review", label="Second reader reviews the diff", prompt="@prompts/review.md", max_visits=3, timeout="3600s"]
+        address [retry_target="address", label="Address blocking findings", prompt="@prompts/address.md", max_visits=2, timeout="3600s"]
+    }
+
+    // Gates: a script decides every route, never an agent.
+    plan_gate    [label="Plan approved?", script="sh scripts/verdict.sh scratch/plan.verdict", on_failure="route"]
+    verify_red   [label="Suite fails?", script="sh scripts/red_gate.sh make test", on_failure="route"]
+    verify_green [label="Suite passes?", script="make test", on_failure="route"]
+    check        [label="Lint, tests, comment gate", script="make lint && make test && make gate", on_failure="route"]
+    review_gate  [label="Review approved?", script="sh scripts/verdict.sh scratch/review.verdict", on_failure="route"]
+
+    start -> setup -> understand -> plan_review -> plan_gate
+    plan_gate -> red        [label="Approved", condition="outcome=succeeded"]
+    plan_gate -> understand [label="Revise"]
+
+    red -> verify_red
+    verify_red -> green [label="Red confirmed", condition="outcome=succeeded"]
+    verify_red -> red   [label="Suite did not fail"]
+
+    green -> verify_green
+    verify_green -> prove [label="Green confirmed", condition="outcome=succeeded"]
+    verify_green -> green [label="Still red"]
+
+    prove -> refactor -> check
+    check -> review   [label="Clean", condition="outcome=succeeded"]
+    check -> refactor [label="Fix"]
+
+    review -> review_gate
+    review_gate -> exit    [label="Approved", condition="outcome=succeeded"]
+    review_gate -> address [label="Blocking findings"]
+    address -> check
+}

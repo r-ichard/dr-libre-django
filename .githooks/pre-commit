@@ -1,0 +1,4 @@
+#!/bin/sh
+# Conventions §4.1 commit gate. Install once: git config core.hooksPath .githooks
+# shortcut: checks the working-tree copy of staged files, not the index; fine until partial staging matters.
+git diff --cached --name-only --diff-filter=ACM -z | xargs -0 python3 scripts/comment_cap.py --files

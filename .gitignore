@@ -1,0 +1,6 @@
+# throwaway scratch space (CLAUDE.md risk classes)
+scratch/
+
+# fabro checkpoints commit every untracked file that is not ignored
+.venv/
+__pycache__/

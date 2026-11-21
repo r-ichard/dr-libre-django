@@ -41,6 +41,13 @@ Screens come later.
 10. Matching, ranking and expiry decisions are pure functions in the domain layer, under
     the mutation gate.
 
+Carried from the review of task 08a: the appointment body now carries the visit reason,
+safe only because every caller limits its readers to the patient, the appointment's
+clinician and an admin. No waitlist answer may include another patient's appointment
+reason: an offer shows the time, the provider and the hospital only. And the test helper
+`scheduling/views/appointment_action_support.py` gets a name the lint rules for test files
+already cover, so its per-file exception can go.
+
 The sandbox cannot run Docker: the orchestrator starts the worker on the host and
 watches a reminder email arrive.
 

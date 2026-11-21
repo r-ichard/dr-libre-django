@@ -248,3 +248,11 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The reviewer approved a 719 line test file although the review prompt names 500 as a
   hard rule. A rule a reader must remember gets missed; task 08a moves it into
   `make gate`.
+
+## 2026-11-21 task 08a, run 01M7ZGGVDM2F (19 minutes, merged 47d6ed1)
+
+- Clean pass. 1220 tests in 11 seconds.
+- Host check: a planted reason is read by the patient and the appointment's clinician,
+  not by another clinician, and appears in no notification, audit row, log line or
+  email; 201 characters and a reversed or empty range answer 400; a 501 line file fails
+  `make gate`.

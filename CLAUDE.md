@@ -39,7 +39,7 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   `drlibre`, domain app `scheduling`. Settings read the environment (`.env.example` holds
   dev values; real environment wins). `Makefile`: `make setup` (uv, locked sync, local
   PostgreSQL in the sandbox), `make test` (starts local PostgreSQL if none answers, then
-  pytest), `make lint` (ruff, mypy), `make gate` (comment cap + escape hatches);
+  pytest), `make lint` (ruff, mypy), `make gate` (comment cap, escape hatches, size cap of 500 lines a file and 100 a function);
   `make mutate` (mutmut on `scheduling/domain`, fails on a survivor not explained in
   `mutation-equivalents.txt`). Decisions: `doc/adr/0001-stack.md`.
 - **Fresh checkout order:** sandbox: `make setup`, then `make lint`, `make test`,

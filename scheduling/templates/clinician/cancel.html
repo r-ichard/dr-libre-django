@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Cancel the appointment · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="today" %}
+<h1>Cancel the appointment</h1>
+<section class="card" aria-labelledby="cancel-summary-title">
+  <h2 id="cancel-summary-title">{{ type_name }}, {{ patient }}</h2>
+  <p>{{ day }}, {{ time }}</p>
+</section>
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  {% if error %}{% include "components/error_summary.html" with errors=cancel_errors %}{% endif %}
+  {% include "components/field.html" with name="reason" label="Why is it cancelled?" value=reason error=error autofocus=error %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Cancel appointment</button>
+    <a class="button button--secondary" href="{{ back_path }}">Keep appointment</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

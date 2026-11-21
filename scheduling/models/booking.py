@@ -19,6 +19,7 @@ from django.utils import timezone
 
 from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, WaitlistStatus
 from scheduling.models.base import (
+    Record,
     Versioned,
     check,
     choices_of,
@@ -71,7 +72,6 @@ class Appointment(Versioned):
     status = CharField(max_length=20, choices=choices_of(AppointmentStatus))
     source = CharField(max_length=20, choices=choices_of(AppointmentSource))
     patient_reason = TextField(blank=True, default="")
-    clinical_notes = CharField(max_length=CLINICAL_NOTES_MAXIMUM, blank=True, default="")
     cancelled_at = DateTimeField(null=True, blank=True)
     cancellation_reason = TextField(blank=True, default="")
     # Section 15.3: an accepted entry and its booking are one FHIR resource, so the booking
@@ -105,6 +105,15 @@ class Appointment(Versioned):
             _no_overlap("patient"),
             _no_overlap("room"),
         ]
+
+
+class ClinicalNote(Record):
+    """Private to the appointment's clinician, so it lives apart from the Appointment row that
+    the API, emails and admin loaders read."""
+
+    fhir_not_exposed = "private to the clinician; never in an API body, notification or email"
+    appointment = OneToOneField(Appointment, on_delete=PROTECT)
+    clinical_notes = CharField(max_length=CLINICAL_NOTES_MAXIMUM, blank=True, default="")
 
 
 class WaitlistEntry(Versioned):

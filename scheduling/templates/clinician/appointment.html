@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Appointment · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="today" %}
+<h1>{{ patient }}</h1>
+{% if notice %}{% include "components/notice.html" with kind="success" text=notice %}{% endif %}
+<section class="card" aria-labelledby="details-title">
+  <h2 id="details-title">{{ type_name }} {% include "components/badge.html" with kind=badge_kind text=badge_text %}</h2>
+  <dl class="facts">
+    <div><dt>Phone</dt><dd>{{ phone|default:"Not given" }}</dd></div>
+    <div><dt>Age</dt><dd>{% if age is not None %}{{ age }} years{% else %}Not given{% endif %}</dd></div>
+    <div><dt>When</dt><dd>{{ day }}, {{ time }} ({{ time_zone }})</dd></div>
+    <div><dt>Room</dt><dd>{{ room|default:"No room" }}</dd></div>
+    <div><dt>Reason for the visit</dt><dd>{{ reason|default:"None given" }}</dd></div>
+    {% if cancelled_reason %}<div><dt>Cancelled because</dt><dd>{{ cancelled_reason }}</dd></div>{% endif %}
+  </dl>
+  <div class="button-row">
+    {% for form in forms %}
+    <form method="post" action="{{ form.action }}">
+      {% csrf_token %}
+      <button class="button button--primary" type="submit">{{ form.label }}</button>
+    </form>
+    {% endfor %}
+    {% if reschedule_href %}<a class="button button--secondary" href="{{ reschedule_href }}">Reschedule</a>{% endif %}
+    {% if cancel_href %}<a class="button button--secondary" href="{{ cancel_href }}">Cancel appointment</a>{% endif %}
+    <a class="button button--secondary" href="{{ today_path }}">Back to today</a>
+  </div>
+</section>
+<section aria-labelledby="note-title">
+  <h2 id="note-title">Clinical note</h2>
+  <p class="hint">Only you can read this note.</p>
+  <form class="form" method="post" action="{{ notes_action }}" novalidate>
+    {% csrf_token %}
+    {% if note_error %}{% include "components/error_summary.html" with errors=note_errors %}{% endif %}
+    <div class="field{% if note_error %} field--invalid{% endif %}">
+      <label class="field__label" for="id_clinical_notes">Clinical note</label>
+      {% if note_error %}<p class="field__error" id="id_clinical_notes_error"><span class="visually-hidden">Error: </span>{{ note_error }}</p>{% endif %}
+      <textarea class="input" id="id_clinical_notes" name="clinical_notes" rows="8" maxlength="{{ note_maximum }}"{% if note_error %} aria-invalid="true" aria-describedby="id_clinical_notes_error" data-autofocus{% endif %}>{{ note }}</textarea>
+    </div>
+    <div class="button-row"><button class="button button--primary" type="submit">Save note</button></div>
+  </form>
+</section>
+<section aria-labelledby="history-title">
+  <h2 id="history-title">History</h2>
+  {% include "components/history_list.html" %}
+</section>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

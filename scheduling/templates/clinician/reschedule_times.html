@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Choose a new time · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="today" %}
+<h1>Choose a new time for {{ patient }}</h1>
+<p><a href="{{ back_path }}">Back to the appointment</a></p>
+{% include "components/week_strip.html" %}
+{% endblock %}

@@ -1,0 +1,80 @@
+/* Clinician workspace: nav extras, day tiles, agenda, history and the week calendar. */
+.portal-nav__soon { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); color: var(--colour-ink-muted); }
+
+.stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--space-3); margin: var(--space-5) 0; padding: 0; list-style: none; }
+.stat-tile { padding: var(--space-3) var(--space-4); background: var(--colour-surface); border: 1px solid var(--colour-line); border-radius: var(--radius-medium); }
+.stat-tile p { margin: 0; }
+.stat-tile__label { color: var(--colour-ink-muted); font-size: var(--text-small); font-weight: 600; }
+.stat-tile__value { font-size: var(--text-heading-3); font-weight: 700; }
+
+.agenda { display: grid; gap: var(--space-3); margin: 0 0 var(--space-5); padding: 0; list-style: none; }
+.agenda-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); background: var(--colour-surface); border: 1px solid var(--colour-line); border-radius: var(--radius-medium); }
+.agenda-row p { margin: 0; }
+.agenda-row__time { font-weight: 700; }
+.agenda-row .button-row { margin-top: 0; }
+
+.history-list { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-5); }
+.history-list__time { color: var(--colour-ink-muted); }
+
+/* Calendar: stacked days from 375 px, a seven column grid of 30 minute rows from 64rem */
+.cal-week, .cal-day, .cal-outside { margin: 0; padding: 0; list-style: none; }
+.cal-week { display: grid; gap: var(--space-4); margin-top: var(--space-5); }
+.cal-week__heading { margin: 0 0 var(--space-2); font-size: var(--text-body); }
+.cal-day, .cal-outside { display: grid; gap: var(--space-2); }
+.cal-none, .cal-outside-title { margin: 0; color: var(--colour-ink-muted); }
+.cal-block { padding: var(--space-2) var(--space-3); background: var(--colour-surface); border: 1px solid var(--colour-line); border-left: 6px solid var(--type-colour, var(--colour-ink-muted)); border-radius: var(--radius-small); font-size: var(--text-small); overflow-wrap: anywhere; }
+.cal-off { background: var(--colour-warning-wash); border-left-style: dashed; }
+@media (min-width: 64rem) {
+  .cal-week { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: var(--space-2); }
+  .cal-day { grid-template-rows: repeat(24, 2.75rem); gap: 2px; }
+  .cal-none { grid-row: 1; }
+  .cal-block { overflow: hidden; }
+}
+.cal-row-1 { grid-row-start: 1; }
+.cal-row-2 { grid-row-start: 2; }
+.cal-row-3 { grid-row-start: 3; }
+.cal-row-4 { grid-row-start: 4; }
+.cal-row-5 { grid-row-start: 5; }
+.cal-row-6 { grid-row-start: 6; }
+.cal-row-7 { grid-row-start: 7; }
+.cal-row-8 { grid-row-start: 8; }
+.cal-row-9 { grid-row-start: 9; }
+.cal-row-10 { grid-row-start: 10; }
+.cal-row-11 { grid-row-start: 11; }
+.cal-row-12 { grid-row-start: 12; }
+.cal-row-13 { grid-row-start: 13; }
+.cal-row-14 { grid-row-start: 14; }
+.cal-row-15 { grid-row-start: 15; }
+.cal-row-16 { grid-row-start: 16; }
+.cal-row-17 { grid-row-start: 17; }
+.cal-row-18 { grid-row-start: 18; }
+.cal-row-19 { grid-row-start: 19; }
+.cal-row-20 { grid-row-start: 20; }
+.cal-row-21 { grid-row-start: 21; }
+.cal-row-22 { grid-row-start: 22; }
+.cal-row-23 { grid-row-start: 23; }
+.cal-row-24 { grid-row-start: 24; }
+.cal-span-1 { grid-row-end: span 1; }
+.cal-span-2 { grid-row-end: span 2; }
+.cal-span-3 { grid-row-end: span 3; }
+.cal-span-4 { grid-row-end: span 4; }
+.cal-span-5 { grid-row-end: span 5; }
+.cal-span-6 { grid-row-end: span 6; }
+.cal-span-7 { grid-row-end: span 7; }
+.cal-span-8 { grid-row-end: span 8; }
+.cal-span-9 { grid-row-end: span 9; }
+.cal-span-10 { grid-row-end: span 10; }
+.cal-span-11 { grid-row-end: span 11; }
+.cal-span-12 { grid-row-end: span 12; }
+.cal-span-13 { grid-row-end: span 13; }
+.cal-span-14 { grid-row-end: span 14; }
+.cal-span-15 { grid-row-end: span 15; }
+.cal-span-16 { grid-row-end: span 16; }
+.cal-span-17 { grid-row-end: span 17; }
+.cal-span-18 { grid-row-end: span 18; }
+.cal-span-19 { grid-row-end: span 19; }
+.cal-span-20 { grid-row-end: span 20; }
+.cal-span-21 { grid-row-end: span 21; }
+.cal-span-22 { grid-row-end: span 22; }
+.cal-span-23 { grid-row-end: span 23; }
+.cal-span-24 { grid-row-end: span 24; }

@@ -62,8 +62,9 @@ def sender_address(settings: object) -> None:
 
 def _plant_free_text(appointment: Appointment) -> None:
     Appointment.objects.filter(pk=appointment.pk).update(
-        version=F("version") + 1, patient_reason=PLANTED_VISIT_REASON, clinical_notes=PLANTED_NOTE
+        version=F("version") + 1, patient_reason=PLANTED_VISIT_REASON
     )
+    make("ClinicalNote", appointment=appointment, clinical_notes=PLANTED_NOTE)
 
 
 def returns_one_email_with_local_time_and_names_after_commit_when_cancelling(

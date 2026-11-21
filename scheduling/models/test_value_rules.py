@@ -66,7 +66,7 @@ ILLEGAL_ROWS = [
     ("TimeOff", {"reason": "x" * 201}, "time_off_reason_201_characters"),
     ("Appointment", {"ends_at": STARTS_AT}, "appointment_ends_at_start"),
     ("Appointment", {"ends_at": STARTS_AT - ONE_MINUTE}, "appointment_ends_before_start"),
-    ("Appointment", {"clinical_notes": "x" * 5001}, "notes_5001_characters"),
+    ("ClinicalNote", {"clinical_notes": "x" * 5001}, "notes_5001_characters"),
     ("Appointment", {"status": "UNKNOWN"}, "unknown_appointment_status"),
     ("Appointment", {"source": "PHONE"}, "unknown_appointment_source"),
     ("Appointment", {"status": "CANCELLED"}, "cancelled_without_time_and_reason"),
@@ -126,7 +126,7 @@ LEGAL_NEIGHBOURS = [
     ("TimeOff", {"ends_at": STARTS_AT + ONE_MINUTE}, "time_off_one_minute_long"),
     ("TimeOff", {"reason": "x" * 200}, "time_off_reason_200_characters"),
     ("Appointment", {"ends_at": STARTS_AT + ONE_MINUTE}, "appointment_one_minute_long"),
-    ("Appointment", {"clinical_notes": "x" * 5000}, "notes_5000_characters"),
+    ("ClinicalNote", {"clinical_notes": "x" * 5000}, "notes_5000_characters"),
     (
         "Appointment",
         {"status": "CANCELLED", "cancelled_at": ENDS_AT, "cancellation_reason": "no longer needed"},

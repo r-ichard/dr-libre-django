@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Calendar · DrLibre{% endblock %}
+{% block head %}<link rel="stylesheet" href="/clinician/type-colours.css">{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="calendar" %}
+<h1>Calendar</h1>
+<p>{{ week_label }}. Times are in the hospital's time zone, {{ time_zone }}.</p>
+<div class="button-row">
+  <a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous week</a>
+  <a class="button button--secondary" href="{{ next_href }}" rel="next">Next week</a>
+</div>
+{% include "components/calendar_week.html" %}
+{% endblock %}

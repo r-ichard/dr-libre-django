@@ -21,8 +21,21 @@ from scheduling.views.pages.booking_confirmation import CalendarFile, Confirmati
 from scheduling.views.pages.booking_details import DetailsPage
 from scheduling.views.pages.booking_steps import ProviderChoicePage, ServicePage
 from scheduling.views.pages.booking_times import TimesPage
+from scheduling.views.pages.clinician_appointment import (
+    AppointmentPage as ClinicianAppointmentPage,
+)
+from scheduling.views.pages.clinician_appointment import CancelPage as ClinicianCancelPage
+from scheduling.views.pages.clinician_appointment import NotesPage
+from scheduling.views.pages.clinician_calendar import CalendarPage, ColoursPage
+from scheduling.views.pages.clinician_reschedule import (
+    ReschedulePage as ClinicianReschedulePage,
+)
+from scheduling.views.pages.clinician_reschedule import (
+    RescheduleReviewPage as ClinicianRescheduleReviewPage,
+)
+from scheduling.views.pages.clinician_today import CheckInPage, CompletePage, NoShowPage, TodayPage
 from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
-from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
+from scheduling.views.pages.homes import AdminConsole, PatientPortal
 from scheduling.views.pages.patient_appointments import AppointmentsPage, CancelPage
 from scheduling.views.pages.patient_notifications import (
     MarkAllReadPage,
@@ -114,7 +127,23 @@ urlpatterns = [
     path("patient/notifications/<uuid:notification_id>/read", MarkReadPage.as_view()),
     path("patient/profile", ProfilePage.as_view()),
     path("patient/profile/password", PasswordPage.as_view()),
-    path("clinician/", ClinicianWorkspace.as_view()),
+    path("clinician/", TodayPage.as_view()),
+    path("clinician/calendar", CalendarPage.as_view()),
+    path("clinician/type-colours.css", ColoursPage.as_view()),
+    path("clinician/appointments/<uuid:appointment_id>", ClinicianAppointmentPage.as_view()),
+    path("clinician/appointments/<uuid:appointment_id>/check-in", CheckInPage.as_view()),
+    path("clinician/appointments/<uuid:appointment_id>/complete", CompletePage.as_view()),
+    path("clinician/appointments/<uuid:appointment_id>/no-show", NoShowPage.as_view()),
+    path("clinician/appointments/<uuid:appointment_id>/cancel", ClinicianCancelPage.as_view()),
+    path("clinician/appointments/<uuid:appointment_id>/notes", NotesPage.as_view()),
+    path(
+        "clinician/appointments/<uuid:appointment_id>/reschedule",
+        ClinicianReschedulePage.as_view(),
+    ),
+    path(
+        "clinician/appointments/<uuid:appointment_id>/reschedule/review",
+        ClinicianRescheduleReviewPage.as_view(),
+    ),
     path("admin-console/", AdminConsole.as_view()),
     # Local-only product, so Django's development file server is enough and works with DEBUG off.
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.BASE_DIR / "static"}),

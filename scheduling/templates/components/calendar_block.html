@@ -1,0 +1,2 @@
+{% comment %}Parameter: item (text, href, badge, classes). The text names time, type and patient, so colour is never the only signal.{% endcomment %}
+<li class="cal-block {{ item.classes }}">{% if item.href %}<a href="{{ item.href }}">{{ item.text }}</a>{% else %}<span>{{ item.text }}</span>{% endif %}{% if item.badge %} {% include "components/badge.html" with kind=item.badge.0 text=item.badge.1 %}{% endif %}</li>

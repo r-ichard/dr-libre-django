@@ -1,0 +1,4 @@
+{% comment %}Parameter: history (time, label, actor), oldest first.{% endcomment %}
+<ol class="history-list">
+  {% for entry in history %}<li><span class="history-list__time">{{ entry.time }}</span> <strong>{{ entry.label }}</strong> by {{ entry.actor }}</li>{% empty %}<li>No history yet.</li>{% endfor %}
+</ol>

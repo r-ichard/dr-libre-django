@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Today · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="today" %}
+<h1>{{ day_text }}</h1>
+<p class="hint">Times are in the hospital's time zone, {{ time_zone }}.</p>
+<div class="button-row">
+  <a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous day</a>
+  <a class="button button--secondary" href="{{ today_href }}">Today</a>
+  <a class="button button--secondary" href="{{ next_href }}" rel="next">Next day</a>
+</div>
+<ul class="stat-tiles">
+  {% for tile in tiles %}{% include "components/stat_tile.html" with label=tile.label value=tile.value %}{% endfor %}
+</ul>
+{% for hour in hours %}
+<section aria-labelledby="hour-{{ forloop.counter }}">
+  <h2 id="hour-{{ forloop.counter }}">{{ hour.heading }}</h2>
+  <ul class="agenda">
+    {% for row in hour.rows %}{% include "components/agenda_row.html" %}{% endfor %}
+  </ul>
+</section>
+{% empty %}
+{% include "components/empty_state.html" with title="No appointments this day" text="Use the day links to look at another day." %}
+{% endfor %}
+{% endblock %}

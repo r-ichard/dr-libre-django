@@ -24,11 +24,11 @@ def _booked(clinic: Clinic, **overrides: object) -> Appointment:
         "clinician": clinic.clinician,
         "appointment_type": clinic.appointment_type,
         "patient_reason": "Private reason",
-        "clinical_notes": "Private notes",
         **overrides,
     }
     appointment = make("Appointment", **fields)
     assert isinstance(appointment, Appointment)
+    make("ClinicalNote", appointment=appointment, clinical_notes="Private notes")
     return appointment
 
 

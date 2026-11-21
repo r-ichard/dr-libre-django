@@ -68,6 +68,18 @@
 {% include "components/pagination.html" with page=2 page_count=5 previous_href="#" next_href="#" %}
 {% include "components/pagination.html" with page=1 page_count=1 %}
 
+<h2>Workspace</h2>
+{% include "components/workspace_nav.html" with current="today" %}
+<ul class="stat-tiles">
+  {% include "components/stat_tile.html" with label="Appointments" value=4 %}
+  {% include "components/stat_tile.html" with label="Next free slot" value="Tue 08 Jan, 09:00" %}
+</ul>
+<ul class="agenda">
+  {% include "components/agenda_row.html" with row=specimen_row %}
+</ul>
+{% include "components/history_list.html" with history=specimen_history %}
+{% include "components/calendar_week.html" with days=specimen_days %}
+
 <h2>Empty state</h2>
 {% include "components/empty_state.html" with title="No appointments yet" text="When you book, your appointments appear here." action_href="#" action_text="Book an appointment" %}
 

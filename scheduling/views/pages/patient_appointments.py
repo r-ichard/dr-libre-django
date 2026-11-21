@@ -91,7 +91,7 @@ class CancelPage(OwnAppointmentPage):
         if isinstance(found, HttpResponse):
             return found
         reason = request.POST.get("reason", "").strip()
-        error = _reason_error(reason)
+        error = reason_error(reason)
         if error:
             return self._form(request, found, reason, error, 422)
         cancelled = cancel_appointment(UUID(str(found.pk)), reason, self.user)
@@ -120,7 +120,7 @@ class CancelPage(OwnAppointmentPage):
         return self.page(request, context, status)
 
 
-def _reason_error(reason: str) -> str:
+def reason_error(reason: str) -> str:
     if not reason:
         return REASON_REQUIRED
     checked = validate_body(CancelRequest, {"reason": reason})

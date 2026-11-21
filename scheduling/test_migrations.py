@@ -13,13 +13,13 @@ def returns_no_pending_changes_when_models_match_migrations() -> None:
         pytest.fail(f"models changed without a migration (exit code {pending.code})")
 
 
-def returns_ten_schema_migrations_when_loader_reads_the_app() -> None:
+def returns_eleven_schema_migrations_when_loader_reads_the_app() -> None:
     loader = MigrationLoader(None, load=False)
     loader.load_disk()
 
     names = sorted(name for app, name in loader.disk_migrations if app == "scheduling")
 
-    assert len(names) == 10
+    assert len(names) == 11
     assert names[:2] == ["0001_initial", "0002_audit_log_append_only"]
 
 

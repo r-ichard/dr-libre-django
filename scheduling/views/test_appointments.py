@@ -156,7 +156,8 @@ def returns_only_appointments_inside_range_when_filtered_by_range() -> None:
 
 def returns_utc_times_with_zone_and_no_free_text_when_listing() -> None:
     clinic = make_clinic()
-    _make_appointment(clinic, patient_reason="private", clinical_notes="private")
+    appointment = _make_appointment(clinic, patient_reason="private")
+    make("ClinicalNote", appointment=appointment, clinical_notes="private")
 
     item = _signed_in(clinic.patient).get(APPOINTMENTS).json()["results"][0]
 

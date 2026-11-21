@@ -19,15 +19,19 @@ WAITLIST_ACTION = ("/patient/waitlist", "Back to your waitlist")
 
 
 def change_refused_page(
-    request: HttpRequest, failure: Failure, user: User, times_action: tuple[str, str] = LIST_ACTION
+    request: HttpRequest,
+    failure: Failure,
+    user: User,
+    times_action: tuple[str, str] = LIST_ACTION,
+    back_action: tuple[str, str] = LIST_ACTION,
 ) -> HttpResponse:
-    """times_action is where a taken slot leads; every other refusal leads back to the list."""
+    """times_action is where a taken slot leads; every other refusal leads to back_action."""
     refusal = refusal_for(failure)
     status_changed = failure.code == FailureCode.INVALID_TRANSITION
     message = STATUS_CHANGED if status_changed else refusal.message
     http_status = 409 if status_changed else refusal.status
     href, text = (
-        times_action if refusal.way_forward == "times" and not status_changed else LIST_ACTION
+        times_action if refusal.way_forward == "times" and not status_changed else back_action
     )
     return message_page(request, user, message, (href, text), http_status)
 

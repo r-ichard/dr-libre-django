@@ -32,11 +32,6 @@ class PatientPortal(PageView):
         return self.page(request, context)
 
 
-class ClinicianWorkspace(PageView):
-    template_name = "homes/clinician.html"
-    allowed_roles = frozenset({Role.CLINICIAN})
-
-
 class AdminConsole(PageView):
     template_name = "homes/admin.html"
     allowed_roles = frozenset({Role.ADMIN})

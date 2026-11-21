@@ -69,7 +69,6 @@ def _appointment_defaults() -> dict[str, Callable[[], object]]:
         "status": lambda: "BOOKED",
         "source": lambda: "ONLINE",
         "patient_reason": lambda: "",
-        "clinical_notes": lambda: "",
         "cancellation_reason": lambda: "",
     }
 
@@ -160,6 +159,7 @@ def _defaults() -> dict[str, dict[str, Callable[[], object]]]:
             "reason": lambda: "",
         },
         "Appointment": _appointment_defaults(),
+        "ClinicalNote": {"appointment": lambda: make("Appointment"), "clinical_notes": lambda: ""},
         "WaitlistEntry": {
             "patient": lambda: make("User"),
             "appointment_type": lambda: make("AppointmentType"),

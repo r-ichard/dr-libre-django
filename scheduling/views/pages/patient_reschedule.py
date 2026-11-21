@@ -70,14 +70,14 @@ class RescheduleReviewPage(OwnAppointmentPage):
         blocked = blocked_page_or_none(request, found, self.user, "reschedule")
         if blocked is not None:
             return blocked
-        return self._review(request, found, _asked_start(request))
+        return self._review(request, found, asked_start(request))
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         found = self.appointment_or_refusal(request)
         if isinstance(found, HttpResponse):
             return found
-        moved = reschedule_appointment(found.pk, _asked_start(request), self.user)
+        moved = reschedule_appointment(found.pk, asked_start(request), self.user)
         if isinstance(moved, Failure):
             times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
             return change_refused_page(request, moved, self.user, times)
@@ -100,7 +100,7 @@ class RescheduleReviewPage(OwnAppointmentPage):
         return self.page(request, context)
 
 
-def _asked_start(request: HttpRequest) -> datetime:
+def asked_start(request: HttpRequest) -> datetime:
     starts_at = instant_from(request.GET.get("starts_at", ""))
     if starts_at is None:
         raise Http404

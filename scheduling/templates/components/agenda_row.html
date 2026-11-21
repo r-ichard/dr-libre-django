@@ -1,0 +1,20 @@
+{% comment %}Parameters: row (patient, time, type_name, room, badge_kind, badge_text, href, forms, cancel_href, reschedule_href, return_date). Status forms post, then return to the day.{% endcomment %}
+<li class="agenda-row">
+  <div class="agenda-row__main">
+    <p class="agenda-row__time">{{ row.time }}</p>
+    <p class="agenda-row__who"><a href="{{ row.href }}">{{ row.patient }}</a></p>
+    <p class="agenda-row__what">{{ row.type_name }}{% if row.room %}, {{ row.room }}{% endif %} {% include "components/badge.html" with kind=row.badge_kind text=row.badge_text %}</p>
+  </div>
+  <div class="button-row">
+    {% for form in row.forms %}
+    <form method="post" action="{{ form.action }}">
+      {% csrf_token %}
+      <input type="hidden" name="return_to" value="today">
+      <input type="hidden" name="date" value="{{ row.return_date }}">
+      <button class="button button--secondary" type="submit">{{ form.label }}<span class="visually-hidden">: {{ row.patient }}, {{ row.time }}</span></button>
+    </form>
+    {% endfor %}
+    {% if row.reschedule_href %}<a class="button button--secondary" href="{{ row.reschedule_href }}">Reschedule<span class="visually-hidden">: {{ row.patient }}, {{ row.time }}</span></a>{% endif %}
+    {% if row.cancel_href %}<a class="button button--secondary" href="{{ row.cancel_href }}">Cancel<span class="visually-hidden">: {{ row.patient }}, {{ row.time }}</span></a>{% endif %}
+  </div>
+</li>

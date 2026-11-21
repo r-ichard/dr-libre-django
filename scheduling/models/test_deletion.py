@@ -14,7 +14,7 @@ MODEL_NAMES = {
     "Hospital", "Department", "Specialty", "User", "ClinicianProfile", "Room",
     "AppointmentType", "AvailabilityRule", "TimeOff", "Appointment", "WaitlistEntry",
     "Notification", "AuditLogEntry", "Session", "BookingHold", "VerificationCode", "SignInLink",
-    "SignInFailure", "RateLimitHit",
+    "SignInFailure", "RateLimitHit", "ClinicalNote",
 }  # fmt: skip
 
 
@@ -34,6 +34,7 @@ REFERENCES: list[tuple[str, str, Callable[[], dict[str, object]]]] = [
     ("Appointment", "clinician", dict),
     ("Appointment", "appointment_type", dict),
     ("Appointment", "room", lambda: {"room": make("Room")}),
+    ("ClinicalNote", "appointment", dict),
     ("WaitlistEntry", "patient", dict),
     ("WaitlistEntry", "appointment_type", dict),
     (
@@ -100,7 +101,7 @@ def returns_deleted_row_when_nothing_refers_to_it() -> None:
     assert not model_class("Hospital")._default_manager.filter(pk=hospital.pk).exists()
 
 
-def returns_exactly_the_nineteen_models_when_the_app_is_inspected() -> None:
+def returns_exactly_the_twenty_models_when_the_app_is_inspected() -> None:
     from django.apps import apps
 
     names = {model.__name__ for model in apps.get_app_config("scheduling").get_models()}

@@ -22,6 +22,7 @@ erDiagram
     Room |o--o{ AvailabilityRule : "room"
     ClinicianProfile ||--o{ BookingHold : "clinician"
     AppointmentType ||--o{ BookingHold : "appointment_type"
+    Appointment ||--o| ClinicalNote : "appointment"
     User ||--o| ClinicianProfile : "user"
     Department ||--o{ ClinicianProfile : "department"
     Specialty ||--o{ ClinicianProfile : "specialty"
@@ -63,7 +64,6 @@ FHIR: Appointment
 | `status` | CharField | no | at most 20 characters; one of BOOKED, CONFIRMED, CHECKED_IN, COMPLETED, CANCELLED, NO_SHOW |
 | `source` | CharField | no | at most 20 characters; one of ONLINE, ROUND_ROBIN, STAFF |
 | `patient_reason` | TextField | no |  |
-| `clinical_notes` | CharField | no | at most 5000 characters |
 | `cancelled_at` | DateTimeField | yes |  |
 | `cancellation_reason` | TextField | no |  |
 | `waitlist_entry` | OneToOneField | yes | unique; refers to WaitlistEntry, protected |
@@ -203,6 +203,25 @@ Constraints:
 - `bookinghold_source_listed` (check): source must be one of ONLINE, ROUND_ROBIN
 - `bookinghold_visitor_email_lower_case` (check): visitor_email must be lower case
 - `bookinghold_visitor_email_unique` (unique): visitor_email has a hold
+
+## ClinicalNote
+
+Table `scheduling_clinicalnote`.
+
+FHIR: not exposed, private to the clinician; never in an API body, notification or email
+
+| Field | Type | Null | Rule |
+| --- | --- | --- | --- |
+| `id` | UUIDField | no | primary key; at most 32 characters |
+| `created_at` | DateTimeField | no |  |
+| `updated_at` | DateTimeField | no |  |
+| `created_by` | ForeignKey | yes | refers to User, protected |
+| `appointment` | OneToOneField | no | unique; refers to Appointment, protected |
+| `clinical_notes` | CharField | no | at most 5000 characters |
+
+Constraints:
+
+- none beyond the field rules above
 
 ## ClinicianProfile
 

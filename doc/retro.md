@@ -108,3 +108,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The owner asked mid-run whether the model should follow FHIR naming. Answer recorded in
   ADR 0003 and the task: domain names stay, the schema carries what FHIR needs (versions,
   one Appointment resource for a waitlist entry and its booking, a declared mapping).
+
+## 2026-11-21 task 03, run 01M7YX1M5WPW (30 minutes, merged 8dd846f)
+
+- Passed with one lint bounce. Prove ran 10 minutes in the foreground and changed one
+  test file; the background hook holds.
+- Host check: `docker compose up --wait` now answers health straight away, the seed runs
+  twice with identical counts, refuses with `DEBUG` off, and its audit entry holds counts
+  only. Every appointment status and three time zones are present.
+- The suite went from 46 to 100 seconds (175 in the container) with 29 more tests: the
+  seed tests hash passwords at production cost and seed again per test. The pipeline runs
+  the suite six times or more per task, so task 03a makes it fast before task 04.
+- The seed writes rows the booking rules would refuse (outside availability). Fine for a
+  schema demo, wrong for a product demo: carried, to redo through the use cases.

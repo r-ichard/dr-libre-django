@@ -27,7 +27,8 @@ as GitHub issues; the issue number is in the heading.
 | 01a | Scaffold hardening: host defects and reviewer "Later" list of 01 | 16 | merged `b972eac` |
 | 02 | Domain model and migrations | 3 | merged `bc0c746` with 02a |
 | 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | merged `bc0c746` |
-| 03 | Repeatable demo seed | 16 | running `01M7YX1M5WPW` |
+| 03 | Repeatable demo seed | 16 | merged `8dd846f` |
+| 03a | Fast test suite: measure, fast hasher in tests, parallel workers | 16 | todo |
 | 04 | Platform baseline: result codes, correlation id, structured logs, audit writer, security headers | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |
@@ -77,3 +78,8 @@ Small findings waiting for the next task that touches the same file.
   for its use case". Each feature task reads that table.
 - Encryption at rest for clinical notes and visitor details in a hold: open point for the
   security review. Task 26.
+- Demo appointments are written straight through the models: some fall outside the
+  clinician's availability (after 17:00, weekends) and outside the 07:00 to 19:00 calendar
+  grid. Re-seed through the booking use cases on real free slots. After task 08.
+- Seed review: identify seeded appointments by a marker, not by patient, clinician and
+  type; notifications through the same upsert. With the re-seed above.

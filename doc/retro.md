@@ -256,3 +256,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   not by another clinician, and appears in no notification, audit row, log line or
   email; 201 characters and a reversed or empty range answer 400; a 501 line file fails
   `make gate`.
+
+## 2026-11-21 task 09, run 01M7ZHR8YB0N (22 minutes, merged 5370249)
+
+- Clean pass, no bounce. 1399 tests in 10 seconds, mutation gate clean.
+- Host check with the worker container running: a clinician cannot join; cancelling an
+  appointment offered the slot to the oldest matching entry, which was a seeded one and
+  not the entry I had just added, as section 5.8 says; another patient could not accept
+  it; an admin accepted, the appointment is linked to the entry and carries its version;
+  a second accept answers `invalid_transition`. The reminder job answers 1 then 0, and a
+  patient calling it gets 403. Worker lines are all JSON.
+- Seed data takes part in live checks. Read the database before deciding a result is
+  wrong.
+- Found by reading the inbox: two notification titles differ from section 11 and an
+  accepted offer sends two emails. Carried.
+- Milestone M3 is complete.

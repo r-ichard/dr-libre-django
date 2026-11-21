@@ -42,9 +42,10 @@ as GitHub issues; the issue number is in the heading.
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | merged `4466b27` |
 | 08 | Appointment changes: cancel, reschedule, status actions, notifications, email | 5.6, 7.6, 11, 14 | merged `032461d` |
 | 08a | Booking hardening: reason for the visit, errors after commit, size gate, range checks | 3.1, 8, 14 | merged `47d6ed1` |
-| 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | running `01M7ZHR8YB0N` |
+| 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | merged `5370249` |
 | | **M4 Public search and passwordless booking (#4)** | | |
-| 10 | Public search | 6.1 to 6.5, 14 | todo |
+| 10 | Public search, use case and API | 6.1 to 6.5, 14 | todo |
+| 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
 | 12 | Booking without signing in: hold, code, patient account | 7.1, 7.2, 7.5 to 7.7 | todo |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | todo |
@@ -73,8 +74,6 @@ Small findings waiting for the next task that touches the same file.
 
 - Start-up should refuse the development `SECRET_KEY` when `DEBUG` is off (task 26).
 - Acceptance of the terms and privacy notice (section 7.1) has no column. Task 12.
-- Waitlist acceptance sets `Appointment.inherited_version` from the locked entry, with a
-  test (review of 02a). Task 09.
 - `If-Match` goes through a filtered `update` and its row count, not `save` (review of
   02a). Tasks 22 to 24.
 - Rules the model plan left to use cases: `doc/plans/2026-11-21-domain-model.md`, "Waits
@@ -97,8 +96,6 @@ Small findings waiting for the next task that touches the same file.
 - A locked address writes one `auth.lockout` audit entry per attempt: an attacker can
   flood the append-only log. Audit the crossing of the threshold, or once per window
   (review of 05). Task 26, sooner if a task touches sign-in.
-- Expired sessions and sign-in failure rows of addresses that never return are never
-  purged. Task 09, with the scheduled jobs.
 - Public pages need a meta description (Lighthouse SEO). Task 10.
 - Static files are served by Django's development file server, also with `DEBUG` off.
   Settle with the production server choice. Task 26.
@@ -118,3 +115,10 @@ Small findings waiting for the next task that touches the same file.
 - The email of a change is sent inside the request after commit and can hold the answer
   for up to the 10 second mail timeout when the server hangs (review of 08). Revisit when
   the worker of task 09 sends pending emails.
+- Notification titles differ from the table of section 11: "A slot opened for you" should
+  be "Waitlist slot offered" and "Waitlist appointment booked" should be "Waitlist slot
+  booked". Accepting an offer sends two emails, "Appointment booked" and the waitlist one,
+  for a single event. Task 12, which touches the booking emails.
+- Review of 09, small: a stale offer is detected by clinician overlap only; the manual
+  offer loads every future cancelled slot of the type. With the admin waitlist screen,
+  task 20.

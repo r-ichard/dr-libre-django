@@ -26,10 +26,10 @@ def search_body(page: SearchPage[AnyResult]) -> dict[str, object]:
 
 def _result_body(result: ProviderResult | HospitalResult | SpecialtyResult) -> dict[str, object]:
     if isinstance(result, ProviderResult):
-        return _provider_body(result)
+        return provider_body(result)
     if isinstance(result, HospitalResult):
         return _hospital_body(result)
-    return _specialty_body(result)
+    return specialty_body(result)
 
 
 def _slot_body(
@@ -51,7 +51,7 @@ def _opening_body(opening: Opening | None) -> dict[str, object] | None:
     )
 
 
-def _provider_body(result: ProviderResult) -> dict[str, object]:
+def provider_body(result: ProviderResult) -> dict[str, object]:
     return {
         "id": str(result.id),
         "full_name": result.full_name,
@@ -94,7 +94,7 @@ def _hospital_body(result: HospitalResult) -> dict[str, object]:
     }
 
 
-def _specialty_body(result: SpecialtyResult) -> dict[str, object]:
+def specialty_body(result: SpecialtyResult) -> dict[str, object]:
     return {
         "id": str(result.id),
         "name": result.name,

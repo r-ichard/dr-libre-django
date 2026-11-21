@@ -117,3 +117,80 @@ def returns_explicit_page_size_when_it_is_changed_to_the_default() -> None:
     href = search_href(query, "providers", page_size=20)
 
     assert href == "/?page_size=20"
+
+
+def returns_query_without_filters_but_with_text_when_a_filter_is_set() -> None:
+    from scheduling.domain.search_address import widened_query
+
+    query = replace(
+        DEFAULT_QUERY,
+        text="heart",
+        specialty_id=SPECIALTY_ID,
+        hospital_id=uuid4(),
+        appointment_type_id=uuid4(),
+        city="Berlin",
+        window="today",
+        time_of_day="morning",
+        earliest_date=date(2030, 12, 3),
+        page=4,
+    )
+
+    wider = widened_query(query)
+
+    assert wider == replace(DEFAULT_QUERY, text="heart")
+
+
+def returns_query_without_text_when_no_filter_is_set() -> None:
+    from scheduling.domain.search_address import widened_query
+
+    query = replace(DEFAULT_QUERY, text="heart", sort="name_asc", page_size=50, page=4)
+
+    wider = widened_query(query)
+
+    assert wider == replace(DEFAULT_QUERY, sort="name_asc", page_size=50)
+
+
+def returns_same_query_when_neither_text_nor_filter_is_set() -> None:
+    from scheduling.domain.search_address import has_filters, widened_query
+
+    assert widened_query(DEFAULT_QUERY) == DEFAULT_QUERY
+    assert not has_filters(DEFAULT_QUERY)
+
+
+def returns_true_for_each_single_filter_when_it_is_set() -> None:
+    from scheduling.domain.search_address import has_filters
+
+    single_filter_queries = [
+        replace(DEFAULT_QUERY, specialty_id=SPECIALTY_ID),
+        replace(DEFAULT_QUERY, hospital_id=uuid4()),
+        replace(DEFAULT_QUERY, city="Berlin"),
+        replace(DEFAULT_QUERY, appointment_type_id=uuid4()),
+        replace(DEFAULT_QUERY, earliest_date=date(2030, 12, 3)),
+        replace(DEFAULT_QUERY, window="7_days"),
+        replace(DEFAULT_QUERY, time_of_day="evening"),
+    ]
+    for query in single_filter_queries:
+        assert has_filters(query), query
+    assert not has_filters(replace(DEFAULT_QUERY, text="heart", sort="name_asc"))
+
+
+def returns_location_kept_when_query_is_widened() -> None:
+    from scheduling.domain.search_address import widened_query
+
+    location = Location(latitude=52.5, longitude=13.4)
+    query = replace(DEFAULT_QUERY, city="Berlin", sort="distance", location=location, page=3)
+
+    wider = widened_query(query)
+
+    assert wider.location == location
+    assert wider.sort == "distance"
+    assert wider.page == 1
+
+
+def returns_path_prefix_when_search_href_is_given_a_path() -> None:
+    from scheduling.domain.search_address import search_href
+
+    path = "/specialties/abc"
+
+    assert search_href(DEFAULT_QUERY, "providers", path=path) == "/specialties/abc"
+    assert search_href(DEFAULT_QUERY, "providers", path=path, page=2) == "/specialties/abc?page=2"

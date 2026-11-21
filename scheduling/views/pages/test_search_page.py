@@ -87,12 +87,15 @@ def returns_all_times_link_to_times_page_for_the_type_and_provider() -> None:
     assert f'href="/book/{appointment_type.pk}?provider={clinician.pk}"' in html
 
 
-def returns_slot_link_text_with_day_time_and_provider() -> None:
+def returns_slot_link_name_containing_visible_text_when_rendered() -> None:
     plant_clinic()
 
     html = _root()
 
-    assert "Monday 7 January 2030 at 12:00 with Dr Ada Lovelace" in html
+    assert (
+        '">Mon 7 Jan, 12:00<span class="visually-hidden"> with Dr Ada Lovelace</span></a>' in html
+    )
+    assert 'aria-hidden="true">Mon 7 Jan' not in html
 
 
 def returns_address_street_city_and_counts_on_hospital_list() -> None:
@@ -179,13 +182,29 @@ def returns_distance_sort_only_when_location_is_in_the_address() -> None:
     assert 'value="distance"' in with_location
 
 
-def returns_empty_state_with_widen_link_when_nothing_matches() -> None:
+def returns_wider_link_without_filters_when_filters_set() -> None:
     plant_clinic()
 
     html = _root("?q=zzzznomatch&window=today&list=hospitals")
 
     assert "Ada Lovelace" not in html
     assert 'href="/?q=zzzznomatch&amp;list=hospitals"' in html
+
+
+def returns_wider_link_without_text_when_no_filters() -> None:
+    plant_clinic()
+
+    html = _root("?q=zzzznomatch&list=hospitals")
+
+    assert 'href="/?list=hospitals"' in html
+    assert 'href="/?q=zzzznomatch&amp;list=hospitals">Widen' not in html
+
+
+def returns_no_wider_link_when_nothing_to_widen() -> None:
+    html = _root("?list=hospitals")
+
+    assert "Nothing matches your search" in html
+    assert "Widen the search" not in html
 
 
 def returns_form_as_plain_get_with_a_label_for_every_control() -> None:
@@ -205,7 +224,7 @@ def returns_form_as_plain_get_with_a_label_for_every_control() -> None:
         assert f'for="{control_id}"' in form.group(0)
 
 
-def returns_list_switch_as_named_nav_with_current_marked_by_text() -> None:
+def returns_no_current_text_in_switch_but_aria_current_and_current_class() -> None:
     plant_clinic()
 
     html = _root("?list=hospitals")
@@ -215,7 +234,8 @@ def returns_list_switch_as_named_nav_with_current_marked_by_text() -> None:
     )
     assert nav is not None
     assert nav.group(0).count('aria-current="page"') == 1
-    assert "(current)" in nav.group(0)
+    assert "(current)" not in nav.group(0)
+    assert "list-switch__link--current" in nav.group(0)
     assert "list=specialties" in nav.group(0)
 
 
@@ -286,13 +306,12 @@ def returns_one_current_page_size_marked_for_the_chosen_size() -> None:
     assert 'name="page_size" value="50"' in html
 
 
-def returns_summary_and_list_switch_text_that_readers_hear_for_the_current_list() -> None:
+def returns_summary_and_search_landmark_text_for_the_current_list() -> None:
     plant_clinic()
 
     html = _root("?list=hospitals")
 
     assert re.search(r'<p class="results-summary">1 result\. Page 1 of 1\.</p>', html)
-    assert '(current)</span><span aria-hidden="true">(current)</span>' in html
     assert 'role="search"' in html
     assert ">Search by name, hospital, city or specialty</label>" in html
 
@@ -305,16 +324,19 @@ def returns_clinician_in_the_earliest_slot_link_of_hospital_and_specialty_lists(
         assert f"/book/{appointment_type.pk}/details?provider={clinician.pk}&amp;" in html
 
 
-def returns_vendored_icon_named_after_the_specialty_and_the_fallback_otherwise() -> None:
+def returns_icon_of_specialty_code_when_specialty_renamed() -> None:
     clinician, _ = plant_clinic()
 
-    for name, icon in (("General Practice", "general-practice"), ("Cardiology", "cardiology")):
-        clinician.specialty.name = name
+    for code, icon in (("general-practice", "general-practice"), ("cardiology", "cardiology")):
+        clinician.specialty.code = code
+        clinician.specialty.name = "Renamed Specialty"
         clinician.specialty.save()
         assert f"/static/icons/specialties/{icon}.svg" in _root("?list=specialties")
-    clinician.specialty.name = "Astrology"
+    clinician.specialty.code = "astrology"
+    clinician.specialty.name = "Cardiology"
     clinician.specialty.save()
     assert "/static/icons/specialties/fallback.svg" in _root("?list=specialties")
+    assert "/static/icons/specialties/cardiology.svg" not in _root("?list=specialties")
 
 
 def returns_counts_and_no_availability_text_on_hospital_and_specialty_lists() -> None:
@@ -334,3 +356,82 @@ def returns_all_times_link_text_naming_the_type_and_hidden_provider() -> None:
     assert (
         'All times for Check-up<span class="visually-hidden"> with Dr Ada Lovelace</span>' in html
     )
+
+
+MORE_FILTER_FIELDS = (
+    "specialty",
+    "hospital",
+    "city",
+    "appointment_type",
+    "from",
+    "window",
+    "time_of_day",
+    "sort",
+)
+
+
+def _form_parts(html: str) -> tuple[str, str, str]:
+    form = re.search(r"<form[^>]*>.*?</form>", html, re.DOTALL)
+    assert form is not None
+    details = re.search(r"<details[^>]*>.*?</details>", form.group(0), re.DOTALL)
+    assert details is not None
+    return form.group(0), details.group(0), form.group(0).replace(details.group(0), "")
+
+
+def returns_q_field_and_search_button_before_more_filters_disclosure() -> None:
+    plant_clinic()
+
+    form, details, outside = _form_parts(_root())
+
+    assert 'name="q"' in outside
+    assert 'type="submit"' in outside
+    assert form.index('name="q"') < form.index('type="submit"') < form.index("<details")
+    assert "More filters" in details
+    assert "<summary" in details
+    assert 'name="q"' not in details
+    for field in MORE_FILTER_FIELDS:
+        assert f'name="{field}"' in details, field
+        assert f'name="{field}"' not in outside, field
+
+
+def returns_disclosure_open_when_a_filter_is_set_and_closed_when_none() -> None:
+    plant_clinic()
+
+    closed = re.search(r"<details[^>]*>", _root())
+    opened = re.search(r"<details[^>]*>", _root("?window=7_days"))
+    text_only = re.search(r"<details[^>]*>", _root("?q=Ada"))
+
+    assert closed is not None and opened is not None and text_only is not None
+    assert "open" not in closed.group(0).split()
+    assert "open" in opened.group(0).split()
+    assert "open" not in text_only.group(0).split()
+
+
+def returns_results_when_form_is_submitted_as_a_browser_does_with_fields_in_the_disclosure() -> (
+    None
+):
+    from scheduling.views.pages.browser_support import SITE_ORIGIN, browser_client
+
+    clinician, _ = plant_clinic()
+    form, _, _ = _form_parts(_root())
+    pairs = {"q": "Ada", "city": "Berlin", "window": "7_days", "sort": "name_asc"}
+    for name in re.findall(r'<(?:input|select)[^>]*\bname="([^"]+)"', form):
+        assert (
+            name in pairs
+            or name in MORE_FILTER_FIELDS
+            or name in {"list", "page_size", "latitude", "longitude"}
+        ), name
+
+    response = browser_client().get("/", pairs, headers={"Origin": SITE_ORIGIN})
+
+    assert response.status_code == 200
+    assert "Ada Lovelace" in response.content.decode()
+
+
+def returns_q_field_in_its_own_main_row_in_the_stylesheet() -> None:
+    from pathlib import Path
+
+    css = (Path(__file__).resolve().parents[3] / "static" / "css" / "components.css").read_text()
+
+    assert ".search-form__main" in css
+    assert re.search(r"\.more-filters[^{]*\{[^}]*align-items: end", css)

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, time
 
+from django.db.models import Model
+
 from scheduling.models import ClinicianProfile
 from scheduling.models.builders import add_clinician, make
 from scheduling.models.organisation import AppointmentType
@@ -42,3 +44,11 @@ def plant_clinic() -> tuple[ClinicianProfile, AppointmentType]:
         patient_reason=PLANTED_REASON,
     )
     return clinician, appointment_type
+
+
+def update_row(row: Model, **fields: object) -> None:
+    """Planted rows can be a version behind the database; reload, then change."""
+    row.refresh_from_db()
+    for name, value in fields.items():
+        setattr(row, name, value)
+    row.save()

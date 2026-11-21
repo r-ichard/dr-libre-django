@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ specialty.name }} providers · DrLibre{% endblock %}
+{% block description %}Providers of {{ specialty.name }} across our hospitals, with their next free times. Book online without an account.{% endblock %}
+{% block content %}
+<div class="result__heading">
+  {% include "components/specialty_icon.html" with file=icon %}
+  <h1>{{ specialty.name }}</h1>
+</div>
+<p>{{ specialty.provider_count }} provider{{ specialty.provider_count|pluralize }}, {{ specialty.hospital_count }} hospital{{ specialty.hospital_count|pluralize }}</p>
+{% if rows %}
+<ol class="results">
+  {% for row in rows %}<li class="card result">{% include "search/provider_result.html" %}</li>{% endfor %}
+</ol>
+{% include "components/page_sizes.html" %}
+{% include "components/pagination.html" %}
+{% else %}
+{% include "components/empty_state.html" with title="No providers to book online" text="No provider of this specialty is open for online booking at the moment." action_href="/" action_text="Search all providers" %}
+{% endif %}
+{% endblock %}

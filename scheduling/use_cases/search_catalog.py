@@ -26,10 +26,16 @@ class CatalogProvider:
     time_zone: str
     latitude: float | None
     longitude: float | None
+    specialty_code: str
     types: tuple[BookableType, ...]
 
 
-def load_catalog() -> list[CatalogProvider]:
+def load_catalog(
+    *,
+    provider_id: UUID | None = None,
+    hospital_id: UUID | None = None,
+    specialty_id: UUID | None = None,
+) -> list[CatalogProvider]:
     """Two queries: listable clinicians, then the bookable types of their departments."""
     types_by_department: dict[UUID, list[BookableType]] = {}
     bookable = AppointmentType.objects.filter(is_active=True, is_bookable_online=True).values_list(
@@ -39,12 +45,20 @@ def load_catalog() -> list[CatalogProvider]:
         types_by_department.setdefault(department_id, []).append(
             BookableType(type_id, name, minutes, buffer)
         )
-    rows = ClinicianProfile.objects.filter(
+    listable = ClinicianProfile.objects.filter(
         user__is_active=True,
         specialty__is_active=True,
         department__hospital__is_active=True,
         department_id__in=list(types_by_department),
-    ).values_list(
+    )
+    for column, wanted in (
+        ("pk", provider_id),
+        ("department__hospital_id", hospital_id),
+        ("specialty_id", specialty_id),
+    ):
+        if wanted is not None:
+            listable = listable.filter(**{column: wanted})
+    rows = listable.values_list(
         "id",
         "user__full_name",
         "title",
@@ -61,5 +75,6 @@ def load_catalog() -> list[CatalogProvider]:
         "department__hospital__time_zone",
         "department__hospital__latitude",
         "department__hospital__longitude",
+        "specialty__code",
     )
     return [CatalogProvider(*row, tuple(types_by_department[row[5]])) for row in rows]

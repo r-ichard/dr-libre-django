@@ -1,6 +1,7 @@
 """Task 12a, times: a week of free slots in the hospital's zone."""
 
-from datetime import timedelta
+from collections.abc import Callable
+from datetime import date, timedelta
 
 from django.http import Http404, HttpRequest, HttpResponse
 
@@ -31,11 +32,16 @@ class TimesPage(PageView):
         loaded = week_of_slots(type_id, provider_id, week_from(request.GET.get("week", "")))
         if isinstance(loaded, Failure):
             raise Http404
-        context = {"summary": slot_summary(loaded.value.choice, None), **week_strip(loaded.value)}
+        week = loaded.value
+
+        def week_href(week_start: date) -> str:
+            return times_href(type_id, provider_id, week_start)
+
+        context = {"summary": slot_summary(week.choice, None), **week_strip(week, week_href)}
         return self.page(request, context)
 
 
-def week_strip(week: WeekOfSlots) -> dict[str, object]:
+def week_strip(week: WeekOfSlots, week_href: Callable[[date], str]) -> dict[str, object]:
     """The context of components/week_strip.html, for every page that shows a week of slots."""
     type_id = week.choice.appointment_type.pk
     clinician = week.choice.clinician
@@ -43,12 +49,13 @@ def week_strip(week: WeekOfSlots) -> dict[str, object]:
     days = []
     for offset in range(DAYS_PER_WEEK):
         day = week.week_start + timedelta(days=offset)
-        heading = day_label(day)
+        heading = f"{day:%a} {day.day} {day:%b}"
+        spoken_day = day_label(day)
         slots = [
             {
                 "label": clock_label(start, week.time_zone),
                 "href": details_href(type_id, provider_id, start),
-                "day": heading,
+                "day": spoken_day,
             }
             for start in week.days.get(day, [])
         ]
@@ -58,6 +65,6 @@ def week_strip(week: WeekOfSlots) -> dict[str, object]:
         "days": days,
         "has_slots": bool(week.days),
         "week_label": f"{day_label(week.week_start)} to {day_label(last_day)}",
-        "previous_href": times_href(type_id, provider_id, previous_week_start(week.week_start)),
-        "next_href": times_href(type_id, provider_id, next_week_start(week.week_start)),
+        "previous_href": week_href(previous_week_start(week.week_start)),
+        "next_href": week_href(next_week_start(week.week_start)),
     }

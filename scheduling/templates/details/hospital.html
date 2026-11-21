@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ hospital.name }}, {{ hospital.city }} · DrLibre{% endblock %}
+{% block description %}{{ hospital.name }} in {{ hospital.city }}: departments, specialties, providers and the next free times. Book online without an account.{% endblock %}
+{% block content %}
+<h1>{{ hospital.name }}</h1>
+<section class="card detail" aria-labelledby="hospital-about">
+  <h2 id="hospital-about">About</h2>
+  <dl class="facts">
+    <div><dt>Address</dt><dd>{{ hospital.street_address }}, {{ hospital.postal_code }} {{ hospital.city }}, {{ hospital.country }}</dd></div>
+    <div><dt>Phone</dt><dd>{{ hospital.phone }}</dd></div>
+    <div><dt>Time zone</dt><dd>{{ hospital.time_zone }}</dd></div>
+  </dl>
+  {% if hospital.description %}<p>{{ hospital.description }}</p>{% endif %}
+</section>
+{% if rows %}
+<section class="detail" aria-labelledby="hospital-first">
+  <h2 id="hospital-first">First available</h2>
+  <p class="hint">Times are in the hospital's time zone, {{ hospital.time_zone }}.</p>
+  <ul class="detail__list">
+    {% for choice in first_available %}<li><a class="button button--secondary" href="{{ choice.href }}">First available: {{ choice.type_name }}<span class="visually-hidden"> in {{ choice.department_name }}</span></a> <span class="hint">{{ choice.department_name }}</span></li>{% endfor %}
+  </ul>
+</section>
+<section class="detail" aria-labelledby="hospital-departments">
+  <h2 id="hospital-departments">Departments</h2>
+  <ul>{% for item in hospital.departments %}<li>{{ item.name }}</li>{% endfor %}</ul>
+</section>
+<section class="detail" aria-labelledby="hospital-specialties">
+  <h2 id="hospital-specialties">Specialties</h2>
+  <ul>{% for item in specialties %}<li><a href="{{ item.href }}">{{ item.name }}</a></li>{% endfor %}</ul>
+</section>
+<section class="detail" aria-labelledby="hospital-providers">
+  <h2 id="hospital-providers">Providers</h2>
+  <ol class="results">
+    {% for row in rows %}<li class="card result">{% include "search/provider_result.html" with heading_level=3 %}</li>{% endfor %}
+  </ol>
+</section>
+{% else %}
+{% include "components/empty_state.html" with title="No providers to book online" text="This hospital has no provider open for online booking at the moment." %}
+{% endif %}
+{% endblock %}

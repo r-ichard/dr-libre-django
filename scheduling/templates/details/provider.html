@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ name }}, {{ provider.specialty_name }} · DrLibre{% endblock %}
+{% block description %}{{ name }}, {{ provider.specialty_name }} at {{ provider.hospital_name }}, {{ provider.city }}. See free times and book online without an account.{% endblock %}
+{% block content %}
+<h1>{{ name }}</h1>
+<p class="lead"><a href="{{ specialty_href }}">{{ provider.specialty_name }}</a></p>
+<section class="card detail" aria-labelledby="provider-about">
+  <h2 id="provider-about">About</h2>
+  <dl class="facts">
+    <div><dt>Hospital</dt><dd><a href="{{ hospital_href }}">{{ provider.hospital_name }}</a>, {{ provider.city }}</dd></div>
+    <div><dt>Department</dt><dd>{{ provider.department_name }}</dd></div>
+    <div><dt>Time zone</dt><dd>{{ provider.time_zone }}</dd></div>
+  </dl>
+  {% if bio %}<p>{{ bio }}</p>{% endif %}
+</section>
+<section class="detail" aria-labelledby="provider-times">
+  <h2 id="provider-times">{{ provider.appointment_type_name }}, {{ provider.appointment_type_minutes }} minutes</h2>
+  {% if switch|length > 1 %}{% include "components/list_switch.html" with label="Appointment type" %}{% endif %}
+  <p class="hint">Times are in the hospital's time zone, {{ provider.time_zone }}.</p>
+  {% if slots %}
+  <p class="result__label">Next free times</p>
+  <ul class="result__slots">
+    {% for slot in slots %}<li>{% include "components/slot_link.html" with href=slot.href visible=slot.visible provider_name=name %}</li>{% endfor %}
+  </ul>
+  {% else %}<p class="hint">No availability in the next 90 days</p>{% endif %}
+  {% include "components/week_strip.html" %}
+</section>
+{% endblock %}

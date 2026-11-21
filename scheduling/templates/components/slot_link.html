@@ -1,2 +1,2 @@
-{% comment %}Parameters: href, visible, spoken. The visible text is short, readers hear day, time and provider.{% endcomment %}
-<a class="button button--secondary slot-link" href="{{ href }}"><span aria-hidden="true">{{ visible }}</span><span class="visually-hidden">{{ spoken }}</span></a>
+{% comment %}Parameters: href, visible, provider_name. The accessible name starts with the visible text and adds the provider (WCAG 2.5.3).{% endcomment %}
+<a class="button button--secondary slot-link" href="{{ href }}">{{ visible }}<span class="visually-hidden"> with {{ provider_name }}</span></a>

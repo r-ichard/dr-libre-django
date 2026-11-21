@@ -1,5 +1,5 @@
 {% with hospital=row.hospital %}
-<h2 class="result__title">{{ hospital.name }}</h2>
+<h2 class="result__title"><a href="{{ row.hospital_href }}">{{ hospital.name }}</a></h2>
 <p>{{ hospital.street_address }}, {{ hospital.postal_code }} {{ hospital.city }}, {{ hospital.country }}</p>
 <p>{{ hospital.specialty_names|join:", " }}</p>
 <p>{{ hospital.bookable_provider_count }} provider{{ hospital.bookable_provider_count|pluralize }}, {{ hospital.providers_with_availability_count }} with free times</p>

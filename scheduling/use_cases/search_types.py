@@ -58,6 +58,7 @@ class HospitalResult:
 class SpecialtyResult:
     id: UUID
     name: str
+    code: str
     provider_count: int
     hospital_count: int
     earliest: Opening | None

@@ -2,9 +2,9 @@
 
 from uuid import UUID
 
-from scheduling.domain.search_address import LIST_KINDS, search_href
-from scheduling.domain.search_query import PAGE_SIZES, SearchQuery, parse_search_query
-from scheduling.domain.slot_text import slot_spoken_text, slot_visible_text
+from scheduling.domain.search_address import LIST_KINDS, has_filters, search_href, widened_query
+from scheduling.domain.search_query import PAGE_SIZES, SearchQuery
+from scheduling.domain.slot_text import slot_visible_text
 from scheduling.domain.specialty_icons import icon_file_for
 from scheduling.use_cases.search_filter_options import FilterOptions
 from scheduling.use_cases.search_types import (
@@ -58,18 +58,28 @@ def search_context(
                 LIST_KINDS, ("Providers", "Hospitals", "Specialties"), strict=True
             )
         ],
-        "page_sizes": [
-            {
-                "size": size,
-                "href": search_href(query, kind, page_size=size),
-                "current": size == query.page_size,
-            }
-            for size in PAGE_SIZES
-        ],
-        "widen_href": search_href(parse_search_query({"q": query.text}), kind),
+        "page_sizes": page_size_links(query, kind),
+        "widen_href": _widen_href(query, kind),
+        "filters_set": has_filters(query),
         "fields": _fields(query, options),
         "location": query.location,
     }
+
+
+def page_size_links(query: SearchQuery, kind: str, path: str = "/") -> list[dict[str, object]]:
+    return [
+        {
+            "size": size,
+            "href": search_href(query, kind, path=path, page_size=size),
+            "current": size == query.page_size,
+        }
+        for size in PAGE_SIZES
+    ]
+
+
+def _widen_href(query: SearchQuery, kind: str) -> str:
+    wider = widened_query(query)
+    return "" if wider == query else search_href(wider, kind)
 
 
 def _fields(query: SearchQuery, options: FilterOptions) -> dict[str, object]:
@@ -103,35 +113,44 @@ def _text(identifier: UUID | None) -> str:
 
 def _row(result: AnyResult) -> dict[str, object]:
     if isinstance(result, ProviderResult):
-        return _provider_row(result)
+        return provider_row(result)
     if isinstance(result, HospitalResult):
-        return {"hospital": result, "opening": _opening(result.earliest)}
+        return {
+            "hospital": result,
+            "hospital_href": hospital_href(result.id),
+            "opening": _opening(result.earliest),
+        }
     return _specialty_row(result)
 
 
-def _provider_row(result: ProviderResult) -> dict[str, object]:
-    name = f"{result.title} {result.full_name}".strip()
+def provider_name(result: ProviderResult) -> str:
+    return f"{result.title} {result.full_name}".strip()
+
+
+def provider_row(result: ProviderResult) -> dict[str, object]:
     slots = [
         {
             "visible": slot_visible_text(start, result.time_zone),
-            "spoken": slot_spoken_text(start, result.time_zone, name),
             "href": details_href(result.appointment_type_id, result.id, start),
         }
         for start in result.next_starts
     ]
     return {
         "provider": result,
-        "name": name,
+        "name": provider_name(result),
+        "provider_href": f"/providers/{result.id}",
+        "hospital_href": hospital_href(result.hospital_id),
+        "specialty_href": specialty_href(result.specialty_id),
         "slots": slots,
         "times_href": times_href(result.appointment_type_id, result.id),
     }
 
 
 def _specialty_row(result: SpecialtyResult) -> dict[str, object]:
-    code = result.name.casefold().replace(" ", "-")
     return {
         "specialty": result,
-        "icon": icon_file_for(code),
+        "specialty_href": specialty_href(result.id),
+        "icon": icon_file_for(result.code),
         "opening": _opening(result.earliest),
     }
 
@@ -141,11 +160,17 @@ def _opening(earliest: Opening | None) -> dict[str, object] | None:
         return None
     return {
         "visible": slot_visible_text(earliest.starts_at, earliest.time_zone),
-        "spoken": slot_spoken_text(
-            earliest.starts_at, earliest.time_zone, "the earliest available provider"
-        ),
         "href": details_href(
             earliest.appointment_type_id, earliest.clinician_id, earliest.starts_at
         ),
+        "provider_name": "the earliest available provider",
         "time_zone": earliest.time_zone,
     }
+
+
+def hospital_href(hospital_id: UUID) -> str:
+    return f"/hospitals/{hospital_id}"
+
+
+def specialty_href(specialty_id: UUID) -> str:
+    return f"/specialties/{specialty_id}"

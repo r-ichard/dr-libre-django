@@ -58,8 +58,9 @@ def search_public(
 @overload
 def search_public(kind: str, query: SearchQuery, now: datetime) -> SearchPage[AnyResult]: ...
 def search_public(kind: str, query: SearchQuery, now: datetime) -> SearchPage[AnyResult]:
+    catalog = load_catalog(hospital_id=query.hospital_id, specialty_id=query.specialty_id)
     candidates = _candidates(
-        query, now, PROVIDER_STARTS if kind == "providers" else AGGREGATE_STARTS
+        catalog, query, now, PROVIDER_STARTS if kind == "providers" else AGGREGATE_STARTS
     )
     if kind == "providers":
         entries = [(_sortable(item, query), _provider_result(item)) for item in candidates]
@@ -69,10 +70,23 @@ def search_public(kind: str, query: SearchQuery, now: datetime) -> SearchPage[An
     return _page(query, _specialty_entries(candidates, query))
 
 
-def _candidates(query: SearchQuery, now: datetime, wanted: int) -> list[Candidate]:
+def provider_results(
+    catalog: list[CatalogProvider], query: SearchQuery, now: datetime
+) -> list[ProviderResult]:
+    """Every matching provider, by name, for a page that lists them all."""
+    candidates = _candidates(catalog, query, now, PROVIDER_STARTS)
+    ordered = sorted(
+        candidates, key=lambda item: (item.provider.full_name.casefold(), item.provider.id.int)
+    )
+    return [_provider_result(candidate) for candidate in ordered]
+
+
+def _candidates(
+    catalog: list[CatalogProvider], query: SearchQuery, now: datetime, wanted: int
+) -> list[Candidate]:
     matching = [
         (provider, chosen)
-        for provider in load_catalog()
+        for provider in catalog
         if _matches(provider, query) and (chosen := _chosen_type(provider, query)) is not None
     ]
     schedules = _schedules(matching, now)
@@ -256,6 +270,7 @@ def _specialty_entries(
         result = SpecialtyResult(
             id=specialty_id,
             name=members[0].provider.specialty_name,
+            code=members[0].provider.specialty_code,
             provider_count=summary.provider_count,
             hospital_count=len({member.provider.hospital_id for member in members}),
             earliest=opening,

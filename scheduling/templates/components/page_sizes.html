@@ -1,0 +1,7 @@
+{% comment %}Parameters: page_sizes (size, href, current).{% endcomment %}
+<nav class="page-sizes" aria-label="Results per page">
+  <p>Results per page:</p>
+  <ul>
+    {% for item in page_sizes %}<li><a href="{{ item.href }}"{% if item.current %} aria-current="true"{% endif %}>{{ item.size }}</a></li>{% endfor %}
+  </ul>
+</nav>

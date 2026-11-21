@@ -20,12 +20,18 @@ from scheduling.views.pages.booking_code import CodePage, ResendPage
 from scheduling.views.pages.booking_confirmation import CalendarFile, ConfirmationPage
 from scheduling.views.pages.booking_details import DetailsPage
 from scheduling.views.pages.booking_times import TimesPage
+from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
 from scheduling.views.pages.public_pages import StylePage
 from scheduling.views.pages.search_page import SearchPage
 from scheduling.views.pages.sign_in import SignInPage
 from scheduling.views.pages.sign_in_link import CheckEmailPage, LinkContinuePage, LinkRequestPage
 from scheduling.views.pages.sign_out import SignOutPage
+from scheduling.views.public_details import (
+    HospitalDetailView,
+    ProviderDetailView,
+    SpecialtyDetailView,
+)
 from scheduling.views.search import (
     SearchHospitalsView,
     SearchProvidersView,
@@ -48,6 +54,9 @@ urlpatterns = [
     path("api/v1/search/providers", SearchProvidersView.as_view()),
     path("api/v1/search/hospitals", SearchHospitalsView.as_view()),
     path("api/v1/search/specialties", SearchSpecialtiesView.as_view()),
+    path("api/v1/hospitals/<uuid:hospital_id>", HospitalDetailView.as_view()),
+    path("api/v1/providers/<uuid:provider_id>", ProviderDetailView.as_view()),
+    path("api/v1/specialties/<uuid:specialty_id>", SpecialtyDetailView.as_view()),
     path("api/v1/booking/holds", HoldsView.as_view()),
     path("api/v1/booking/holds/<uuid:hold_id>/resend", ResendView.as_view()),
     path("api/v1/booking/holds/<uuid:hold_id>/verify", VerifyView.as_view()),
@@ -64,6 +73,9 @@ urlpatterns = [
     re_path(r"^api/v1/", NotFoundView.as_view()),
     path("", SearchPage.as_view()),
     path("favicon.ico", lambda request: redirect("/static/favicon.svg")),
+    path("providers/<uuid:provider_id>", ProviderPage.as_view()),
+    path("hospitals/<uuid:hospital_id>", HospitalPage.as_view()),
+    path("specialties/<uuid:specialty_id>", SpecialtyPage.as_view()),
     path("sign-in", SignInPage.as_view()),
     path("sign-in/email-link", LinkRequestPage.as_view()),
     path("sign-in/check-email", CheckEmailPage.as_view()),

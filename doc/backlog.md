@@ -50,7 +50,7 @@ as GitHub issues; the issue number is in the heading.
 | 11 | Public detail pages | 6.6 | todo |
 | 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | merged `bc85ddf` |
 | 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | todo |
-| 13 | Sign-in by email link | 7.3, 7.4, 12.2 | todo |
+| 13 | Sign-in by email link | 7.3, 7.4, 12.2 | running `01M7ZP6HTKGF` |
 | | **M5 Patient portal (#5)** | | |
 | 14 | Home, appointments, booking wizard, reschedule, cancel, calendar file | 8 | todo |
 | 15 | Waitlist, notifications, profile | 8 | todo |

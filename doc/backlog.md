@@ -51,7 +51,7 @@ as GitHub issues; the issue number is in the heading.
 | 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | merged `bc85ddf` |
 | 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | todo |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | merged `b3192e7` |
-| 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | running `01M7ZQXQPPY9` |
+| 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | merged `84412f9` |
 | | **M5 Patient portal (#5)** | | |
 | 14 | Home, appointments, booking wizard, reschedule, cancel, calendar file | 8 | todo |
 | 15 | Waitlist, notifications, profile | 8 | todo |
@@ -122,3 +122,6 @@ Small findings waiting for the next task that touches the same file.
 - A hold blocks the clinician, not the room: a room taken meanwhile makes verification
   answer `conflict` with the hold kept (review of 12). The booking page must say what to
   do. Task 12a.
+- The sign-in page shows the password form first; most patients have no password. And
+  the "link not valid" page does not show the signed-in user in its header. Task 25.
+- `background_mail._send` logs a failure without its trace. Task 26.

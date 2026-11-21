@@ -313,3 +313,12 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   all, so the form passed every test. A flow is verified when a browser has walked it.
 - Rule added to `CLAUDE.md`: page forms are tested with the check enforced and the
   header set. Task 13a fixes the page and adds the helper.
+
+## 2026-11-21 task 13a, run 01M7ZQXQPPY9 (8 minutes, merged 84412f9)
+
+- Clean pass. 1765 tests.
+- Chrome, with a link taken from smtp4dev: Continue signs the passwordless patient in and
+  lands on `/patient/` with no token in the address; the same link again shows "Sign-in
+  link not valid" with a way to ask for a new one; the link request form answers "Check
+  your email" for an unknown address too. A POST with `Origin: null` gets the product's
+  403 page. Lighthouse on the sign-in page: accessibility 100, best practices 100.

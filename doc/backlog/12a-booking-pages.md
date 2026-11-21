@@ -38,6 +38,9 @@ no inline script or style, every step works without JavaScript.
 9. Accessibility to WCAG 2.2 level AA and 375 px to 1440 px, as in task 05a. Test what
    the server can prove in the rendered HTML.
 
+Every form is tested as a browser sends it, with the helper of task 13a
+(`scheduling/views/pages/browser_support.py`).
+
 The sandbox has no browser. The orchestrator books in Chrome as a visitor and as a
 patient, at 375 and 1440 px, with the keyboard only, and runs an accessibility audit.
 

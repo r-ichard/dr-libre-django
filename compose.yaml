@@ -21,14 +21,17 @@ services:
 
   db:
     image: postgres:15.20-bookworm
-    environment:
-      POSTGRES_DB: drlibre
-      POSTGRES_USER: drlibre
-      POSTGRES_PASSWORD: drlibre-development
+    env_file: .env.example
+    entrypoint:
+      - sh
+      - -c
+      - >-
+        POSTGRES_DB="$$DB_NAME" POSTGRES_USER="$$DB_USER" POSTGRES_PASSWORD="$$DB_PASSWORD"
+        exec docker-entrypoint.sh postgres
     volumes:
       - database:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U drlibre -d drlibre"]
+      test: ["CMD-SHELL", "pg_isready -U $$DB_USER -d $$DB_NAME"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -36,7 +39,7 @@ services:
   mail:
     image: rnwood/smtp4dev:3.16.1
     ports:
-      - "127.0.0.1:5000:80"
+      - "127.0.0.1:8025:80"
 
 volumes:
   database:

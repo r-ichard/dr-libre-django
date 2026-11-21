@@ -25,7 +25,7 @@ package = false
 DJANGO_SETTINGS_MODULE = "drlibre.settings"
 python_files = ["test_*.py"]
 pythonpath = ["."]
-python_functions = ["returns_*", "raises_*"]
+python_functions = ["returns_*", "raises_*", "rejects_*"]
 
 # comment_cap.py is orchestrator-owned process tooling, not product code.
 [tool.ruff]
@@ -40,6 +40,7 @@ select = ["E", "F", "I", "B", "UP", "N", "S", "SIM"]
 
 [tool.mypy]
 strict = true
+explicit_package_bases = true
 exclude = ["scripts/comment_cap.py"]
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 

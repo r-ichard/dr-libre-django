@@ -7,7 +7,10 @@ SECRET_KEY = require_env("SECRET_KEY")
 DEBUG = env_flag("DEBUG")
 ALLOWED_HOSTS = require_env_list("ALLOWED_HOSTS")
 INSTALLED_APPS = ["django.contrib.postgres", "rest_framework", "scheduling"]
-MIDDLEWARE = ["django.middleware.common.CommonMiddleware"]
+MIDDLEWARE = [
+    "scheduling.views.middleware.RequestContextMiddleware",
+    "django.middleware.common.CommonMiddleware",
+]
 ROOT_URLCONF = "drlibre.urls"
 DATABASES = {
     "default": {
@@ -32,6 +35,23 @@ AUTH_USER_MODEL = "scheduling.User"
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_AUTHENTICATION_CLASSES": [],
-    "DEFAULT_PERMISSION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": ["scheduling.views.access.DenyUnlessDeclared"],
+    "DEFAULT_CONTENT_NEGOTIATION_CLASS": "scheduling.views.negotiation.AlwaysJsonNegotiation",
+    "EXCEPTION_HANDLER": "scheduling.views.failure_response.handle_exception",
     "UNAUTHENTICATED_USER": None,
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"json": {"()": "scheduling.views.json_logging.JsonFormatter"}},
+    "handlers": {"stdout": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["stdout"], "level": "INFO"},
+    # Django's own handlers interpolate paths into text; its records reach the JSON root instead.
+    "loggers": {
+        "django": {"handlers": [], "propagate": True},
+        # The request middleware writes the one request line; this one runs outside its context.
+        "django.request": {"handlers": [], "propagate": False},
+        "django.server": {"handlers": [], "propagate": True},
+    },
 }

@@ -44,7 +44,7 @@ as GitHub issues; the issue number is in the heading.
 | 08a | Booking hardening: reason for the visit, errors after commit, size gate, range checks | 3.1, 8, 14 | merged `47d6ed1` |
 | 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | merged `5370249` |
 | | **M4 Public search and passwordless booking (#4)** | | |
-| 10 | Public search, use case and API | 6.1 to 6.5, 14 | todo |
+| 10 | Public search, use case and API | 6.1 to 6.5, 14 | running `01M7ZK5KBHH0` |
 | 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
 | 12 | Booking without signing in: hold, code, patient account | 7.1, 7.2, 7.5 to 7.7 | todo |

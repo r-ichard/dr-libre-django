@@ -65,7 +65,7 @@ tasks.
 | 15 | Patient portal: waitlist, notifications, profile, password | 8 | merged `9d36ae6` |
 | | **M6 Clinician workspace (#6)** | | |
 | 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
-| 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | todo |
+| 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | running `01M80115TVZ7` |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |

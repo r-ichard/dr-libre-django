@@ -56,7 +56,7 @@ as GitHub issues; the issue number is in the heading.
 | 14 | Patient portal: home, appointments, booking wizard, reschedule, cancel | 8, 7.4 | merged `abb50a6` |
 | 15 | Patient portal: waitlist, notifications, profile, password | 8 | merged `9d36ae6` |
 | | **M6 Clinician workspace (#6)** | | |
-| 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | todo |
+| 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | running `01M7ZZBVRQ7T` |
 | 17 | Availability, time off, patients, rooms | 9 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |

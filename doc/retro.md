@@ -363,3 +363,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The six items carried from the search page are fixed and checked in the browser.
 - Milestone M4 is complete: a visitor can search, book without an account and come back
   through an emailed link.
+
+## 2026-11-21 task 14, run 01M7ZWV0TF4K (16 minutes, merged abb50a6)
+
+- One review bounce: the home page had been left as a greeting, and the reviewer blocked
+  on it. 2010 tests in 21 seconds.
+- Chrome as the demo patient at 375 px, keyboard for the forms: sign-in returns to the
+  page asked for; service, provider, time and review book an appointment; the home shows
+  it with its actions and the unread count; reschedule shows the old and the new time and
+  confirms; cancel refuses an empty reason and then cancels. Another patient's
+  appointment id answers 403 or 404 and shows nothing. The planted cancel reason is in no
+  log line, audit row or email. Lighthouse 100 in all four categories.
+- Measured, not eyeballed: the space between appointment cards is 0 px. Carried into
+  task 15.

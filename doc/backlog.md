@@ -53,7 +53,7 @@ as GitHub issues; the issue number is in the heading.
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | merged `b3192e7` |
 | 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | merged `84412f9` |
 | | **M5 Patient portal (#5)** | | |
-| 14 | Patient portal: home, appointments, booking wizard, reschedule, cancel | 8, 7.4 | running `01M7ZWV0TF4K` |
+| 14 | Patient portal: home, appointments, booking wizard, reschedule, cancel | 8, 7.4 | merged `abb50a6` |
 | 15 | Waitlist, notifications, profile | 8 | todo |
 | | **M6 Clinician workspace (#6)** | | |
 | 16 | Today, calendar, appointment, clinical notes | 9 | todo |

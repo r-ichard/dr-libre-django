@@ -11,8 +11,8 @@ from django.utils.cache import add_never_cache_headers
 from django.views import View
 
 from scheduling.domain.failure import Failure
+from scheduling.domain.vocabulary import Role
 from scheduling.models import User
-from scheduling.models.people import Role
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.session import ResolvedSession, resolve_session
 from scheduling.views.session_cookie import SESSION_COOKIE, set_session_cookie

@@ -2,8 +2,7 @@
 
 from datetime import datetime, timedelta
 
-from scheduling.models.access import SessionKind
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role, SessionKind
 
 ADMIN_PASSWORD_LIFETIME = timedelta(hours=12)
 PASSWORD_LIFETIME = timedelta(days=7)

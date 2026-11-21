@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from enum import StrEnum
 from typing import ClassVar
 
 from django.db import DatabaseError
@@ -11,7 +12,6 @@ from django.db.models import (
     Model,
     PositiveIntegerField,
     Q,
-    TextChoices,
     UUIDField,
 )
 from django.db.models.base import ModelBase
@@ -82,11 +82,17 @@ def not_blank(prefix: str, field: str) -> CheckConstraint:
     return check(f"{prefix}_{field}_not_blank", ~Q(**{field: ""}), f"{field} must not be empty")
 
 
-def one_of(prefix: str, field: str, choices: type[TextChoices]) -> CheckConstraint:
-    allowed = ", ".join(choices.values)
+def choices_of(enumeration: type[StrEnum]) -> list[tuple[str, str]]:
+    # Same pairs TextChoices derives, so these enumerations moving out creates no migration.
+    return [(member.value, member.name.replace("_", " ").title()) for member in enumeration]
+
+
+def one_of(prefix: str, field: str, choices: type[StrEnum]) -> CheckConstraint:
+    values = [member.value for member in choices]
+    allowed = ", ".join(values)
     return check(
         f"{prefix}_{field}_listed",
-        Q(**{f"{field}__in": choices.values}),
+        Q(**{f"{field}__in": values}),
         f"{field} must be one of {allowed}",
     )
 

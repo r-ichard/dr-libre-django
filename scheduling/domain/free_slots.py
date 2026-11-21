@@ -6,7 +6,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from scheduling.domain.appointment_status import is_active
-from scheduling.models.booking import AppointmentStatus
+from scheduling.domain.vocabulary import AppointmentStatus
 
 DAYS_PER_WEEK = 7
 
@@ -94,14 +94,16 @@ def _rule_applies(rule: AvailabilityWindow, day: date) -> bool:
 def _rule_starts(
     rule: AvailabilityWindow, day: date, appointment_type: SlotType, time_zone: ZoneInfo
 ) -> list[datetime]:
-    # Stepping in naive local time keeps the rule's wall-clock bounds across clock changes.
+    # Starts step in naive local time; the real end, back on the wall clock, must fit the rule.
     starts: list[datetime] = []
     local_start = datetime.combine(day, rule.start_time)
     local_end = datetime.combine(day, rule.end_time)
-    while local_start + appointment_type.duration <= local_end:
+    while local_start < local_end:
         start = _to_utc_if_it_exists(local_start, time_zone)
         if start is not None:
-            starts.append(start)
+            real_end = (start + appointment_type.duration).astimezone(time_zone)
+            if real_end.replace(tzinfo=None) <= local_end:
+                starts.append(start)
         local_start += rule.slot_step
     return starts
 

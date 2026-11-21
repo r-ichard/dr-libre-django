@@ -5,8 +5,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from scheduling.domain.session_rules import extended_expiry, session_lifetime
-from scheduling.models.access import SessionKind
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role, SessionKind
 
 NOW = datetime(2026, 6, 1, 12, 0, tzinfo=UTC)
 

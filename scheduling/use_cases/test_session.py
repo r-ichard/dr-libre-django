@@ -8,8 +8,8 @@ import pytest
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.request_context import RequestContext
+from scheduling.domain.vocabulary import SessionKind
 from scheduling.models import AuditLogEntry, Session, User
-from scheduling.models.access import SessionKind
 from scheduling.models.builders import make
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session, resolve_session, sign_out

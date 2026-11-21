@@ -10,9 +10,8 @@ from django.db import transaction
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.session_rules import extended_expiry, session_lifetime
+from scheduling.domain.vocabulary import Role, SessionKind
 from scheduling.models import Session, User
-from scheduling.models.access import SessionKind
-from scheduling.models.people import Role
 from scheduling.use_cases.audit import AuditEvent, record_audit
 from scheduling.use_cases.request_context import current_request_context
 

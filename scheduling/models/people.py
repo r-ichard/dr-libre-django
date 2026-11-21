@@ -10,28 +10,30 @@ from django.db.models import (
     OneToOneField,
     Q,
     SmallIntegerField,
-    TextChoices,
     TextField,
     UniqueConstraint,
 )
 
-from scheduling.models.base import Versioned, at_least, check, lower_case, not_blank, one_of
+from scheduling.domain.vocabulary import Role
+from scheduling.models.base import (
+    Versioned,
+    at_least,
+    check,
+    choices_of,
+    lower_case,
+    not_blank,
+    one_of,
+)
 from scheduling.models.organisation import Department, Room, Specialty
 
 UNUSABLE_PASSWORD_PREFIX = "!"  # noqa: S105
-
-
-class Role(TextChoices):
-    ADMIN = "ADMIN"
-    CLINICIAN = "CLINICIAN"
-    PATIENT = "PATIENT"
 
 
 class User(AbstractBaseUser, Versioned):
     fhir_resources = ("Practitioner", "Patient")
     email = EmailField(max_length=254)
     full_name = CharField(max_length=200)
-    role = CharField(max_length=20, choices=Role)
+    role = CharField(max_length=20, choices=choices_of(Role))
     is_active = BooleanField(default=True)
     phone = CharField(max_length=30, blank=True, default="")
     date_of_birth = DateField(null=True, blank=True)

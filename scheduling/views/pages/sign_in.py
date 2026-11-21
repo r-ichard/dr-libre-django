@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.sign_in_rules import home_for
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role
 from scheduling.use_cases.sign_in import is_locked_out, sign_in_with_password
 from scheduling.views.pages.homes import HOME_PATHS
 from scheduling.views.pages.page_view import PageView

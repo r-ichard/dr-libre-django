@@ -3,6 +3,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from scheduling.domain.free_slots import (
@@ -27,7 +28,7 @@ class ClinicianSchedule:
 @dataclass(frozen=True)
 class SlotOffer:
     start: datetime
-    clinician_ids: tuple[int, ...]
+    clinician_ids: tuple[UUID, ...]
 
 
 @dataclass(frozen=True)
@@ -36,7 +37,7 @@ class QueryTooWide:
 
 
 def free_slots_by_start(
-    schedules: Mapping[int, ClinicianSchedule],
+    schedules: Mapping[UUID, ClinicianSchedule],
     appointment_type: SlotType,
     window: TimeRange,
     now: datetime,
@@ -44,7 +45,7 @@ def free_slots_by_start(
 ) -> list[SlotOffer] | QueryTooWide:
     if window.ends_at - window.starts_at > timedelta(days=MAXIMUM_QUERY_DAYS):
         return QueryTooWide(MAXIMUM_QUERY_DAYS)
-    free_clinicians: dict[datetime, list[int]] = {}
+    free_clinicians: dict[datetime, list[UUID]] = {}
     for clinician_id in sorted(schedules):
         schedule = schedules[clinician_id]
         starts = free_slots(

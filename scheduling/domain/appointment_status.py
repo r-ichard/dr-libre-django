@@ -1,7 +1,6 @@
 """Section 5.6: the status transition table, who may make each change, and active."""
 
-from scheduling.models.booking import AppointmentStatus
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import AppointmentStatus, Role
 
 # The one definition of active; it mirrors what the no-overlap constraint ignores.
 INACTIVE_STATUSES: frozenset[AppointmentStatus] = frozenset(

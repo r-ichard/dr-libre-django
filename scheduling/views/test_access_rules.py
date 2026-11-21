@@ -11,10 +11,9 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from scheduling.domain.request_context import RequestContext
+from scheduling.domain.vocabulary import Role, SessionKind
 from scheduling.models import Session, User
-from scheduling.models.access import SessionKind
 from scheduling.models.builders import make
-from scheduling.models.people import Role
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session
 from scheduling.views import clock

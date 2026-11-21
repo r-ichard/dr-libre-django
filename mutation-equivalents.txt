@@ -1,0 +1,6 @@
+# Mutants `make mutate` may leave alive. Format: <mutant name>: <reason>. A line without a reason fails the check.
+scheduling.domain.first_available.x__rank_key__mutmut_3: the first tuple slot already separates never-assigned from assigned, and every never-assigned candidate shares the second slot, so order is unchanged
+scheduling.domain.first_available.x__rank_key__mutmut_9: the group marker 2 instead of 1 still sorts after 0 for every assigned candidate, so order is unchanged
+scheduling.domain.free_slots.x__local_days__mutmut_10: the extra local day starts after the query window and every slot there is dropped by the window check
+scheduling.domain.free_slots.x__rule_starts__mutmut_12: a start equal to the rule end ends after it because a duration is positive, so the real end check drops it
+scheduling.domain.free_slots.x__to_utc_if_it_exists__mutmut_5: fold=0 is the default of datetime.replace

@@ -13,9 +13,8 @@ from scheduling.domain.audit_metadata import AuditMetadata, email_domain
 from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.lockout_rules import is_locked, window_start
 from scheduling.domain.sign_in_rules import Home, home_for
+from scheduling.domain.vocabulary import Role, SessionKind
 from scheduling.models import SignInFailure, User
-from scheduling.models.access import SessionKind
-from scheduling.models.people import Role
 from scheduling.use_cases.audit import AuditEvent, record_audit
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.session import OpenedSession, open_session

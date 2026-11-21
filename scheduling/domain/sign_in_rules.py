@@ -2,7 +2,7 @@
 
 from enum import StrEnum
 
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role
 
 
 class Home(StrEnum):

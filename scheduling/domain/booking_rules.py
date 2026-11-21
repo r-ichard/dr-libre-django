@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from enum import StrEnum
 
 from scheduling.domain.appointment_status import is_active
-from scheduling.models.booking import AppointmentSource, AppointmentStatus
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, Role
 
 LEAD_TIME = timedelta(minutes=120)
 CANCELLATION_WINDOW = timedelta(hours=24)

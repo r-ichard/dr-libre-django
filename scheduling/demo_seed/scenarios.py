@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from scheduling.models.booking import AppointmentSource as Source
-from scheduling.models.booking import AppointmentStatus as Status
+from scheduling.domain.vocabulary import AppointmentSource as Source
+from scheduling.domain.vocabulary import AppointmentStatus as Status
 from scheduling.models.booking import NotificationKind as Kind
 from scheduling.models.booking import WaitlistStatus
 

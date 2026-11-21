@@ -13,17 +13,18 @@ from django.db.models import (
 )
 from django.utils import timezone
 
+from scheduling.domain.vocabulary import AppointmentSource, SessionKind
 from scheduling.models.base import (
     Record,
     Versioned,
     at_least,
+    choices_of,
     ends_after_start,
     expires_after_creation,
     hash_is_64_characters,
     lower_case,
     one_of,
 )
-from scheduling.models.booking import AppointmentSource
 from scheduling.models.organisation import AppointmentType
 from scheduling.models.people import ClinicianProfile, User
 
@@ -32,12 +33,6 @@ HASH_LENGTH = 64
 
 class CodePurpose(TextChoices):
     BOOKING = "BOOKING"
-
-
-class SessionKind(TextChoices):
-    PASSWORD = "PASSWORD"  # noqa: S105 - a kind of sign-in, not a secret
-    EMAIL_LINK = "EMAIL_LINK"
-    BOOKING_CODE = "BOOKING_CODE"
 
 
 class HoldSource(TextChoices):
@@ -51,7 +46,9 @@ class Session(Record):
     created_at = DateTimeField(editable=False, default=timezone.now)
     user = ForeignKey(User, on_delete=PROTECT)
     token_hash = CharField(max_length=HASH_LENGTH)
-    opened_by = CharField(max_length=20, choices=SessionKind, default=SessionKind.PASSWORD)
+    opened_by = CharField(
+        max_length=20, choices=choices_of(SessionKind), default=SessionKind.PASSWORD
+    )
     expires_at = DateTimeField()
     user_agent = CharField(max_length=300, blank=True, default="")
 

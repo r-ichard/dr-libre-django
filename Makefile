@@ -28,4 +28,5 @@ gate:
 mutate:
 	rm -rf mutants
 	uv run --env-file .env.example mutmut run
-	uv run --env-file .env.example mutmut results
+	uv run --env-file .env.example mutmut results > mutants/results.txt
+	uv run python scripts/mutation_survivors.py mutants/results.txt

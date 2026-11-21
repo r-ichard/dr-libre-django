@@ -14,27 +14,20 @@ from django.db.models import (
     UniqueConstraint,
 )
 
-from scheduling.models.base import Versioned, check, ends_after_start, not_blank, one_of
+from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus
+from scheduling.models.base import (
+    Versioned,
+    check,
+    choices_of,
+    ends_after_start,
+    not_blank,
+    one_of,
+)
 from scheduling.models.organisation import AppointmentType, Room
 from scheduling.models.people import ClinicianProfile, User
 
 CLINICAL_NOTES_MAXIMUM = 5000
 TITLE_MAXIMUM = 200
-
-
-class AppointmentStatus(TextChoices):
-    BOOKED = "BOOKED"
-    CONFIRMED = "CONFIRMED"
-    CHECKED_IN = "CHECKED_IN"
-    COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
-    NO_SHOW = "NO_SHOW"
-
-
-class AppointmentSource(TextChoices):
-    ONLINE = "ONLINE"
-    ROUND_ROBIN = "ROUND_ROBIN"
-    STAFF = "STAFF"
 
 
 class WaitlistStatus(TextChoices):
@@ -79,8 +72,8 @@ class Appointment(Versioned):
     room = ForeignKey(Room, null=True, blank=True, on_delete=PROTECT)
     starts_at = DateTimeField()
     ends_at = DateTimeField()
-    status = CharField(max_length=20, choices=AppointmentStatus)
-    source = CharField(max_length=20, choices=AppointmentSource)
+    status = CharField(max_length=20, choices=choices_of(AppointmentStatus))
+    source = CharField(max_length=20, choices=choices_of(AppointmentSource))
     patient_reason = TextField(blank=True, default="")
     clinical_notes = CharField(max_length=CLINICAL_NOTES_MAXIMUM, blank=True, default="")
     cancelled_at = DateTimeField(null=True, blank=True)

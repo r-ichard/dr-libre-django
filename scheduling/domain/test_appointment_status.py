@@ -11,8 +11,7 @@ from scheduling.domain.appointment_status import (
     is_active,
     may_change_status,
 )
-from scheduling.models.booking import AppointmentStatus
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import AppointmentStatus, Role
 
 TABLE = {
     AppointmentStatus.BOOKED: (

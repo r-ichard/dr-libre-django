@@ -1,7 +1,7 @@
 """Section 12: the three role homes, each behind its access rule."""
 
 from scheduling.domain.sign_in_rules import Home
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role
 from scheduling.views.pages.page_view import PageView
 
 HOME_PATHS = {

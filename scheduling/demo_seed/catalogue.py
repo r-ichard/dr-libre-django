@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time
 
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role
 
 ADMIN_EMAIL = "admin@example.test"
 VERIFIED_AT = datetime(2026, 1, 1, tzinfo=UTC)

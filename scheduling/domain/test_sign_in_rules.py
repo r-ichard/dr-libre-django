@@ -3,7 +3,7 @@
 import pytest
 
 from scheduling.domain.sign_in_rules import Home, home_for
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import Role
 
 
 @pytest.mark.parametrize(

@@ -3,8 +3,8 @@
 from rest_framework.permissions import AllowAny, BasePermission
 from rest_framework.request import Request
 
+from scheduling.domain.vocabulary import Role
 from scheduling.models import User
-from scheduling.models.people import Role
 
 type Declaration = list[type[BasePermission]]
 

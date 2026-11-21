@@ -18,6 +18,7 @@ dev = [
     "djangorestframework-stubs==3.18.2",
     "pytest-xdist==3.8.0",
     "mutmut==3.8.1",
+    "hypothesis==6.170.17",
 ]
 
 [tool.uv]

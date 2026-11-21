@@ -16,8 +16,7 @@ from scheduling.domain.booking_rules import (
     count_open_online_bookings,
     violated_rules,
 )
-from scheduling.models.booking import AppointmentSource, AppointmentStatus
-from scheduling.models.people import Role
+from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, Role
 
 NOW = datetime(2026, 6, 1, 12, 0, tzinfo=UTC)
 FAR = NOW + timedelta(days=5)

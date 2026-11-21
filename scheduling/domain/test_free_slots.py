@@ -11,7 +11,7 @@ from scheduling.domain.free_slots import (
     TimeRange,
     free_slots,
 )
-from scheduling.models.booking import AppointmentStatus
+from scheduling.domain.vocabulary import AppointmentStatus
 
 PARIS = ZoneInfo("Europe/Paris")
 LONG_BEFORE = datetime(2026, 11, 1, tzinfo=UTC)

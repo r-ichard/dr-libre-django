@@ -11,6 +11,7 @@ from django.db.models import Model
 
 from scheduling.demo_seed import catalogue, scenarios
 from scheduling.domain.audit_metadata import AuditMetadata
+from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import (
     Appointment,
     AppointmentType,
@@ -25,7 +26,6 @@ from scheduling.models import (
     User,
     WaitlistEntry,
 )
-from scheduling.models.booking import AppointmentStatus
 from scheduling.use_cases.audit import AuditEvent, record_audit
 
 AUDIT_ACTION = "demo_seed.run"

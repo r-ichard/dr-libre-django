@@ -459,3 +459,23 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   `scheduling/demo_seed/`, so it runs beside task 17a.
 - The two grid items I had put into task 17b moved to task 17c with the issues that
   describe them better.
+
+## 2026-11-21 task 17a, run 01M802KYJ8DS (26 minutes, merged e412ecb)
+
+- Plan bounced once, review bounced once. The reviewer's two blockers were the task's own
+  words: the hostile test ran without a session, and the promised property test was
+  missing. With sessions it found three real 500s at once (GET on pages that only accept
+  POST).
+- On the running stack the inputs of #10, #12, #13, #14 and #18 answer 400. In Chrome the
+  sign-in page with `a@b` shows its message, keeps the address and puts focus on it.
+- The reviewer rated "non-numeric Content-Length answers 500" low, because a production
+  server refuses it first. The product runs on the development server, and there it is a
+  500 on every API route without a session, which did not exist before this task. A
+  reviewer's "low" on a task about 500s needs my own request before I accept it. Task 17b.
+- The suite went from 15 to 75 seconds: the hostile test sends about 290 000 requests.
+  The task said "every route" and set no time budget, so nobody was wrong. Tasks that add
+  a broad test now state a budget. Fixed in task 17b, which therefore runs before 17c.
+- The test fills path ids with random ones, so routes that name a record are only
+  tested for "not found". Also task 17b.
+- My gate command pipes each `make` into `tail`, which hides its exit code. I read the
+  output for the error line instead; the command should use `set -o pipefail` or no pipe.

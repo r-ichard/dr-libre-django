@@ -42,7 +42,7 @@ as GitHub issues; the issue number is in the heading.
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | merged `4466b27` |
 | 08 | Appointment changes: cancel, reschedule, status actions, notifications, email | 5.6, 7.6, 11, 14 | merged `032461d` |
 | 08a | Booking hardening: reason for the visit, errors after commit, size gate, range checks | 3.1, 8, 14 | merged `47d6ed1` |
-| 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | todo |
+| 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | running `01M7ZHR8YB0N` |
 | | **M4 Public search and passwordless booking (#4)** | | |
 | 10 | Public search | 6.1 to 6.5, 14 | todo |
 | 11 | Public detail pages | 6.6 | todo |

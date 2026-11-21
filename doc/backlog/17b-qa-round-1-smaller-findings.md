@@ -36,6 +36,35 @@ Forms (section 16):
     called wrong. One submission reports every error; an empty field says "enter", not
     "wrong".
 
+Left open by task 17a (input limits, `scheduling/views/input_limits.py`), found by its
+reviewer and reproduced by the orchestrator on the running product:
+
+11. `curl -X POST /api/v1/auth/login -H 'Content-Length: abc' -d '{}'` answers 500
+    `internal_error`, on every API route and without a session: `refuse_oversized` calls
+    `int()` on the header. Before task 17a the same request answered 400. Answer
+    `invalid_input` naming `body`, and test it with the raw header, which the test
+    client does not send by itself.
+12. A page that receives more than 200 fields or a body over 1 MiB shows Django's bare
+    "Bad Request (400)" page, with no layout and no correlation id. Give 400 the
+    product's error page, like 403, 404 and 500.
+13. `json_depth` and the date bounds are pure and sit in the views layer, where the
+    mutation gate does not look. Move the pure part into `scheduling/domain` with its
+    boundary tests. Record the limits the product ships (body size, number of fields,
+    nesting depth, date range, page number) and where each is enforced in
+    `doc/adr/0004-failure-contract-and-request-context.md`; the plan of task 17a states
+    other numbers.
+14. The hostile-input test (`scheduling/views/test_hostile_input.py`) fills every id in
+    a path with a random one, so a route that names a record answers "not found" before
+    it reads anything else, and the writes on an appointment, a waitlist entry, a
+    notification, an availability rule or a time off are never sent hostile values.
+    Fill each id with a record the signed-in actor may use, so the request reaches the
+    parsing, and keep the random id as one more case. No answer may be 500.
+15. That test takes about 60 of the suite's 75 seconds (the suite ran in 15 before task
+    17a) and five mutants now time out. Every stage of every later run pays it. Bring
+    `make test` back under 30 seconds without dropping a route, an actor or a kind of
+    value: say in the plan which combinations prove nothing (a method the route does not
+    accept is refused before any parsing) and how the rest is spread over the workers.
+
 Write the commit so that merging it closes the issues: the reply of the last stage lists
 "Closes #11, #15, #16, #17, #19, #20, #21, #22, #23, #24".
 

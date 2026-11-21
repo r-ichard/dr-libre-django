@@ -23,6 +23,7 @@ lint:
 # Conventions §4.1 comment cap and §7 escape hatches over every tracked file.
 gate:
 	git ls-files -z | xargs -0 python3 scripts/comment_cap.py --files
+	git ls-files -z | xargs -0 uv run python scripts/size_cap.py
 	sh scripts/escape_hatches.sh
 
 mutate:

@@ -94,3 +94,26 @@ def returns_earliest_start_first_when_listing() -> None:
     earlier = _appointment(clinic, STARTS_AT)
 
     assert _ids(_admin_client(), "") == [str(earlier.pk), str(later.pk)]
+
+
+@pytest.mark.parametrize(
+    "window",
+    [
+        "from=2030-01-10T00:00:00Z&to=2030-01-10T00:00:00Z",
+        "from=2030-01-11T00:00:00Z&to=2030-01-10T00:00:00Z",
+    ],
+)
+def returns_400_invalid_input_naming_to_when_to_is_not_after_from(window: str) -> None:
+    response = _admin_client().get(f"{APPOINTMENTS}?{window}")
+
+    assert response.status_code == 400
+    error = response.json()["error"]
+    assert error["code"] == "invalid_input"
+    assert [item["field"] for item in error["details"]["fields"]] == ["to"]
+
+
+@pytest.mark.parametrize("window", ["from=2030-01-10T00:00:00Z", "to=2030-01-10T00:00:00Z"])
+def returns_200_when_only_one_end_of_the_range_is_given(window: str) -> None:
+    response = _admin_client().get(f"{APPOINTMENTS}?{window}")
+
+    assert response.status_code == 200

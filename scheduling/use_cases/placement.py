@@ -47,6 +47,7 @@ class PlacementCommand:
     clinician_id: UUID | None
     patient_id: UUID | None
     room_id: UUID | None
+    reason: str = ""
 
 
 def place_appointment(command: PlacementCommand, actor: User) -> Result[Appointment]:
@@ -106,7 +107,7 @@ def _place(
     chosen = _choose_clinician(pool, free_ids, parties, slot)
     if isinstance(chosen, Failure):
         return chosen
-    context = ChangeContext(slot, chosen.pk in free_ids, actor, replacing)
+    context = ChangeContext(slot, chosen.pk in free_ids, actor, replacing, command.reason)
     refused = _first_refusal(chosen, patient, parties, context)
     if refused is not None:
         return refused
@@ -155,6 +156,7 @@ class ChangeContext:
     slot_is_free: bool
     actor: User
     replacing: Appointment | None
+    reason: str = ""
 
     @property
     def replacing_id(self) -> UUID | None:
@@ -238,6 +240,7 @@ def _write(
             ends_at=window.ends_at,
             status=AppointmentStatus.BOOKED,
             source=parties.source,
+            patient_reason=context.reason,
         )
     moved = context.replacing
     moved.room_id, moved.starts_at, moved.ends_at = room_id, window.starts_at, window.ends_at

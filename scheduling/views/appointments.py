@@ -14,6 +14,7 @@ from scheduling.views.booking_schemas import (
     appointment_body,
     filters_of,
     placement_command_of,
+    refuse_empty_range,
 )
 from scheduling.views.failure_response import failure_response
 from scheduling.views.schemas import validate_body
@@ -26,6 +27,9 @@ class AppointmentsView(ApiView):
         query = validate_body(AppointmentsQuery, request.query_params)
         if isinstance(query, Failure):
             return failure_response(query)
+        refused = refuse_empty_range(query.value)
+        if refused is not None:
+            return failure_response(refused)
         page, page_size = int(str(query.value["page"])), int(str(query.value["page_size"]))
         found = list_appointments(signed_in_user(request), filters_of(query.value), page, page_size)
         return Response(

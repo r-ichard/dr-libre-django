@@ -112,3 +112,21 @@ def returns_only_the_named_clinician_when_the_query_names_one() -> None:
     assert {identifier for slot in slots for identifier in slot["clinician_ids"]} == {
         str(clinic.clinician.pk)
     }
+
+
+@pytest.mark.parametrize(
+    "window",
+    [
+        "from=2030-01-07T00:00:00Z&to=2030-01-07T00:00:00Z",
+        "from=2030-01-08T00:00:00Z&to=2030-01-07T00:00:00Z",
+    ],
+)
+def returns_400_invalid_input_naming_to_when_slots_to_is_not_after_from(window: str) -> None:
+    clinic = make_clinic()
+
+    response = Client().get(f"{SLOTS}?appointment_type_id={clinic.appointment_type.pk}&{window}")
+
+    assert response.status_code == 400
+    error = response.json()["error"]
+    assert error["code"] == "invalid_input"
+    assert [item["field"] for item in error["details"]["fields"]] == ["to"]

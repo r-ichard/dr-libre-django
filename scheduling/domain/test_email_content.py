@@ -51,3 +51,27 @@ def returns_blank_lines_between_title_details_and_sign_in_when_building_the_emai
         "\n"
         "Sign in to see your appointments: https://drlibre.example/sign-in"
     )
+
+
+def returns_title_and_sign_in_link_only_when_the_notification_has_no_appointment() -> None:
+    bare = EmailSubject(title="A slot is free", sign_in_url="https://drlibre.example/sign-in")
+
+    assert patient_email(bare).body == (
+        "A slot is free.\n\nSign in to see your appointments: https://drlibre.example/sign-in"
+    )
+
+
+def returns_only_the_lines_whose_value_is_present_when_the_appointment_is_partly_known() -> None:
+    partial = EmailSubject(
+        title="Appointment booked",
+        hospital_name="Riverside Hospital",
+        sign_in_url="https://drlibre.example/sign-in",
+    )
+
+    assert patient_email(partial).body == (
+        "Appointment booked.\n"
+        "\n"
+        "Where: Riverside Hospital\n"
+        "\n"
+        "Sign in to see your appointments: https://drlibre.example/sign-in"
+    )

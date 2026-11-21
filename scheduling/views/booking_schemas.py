@@ -7,6 +7,7 @@ from uuid import UUID
 
 from rest_framework import serializers
 
+from scheduling.domain.failure import Failure, FieldMessage
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import Appointment
 from scheduling.use_cases.appointment_list import AppointmentFilters
@@ -17,6 +18,7 @@ from scheduling.views.schemas import StrictSerializer
 DEFAULT_PAGE_SIZE = 20
 MAXIMUM_PAGE_SIZE = 100
 CANCELLATION_REASON_MAXIMUM = 1000
+VISIT_REASON_MAXIMUM = 200
 
 
 class OffsetDateTimeField(serializers.DateTimeField):
@@ -56,6 +58,9 @@ class BookRequest(StrictSerializer):
     clinician_id = serializers.UUIDField(required=False)
     patient_id = serializers.UUIDField(required=False)
     room_id = serializers.UUIDField(required=False)
+    reason = serializers.CharField(
+        max_length=VISIT_REASON_MAXIMUM, allow_blank=True, required=False
+    )
 
 
 def uuid_of(values: Mapping[str, object], key: str) -> UUID | None:
@@ -97,6 +102,7 @@ def placement_command_of(values: Mapping[str, object]) -> PlacementCommand:
         clinician_id=uuid_of(values, "clinician_id"),
         patient_id=uuid_of(values, "patient_id"),
         room_id=uuid_of(values, "room_id"),
+        reason=str(values.get("reason", "")),
     )
 
 
@@ -109,6 +115,13 @@ def filters_of(values: Mapping[str, object]) -> AppointmentFilters:
         starts_from=instant_of(values, "from"),
         starts_before=instant_of(values, "to"),
     )
+
+
+def refuse_empty_range(values: Mapping[str, object]) -> Failure | None:
+    starts, ends = instant_of(values, "from"), instant_of(values, "to")
+    if starts is None or ends is None or ends > starts:
+        return None
+    return Failure.invalid_input([FieldMessage("to", "The end must be after the start.")])
 
 
 def format_instant(instant: datetime) -> str:
@@ -130,7 +143,8 @@ def slots_body(found: FoundSlots) -> dict[str, object]:
 
 
 def appointment_body(appointment: Appointment) -> dict[str, object]:
-    """No reason, no notes: the free text of an appointment never leaves through the list."""
+    """The visit reason is shown: every caller already limits readers to the appointment's patient,
+    its clinician and an admin. Clinical notes never leave."""
     room_id = appointment.room_id
     return {
         "id": str(appointment.pk),
@@ -143,6 +157,7 @@ def appointment_body(appointment: Appointment) -> dict[str, object]:
         "time_zone": appointment.appointment_type.department.hospital.time_zone,
         "status": appointment.status,
         "source": appointment.source,
+        "reason": appointment.patient_reason,
     }
 
 

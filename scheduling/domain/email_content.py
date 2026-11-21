@@ -9,11 +9,11 @@ from zoneinfo import ZoneInfo
 @dataclass(frozen=True)
 class EmailSubject:
     title: str
-    starts_at: datetime
-    time_zone: ZoneInfo
-    hospital_name: str
-    provider_name: str
     sign_in_url: str
+    starts_at: datetime | None = None
+    time_zone: ZoneInfo = ZoneInfo("UTC")
+    hospital_name: str | None = None
+    provider_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -23,14 +23,16 @@ class EmailText:
 
 
 def patient_email(content: EmailSubject) -> EmailText:
-    local = content.starts_at.astimezone(content.time_zone)
-    lines = [
-        f"{content.title}.",
-        "",
-        f"When: {local:%Y-%m-%d} at {local:%H:%M} ({content.time_zone.key})",
-        f"Where: {content.hospital_name}",
-        f"Provider: {content.provider_name}",
-        "",
-        f"Sign in to see your appointments: {content.sign_in_url}",
-    ]
+    details = []
+    if content.starts_at is not None:
+        local = content.starts_at.astimezone(content.time_zone)
+        details.append(f"When: {local:%Y-%m-%d} at {local:%H:%M} ({content.time_zone.key})")
+    if content.hospital_name is not None:
+        details.append(f"Where: {content.hospital_name}")
+    if content.provider_name is not None:
+        details.append(f"Provider: {content.provider_name}")
+    lines = [f"{content.title}.", ""]
+    if details:
+        lines += [*details, ""]
+    lines.append(f"Sign in to see your appointments: {content.sign_in_url}")
     return EmailText(content.title, "\n".join(lines))

@@ -1,6 +1,7 @@
 """Section 11: one Notification per event of the table, made in the event's transaction. The
 email goes out only after that transaction commits."""
 
+import logging
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -12,6 +13,8 @@ from scheduling.models import Appointment, Notification
 from scheduling.models.booking import NotificationKind
 from scheduling.use_cases.email_delivery import send_notification_email
 from scheduling.use_cases.request_context import bind_request_context, current_request_context
+
+logger = logging.getLogger(__name__)
 
 BOOKED_TITLE = "Appointment booked"
 CANCELLED_TITLE = "Appointment cancelled"
@@ -35,4 +38,14 @@ def notify_patient(appointment: Appointment, kind: NotificationKind, title: str)
 def _send_in_context(notification_id: UUID, context: RequestContext) -> None:
     # The callback may run after the request unbound its context; the log needs the correlation id.
     with bind_request_context(context):
-        send_notification_email(notification_id)
+        try:
+            send_notification_email(notification_id)
+        except Exception:
+            # The change already committed; its answer must not turn into an error.
+            logger.exception(
+                "notification email lookup failed",
+                extra={
+                    "notification_id": str(notification_id),
+                    "correlation_id": context.correlation_id,
+                },
+            )

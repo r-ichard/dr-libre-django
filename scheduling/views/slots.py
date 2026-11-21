@@ -10,6 +10,7 @@ from scheduling.views.access import public
 from scheduling.views.api_view import ApiView
 from scheduling.views.booking_schemas import (
     SlotsQuery,
+    refuse_empty_range,
     required_instant,
     required_uuid,
     slots_body,
@@ -27,6 +28,9 @@ class SlotsView(ApiView):
         if isinstance(query, Failure):
             return failure_response(query)
         values = query.value
+        refused = refuse_empty_range(values)
+        if refused is not None:
+            return failure_response(refused)
         window = TimeRange(required_instant(values, "from"), required_instant(values, "to"))
         result = find_free_slots(
             required_uuid(values, "appointment_type_id"), uuid_of(values, "clinician_id"), window

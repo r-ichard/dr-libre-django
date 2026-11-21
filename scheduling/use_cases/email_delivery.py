@@ -2,7 +2,6 @@
 the row pending for the next run of send_pending_emails; delivery is at least once."""
 
 import logging
-from smtplib import SMTPException
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -26,7 +25,7 @@ def send_pending_emails(limit: int) -> int:
 
 
 def send_notification_email(notification_id: UUID) -> bool:
-    """True when the email went out. Never raises for a mail server problem."""
+    """True when the email went out. A failure to build or send leaves the row pending."""
     with transaction.atomic():
         locked = Notification.objects.select_for_update(skip_locked=True, of=("self",))
         notification = (
@@ -38,13 +37,13 @@ def send_notification_email(notification_id: UUID) -> bool:
             return False
         try:
             _message_of(notification).send()
-        except (OSError, SMTPException) as error:
-            logger.warning(
+        except Exception:
+            # Anything raised here must leave the row pending, never change a committed answer.
+            logger.exception(
                 "notification email not sent",
                 extra={
                     "notification_id": str(notification.pk),
                     "correlation_id": current_request_context().correlation_id,
-                    "error_class": type(error).__name__,
                 },
             )
             return False
@@ -62,20 +61,21 @@ def send_notification_email(notification_id: UUID) -> bool:
 
 
 def _message_of(notification: Notification) -> EmailMessage:
+    sign_in_url = f"{settings.PUBLIC_BASE_URL}/sign-in"
     appointment = notification.appointment
     if appointment is None:
-        raise ValueError("a patient email notification belongs to an appointment")
-    hospital = appointment.appointment_type.department.hospital
-    text = patient_email(
-        EmailSubject(
+        subject = EmailSubject(title=notification.title, sign_in_url=sign_in_url)
+    else:
+        hospital = appointment.appointment_type.department.hospital
+        subject = EmailSubject(
             title=notification.title,
+            sign_in_url=sign_in_url,
             starts_at=appointment.starts_at,
             time_zone=ZoneInfo(hospital.time_zone),
             hospital_name=hospital.name,
             provider_name=appointment.clinician.user.full_name,
-            sign_in_url=f"{settings.PUBLIC_BASE_URL}/sign-in",
         )
-    )
+    text = patient_email(subject)
     return EmailMessage(
         subject=text.subject,
         body=text.body,

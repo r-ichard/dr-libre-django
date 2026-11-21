@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from scheduling.use_cases.session import ResolvedSession
 from scheduling.views.access import public
 from scheduling.views.authentication import SessionCookieAuthentication
+from scheduling.views.input_limits import refuse_oversized
 from scheduling.views.session_cookie import SESSION_COOKIE, set_session_cookie
 
 SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
@@ -28,6 +29,7 @@ class ApiView(APIView):
 
     def initial(self, request: Request, *args: object, **kwargs: object) -> None:
         refuse_foreign_origin(request)
+        refuse_oversized(request)
         super().initial(request, *args, **kwargs)
 
     def finalize_response(

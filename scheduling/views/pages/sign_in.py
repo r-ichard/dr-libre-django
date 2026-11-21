@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass, field
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure
@@ -16,6 +18,7 @@ from scheduling.views.session_cookie import set_session_cookie
 WRONG_CREDENTIALS = "Email or password is not correct."
 LOCKED_OUT = "Too many attempts. Try again in 15 minutes."
 MISSING_MESSAGES = {"email": "Enter your email address.", "password": "Enter your password."}
+EMAIL_INVALID = "Enter a valid email address."
 FORM_ERROR_ID = "form-error"
 
 
@@ -81,6 +84,12 @@ class SignInPage(PageView):
         if form.field_errors:
             form.focus = next(iter(form.field_errors))
             return self._form(request, form)
+        try:
+            validate_email(email)
+        except ValidationError:
+            form.field_errors = {"email": EMAIL_INVALID}
+            form.focus = "email"
+            return self._form(request, form, status=400)
         result = sign_in_with_password(email, password, request.headers.get("User-Agent", ""))
         if isinstance(result, Failure):
             form.form_error = LOCKED_OUT if is_locked_out(email) else WRONG_CREDENTIALS

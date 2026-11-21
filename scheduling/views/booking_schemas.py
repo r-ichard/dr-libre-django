@@ -19,6 +19,10 @@ DEFAULT_PAGE_SIZE = 20
 MAXIMUM_PAGE_SIZE = 100
 CANCELLATION_REASON_MAXIMUM = 1000
 VISIT_REASON_MAXIMUM = 200
+MAXIMUM_PAGE = 1_000_000
+EARLIEST_INSTANT = datetime(2000, 1, 1, tzinfo=UTC)
+LATEST_INSTANT = datetime(2100, 1, 1, tzinfo=UTC)
+DATE_OUT_OF_RANGE = "Use a date between the years 2000 and 2099."
 
 
 class OffsetDateTimeField(serializers.DateTimeField):
@@ -27,7 +31,13 @@ class OffsetDateTimeField(serializers.DateTimeField):
     def enforce_timezone(self, value: datetime) -> datetime:
         if value.utcoffset() is None:
             raise serializers.ValidationError("Include a UTC offset, such as Z.")
-        return value.astimezone(UTC)
+        try:
+            instant = value.astimezone(UTC)
+        except OverflowError:
+            raise serializers.ValidationError(DATE_OUT_OF_RANGE) from None
+        if not EARLIEST_INSTANT <= instant < LATEST_INSTANT:
+            raise serializers.ValidationError(DATE_OUT_OF_RANGE)
+        return instant
 
 
 class SlotsQuery(StrictSerializer):
@@ -46,7 +56,7 @@ class AppointmentsQuery(StrictSerializer):
     )
     locals()["from"] = OffsetDateTimeField(required=False)
     locals()["to"] = OffsetDateTimeField(required=False)
-    page = serializers.IntegerField(min_value=1, default=1)
+    page = serializers.IntegerField(min_value=1, max_value=MAXIMUM_PAGE, default=1)
     page_size = serializers.IntegerField(
         min_value=1, max_value=MAXIMUM_PAGE_SIZE, default=DEFAULT_PAGE_SIZE
     )

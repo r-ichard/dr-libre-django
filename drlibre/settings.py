@@ -103,5 +103,9 @@ LOGGING = {
         "django.server": {"handlers": ["discard"], "propagate": False},
     },
 }
+# Pages: Django refuses a larger form or more fields with its own 400; the API checks the same
+# limits itself in scheduling/views/input_limits.py.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 200
 EMAIL_SENDER = require_env("EMAIL_SENDER")
 PUBLIC_BASE_URL = require_env("PUBLIC_BASE_URL")

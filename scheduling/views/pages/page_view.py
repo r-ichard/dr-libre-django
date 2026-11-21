@@ -72,6 +72,8 @@ class PageView(View):
                 return HttpResponseRedirect(f"{SIGN_IN_PATH}?{query}")
             if Role(self.user.role) not in self.allowed_roles:
                 return render_page(request, "errors/403.html", status=403, signed_in_user=self.user)
+        if request.method == "GET" and type(self).get is PageView.get and not self.template_name:
+            return self.http_method_not_allowed(request)
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request: HttpRequest) -> HttpResponse:

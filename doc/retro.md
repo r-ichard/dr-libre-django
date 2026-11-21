@@ -299,3 +299,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   first and use distinct slots.
 - With the mail server down a hold answers a bare 500. Carried to task 13 with the lock
   order finding of the review.
+
+## 2026-11-21 task 13, run 01M7ZP6HTKGF (27 minutes, merged b3192e7)
+
+- One review bounce (a purge without its audit entry), then approved. 1746 tests.
+- API on the host: a patient, an unknown address and an admin all get 202 and an empty
+  body; only the patient gets mail; a second request cancels the first link; the fourth
+  request in an hour answers 429; token and address appear in no log line; the database
+  holds the hash.
+- Chrome found what 1746 tests did not: the Continue button answers 403. The page sends
+  `Referrer-Policy: no-referrer`, the browser then posts with `Origin: null`, and the
+  cross-site request check refuses. Django's test client sends no `Origin` header at
+  all, so the form passed every test. A flow is verified when a browser has walked it.
+- Rule added to `CLAUDE.md`: page forms are tested with the check enforced and the
+  header set. Task 13a fixes the page and adds the helper.

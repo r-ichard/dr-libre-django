@@ -101,6 +101,9 @@ BookingHold (slot reserved while an email is verified), VerificationCode, SignIn
 - **Test placement (§10):** tests beside the code they cover, `test_*.py`. Layers (§8):
   domain `scheduling/domain/`, use cases `scheduling/use_cases/`, views and API endpoints
   `scheduling/views/`; each created when first used.
+- **Page forms:** test them as a browser sends them: cross-site request check enforced
+  and the `Origin` header set. The test client sends neither by default, so a form can
+  pass every test and answer 403 in a browser (task 13a).
 - **Comments (§4):** obvious in code first; else why; else delete. Changes with code?
   Narration, delete. Docstrings count toward the cap.
 - **Size (§5):** functions < 50 lines, files < 300, callers above callees, variables

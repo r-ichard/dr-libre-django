@@ -34,7 +34,8 @@ as GitHub issues; the issue number is in the heading.
 | 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | merged `45d9150` |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | merged `796da1f` |
-| 05a | Design foundation, sign-in screens, role homes, error pages | 12, 16 | running `01M7Z4WKE7WY` |
+| 05a | Design foundation, sign-in screens, role homes, error pages | 12, 16 | merged `b35274e` |
+| 05b | Screens hardening: sliding session cookie on pages, layout edges, favicon | 12.2, 16 | todo |
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, conflicts, status changes, booking rules; bind `make mutate` | 5.1 to 5.3, 5.6 | todo |
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | todo |
@@ -87,8 +88,6 @@ Small findings waiting for the next task that touches the same file.
   included. Rate limiting needs its own answer (429). Task 12.
 - Test-only probe views live in `scheduling/views/` (`probe_views.py`, `probe_urls.py`).
   Move them out of the product package when a test support location exists.
-- Under `DEBUG`, a failing server-rendered page shows Django's technical error page, raw
-  path included. Decide the error pages with the first screens. Task 05a.
 - Start-up lines of `migrate` and the development server are plain text, not JSON. Settle
   with the production server choice. Task 26.
 - `SECURE_PROXY_SSL_HEADER` is not set; needed before any deployment behind a proxy that
@@ -98,5 +97,8 @@ Small findings waiting for the next task that touches the same file.
   (review of 05). Task 26, sooner if a task touches sign-in.
 - Expired sessions and sign-in failure rows of addresses that never return are never
   purged. Task 09, with the scheduled jobs.
-- The lockout has no signal of its own: the API answers `unauthenticated` for a locked
-  address. The sign-in screen needs to tell the user. Task 05a.
+- Public pages need a meta description (Lighthouse SEO). Task 10.
+- Static files are served by Django's development file server, also with `DEBUG` off.
+  Settle with the production server choice. Task 26.
+- The sign-in page sits at the left edge of a wide screen with empty space beside it.
+  Layout polish for single-form pages. Task 25.

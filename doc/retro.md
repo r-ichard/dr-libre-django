@@ -164,3 +164,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   login refused, equal time for a wrong password and an unknown address (0.21 s both),
   lockout after ten failures holding against the right password, sign-out deleting the
   session, audit rows with the email domain only, nothing readable in logs.
+
+## 2026-11-21 task 05a, run 01M7Z4WKE7WY (13 minutes, merged b35274e)
+
+- Clean pass, 717 tests. First run verified in Chrome DevTools: style page and sign-in at
+  375, 768 and 1440 px, sign-in driven with the keyboard only (skip link, empty submit,
+  wrong password, right password, return to the page asked for), forbidden page, product
+  404 page.
+- Lighthouse accessibility 100 on the style page (mobile) and the sign-in page (desktop).
+  No horizontal scroll at 375 px, no inline style or script.
+- Found in the browser: three different left edges at 1440 px, a favicon 404 in the
+  console. Found by reading the code: a page request extends the session in the database
+  but does not renew the cookie, so sliding sessions do not slide for pages. Task 05b.
+- The compose stack always runs with `DEBUG` on, which hides the product's 404 and 500
+  pages. To see them: `docker compose run -d -e DEBUG=false -p 127.0.0.1:8001:8001 web
+  python manage.py runserver 0.0.0.0:8001`.
+- The Lighthouse tool cannot write reports outside the workspace roots; omit the output
+  directory.

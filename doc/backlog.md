@@ -4,6 +4,7 @@ One task per fabro run of `conventions-auto`. Each task is one reviewed PR-sized
 Run: `fabro run conventions-auto --goal-file doc/backlog/NN-slug.md -d`.
 Status is kept here by the orchestrator: todo, running, merged, failed.
 
+Order inside M4: 10, 12, 13, 12a, 10a, 11, so that a slot link always has somewhere to go.
 A task file is written just before its run, from the specification sections named here
 and from what the previous runs taught. The orchestrator writes tasks and process files
 and never product code: a defect found on the host becomes a task. Milestones are mirrored
@@ -44,10 +45,11 @@ as GitHub issues; the issue number is in the heading.
 | 08a | Booking hardening: reason for the visit, errors after commit, size gate, range checks | 3.1, 8, 14 | merged `47d6ed1` |
 | 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | merged `5370249` |
 | | **M4 Public search and passwordless booking (#4)** | | |
-| 10 | Public search, use case and API | 6.1 to 6.5, 14 | running `01M7ZK5KBHH0` |
+| 10 | Public search, use case and API | 6.1 to 6.5, 14 | merged `2344ec0` |
 | 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
-| 12 | Booking without signing in: hold, code, patient account | 7.1, 7.2, 7.5 to 7.7 | todo |
+| 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | todo |
+| 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | todo |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | todo |
 | | **M5 Patient portal (#5)** | | |
 | 14 | Home, appointments, booking wizard, reschedule, cancel, calendar file | 8 | todo |
@@ -122,3 +124,5 @@ Small findings waiting for the next task that touches the same file.
 - Review of 09, small: a stale offer is detected by clinician overlap only; the manual
   offer loads every future cancelled slot of the type. With the admin waitlist screen,
   task 20.
+- Public search loads the whole catalogue and 90 days of schedules per request and has no
+  rate limit (review of 10). Task 26, with the rate limits of task 12 as the mechanism.

@@ -271,3 +271,14 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Found by reading the inbox: two notification titles differ from section 11 and an
   accepted offer sends two emails. Carried.
 - Milestone M3 is complete.
+
+## 2026-11-21 task 10, run 01M7ZK5KBHH0 (18 minutes, merged 2344ec0)
+
+- Clean pass, no bounce. 1528 tests in 11 seconds; mutation gate clean with 11 new
+  equivalents, each explained.
+- Host check: three lists with next availabilities in three time zones, text match,
+  sort, a time-of-day filter that empties the list, junk parameters falling back, a page
+  past the end. The first slot a result showed was booked with 201: the list and booking
+  agree.
+- A grep for private data matched "phone" in the type name "Cardiology phone follow-up".
+  Search for values, not words.

@@ -10,6 +10,14 @@ and from what the previous runs taught. The orchestrator writes tasks and proces
 and never product code: a defect found on the host becomes a task. Milestones are mirrored
 as GitHub issues; the issue number is in the heading.
 
+## QA gate
+
+QA runs (`fabro run qa`, one per area in `.fabro/workflows/qa/areas/`) test the product as
+it is on `main` and file GitHub issues labelled `qa` and `P0`, `P1` or `P2`. Before a new
+backlog task starts: `gh issue list --label P0 --state open`. An open P0 that the
+orchestrator has reproduced becomes the next task. P1 and P2 are batched into hardening
+tasks.
+
 ## Owner decisions (2026-11-21)
 
 - Latest stable Django and Django REST Framework. PostgreSQL, tests included.

@@ -390,3 +390,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - A grep for "password" on the passwordless profile matched the address
   passwordless@example.test. Second time a word search misled; search for the element.
 - Milestone M5 is complete.
+
+## 2026-11-21 QA workflow added
+
+- The owner asked for QA agents that test through the API and Chrome DevTools, in
+  parallel, on a database of their own, and file GitHub issues. Fabro fits: each run has
+  its own sandbox, so one `qa` run per area is isolated from the task run and from the
+  other areas. A fork node inside one workflow would share one checkout and one database.
+- Probe run, 2 minutes, beside a running task: Claude Code over ACP in the sandbox gets
+  the Chrome DevTools MCP tools from `~/.claude.json` with Debian's `chromium`
+  (`--headless --no-sandbox`); `gh` works with the `GITHUB_TOKEN` secret passed as
+  `GH_TOKEN`; five runs execute at once.
+- The probe also found two harness bugs: the mail sink buffered its output when it wrote
+  to a file (`python -u`), and the background hook let `(sleep 30 &)` through.
+- Processes a QA run needs for its whole life (product, worker, mail sink) are started by
+  a script node with `setsid nohup`: the property that broke task 02 is used on purpose.

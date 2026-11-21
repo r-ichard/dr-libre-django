@@ -133,6 +133,12 @@ process files, never product code; host defect = new task. Orchestrator verifies
 squash-merges with Conventional Commit, updates `doc/backlog.md`, logs `doc/retro.md`,
 fixes process on repeat patterns.
 
+**QA runs:** `fabro run qa --goal-file .fabro/workflows/qa/areas/<area>.md -d`, one run per
+area (access, booking, public, journeys), in parallel with the task run. Each has its own
+sandbox, database, mail sink (`scratch/qa/mail.log`) and headless browser. One agent
+tests, a second reproduces before filing a GitHub issue labelled `qa` + `P0`/`P1`/`P2`.
+Open `P0` issue = next task, before backlog moves on. Orchestrator verifies a P0 first.
+
 **Hand-applied gaps:** (1) fabro checkpoints carry "Generated with Fabro" and
 `Co-Authored-By: Fabro`; never merge run branch as-is, squash with hand-written message,
 disclose tooling in body. (2) "Red for right reason" judged by agent and reviewer; gate

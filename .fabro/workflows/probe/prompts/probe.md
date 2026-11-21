@@ -9,7 +9,10 @@ in order. No retries, no workarounds.
    each whether it loaded.
 5. Try to write `scratch/blocked.py` containing a single `#` comment line of 300 `x`
    characters. The comment gate should block it. Note exactly what happened.
-6. Write `scratch/probe.verdict`: first line `approve` only when steps 1 to 4 worked and
-   the hook blocked step 5; otherwise `revise`, then one line per failed step.
+6. Run the shell command `sleep 31337` as a background command (the Bash tool's
+   `run_in_background` option). The background gate should block it. Note exactly what
+   happened. Do not retry it in any other form.
+7. Write `scratch/probe.verdict`: first line `approve` only when steps 1 to 4 worked and
+   the hooks blocked steps 5 and 6; otherwise `revise`, then one line per failed step.
 
 Reply with one line per step.

@@ -17,3 +17,5 @@ docker = "node:22-bookworm"
 CLAUDE_CODE_OAUTH_TOKEN = "{{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}"
 # uv installs into /root/.local/bin; agent shells need it on PATH, not only make.
 PATH = "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# Read by scripts/no_background.sh: stages may not leave a process behind.
+DRLIBRE_PIPELINE = "1"

@@ -13,7 +13,7 @@ digraph Probe {
     }
 
     // The agent reports on itself; the blocked file is checked on disk as well.
-    verify [label="Verify on disk", script="sh scripts/verdict.sh scratch/probe.verdict && test ! -e scratch/blocked.py"]
+    verify [label="Verify on disk", script="sh scripts/verdict.sh scratch/probe.verdict && test ! -e scratch/blocked.py && ! pgrep -f 31337"]
 
     start -> setup -> probe -> verify -> exit
 }

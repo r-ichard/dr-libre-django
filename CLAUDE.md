@@ -141,6 +141,9 @@ only proves suite fails. (3) Mutation testing waits for `make mutate`. (4) A rev
 - Command node scripts shell-quote templated values as one word. Literal commands.
 - Graph = process, not backlog. Features in `doc/backlog/`.
 - Generators write long comments the write-gate never sees; `make gate` catches.
+- Stage = one agent turn. Background process outlives it, mutates files and runs tests
+  under later stages. `scripts/no_background.sh` hook blocks it in the sandbox
+  (`DRLIBRE_PIPELINE=1`). Foreground only; start, use and stop a server in one command.
 - Run ids from `fabro run -d` output; mistyped id makes `fabro wait` return at once.
 - No `fabro server restart` during a run; kills it. `fabro resume <id>`.
 - Laptop sleep kills sandboxes mid-run. Keep `caffeinate -i -s` running during runs.

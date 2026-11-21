@@ -9,6 +9,15 @@
             "command": "python3 \"${CLAUDE_PROJECT_DIR:-.}/scripts/comment_cap.py\" --hook"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR:-.}/scripts/no_background.sh\""
+          }
+        ]
       }
     ]
   }

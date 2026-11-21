@@ -19,7 +19,10 @@ Check in this order and cite `file:line` for every finding:
 5. Tests: derived from specification or implementation? Assertions that pass forever?
    Missing edge cases the plan promised? (§10.1)
 6. Names state roles (§3). Comments pass the litmus test and the 255 cap (§4).
-7. Scope: anything unrequested bundled in? Any dependency added, is it the package meant
+7. Proof left no trace: `git log --oneline` names the stage of each commit. The commits
+   after `verify_green` up to `prove` may change tests and test helpers only. A product
+   or migration line changed there is a mutation left behind: blocker.
+8. Scope: anything unrequested bundled in? Any dependency added, is it the package meant
    and pinned (§11)? Contract sync across layers (§8)?
 
 Write `doc/reviews/<today>-<slug>.md` with findings as severity, `file:line`, risk, and

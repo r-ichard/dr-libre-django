@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Appointment booked · DrLibre{% endblock %}
+{% block content %}
+<h1>Your appointment is booked</h1>
+{% include "components/notice.html" with kind="success" text="We sent a confirmation email." %}
+<section class="card" aria-labelledby="confirmation-title">
+  <h2 id="confirmation-title">{{ type_name }}</h2>
+  <dl class="facts">
+    <div><dt>With</dt><dd>{{ provider }}, {{ specialty }}</dd></div>
+    <div><dt>When</dt><dd>{{ day }}, {{ starts }} to {{ ends }} ({{ time_zone }})</dd></div>
+    <div><dt>Where</dt><dd>{{ hospital }}, {{ address }}. {{ department }}.{% if room %} Room: {{ room }}.{% endif %}</dd></div>
+  </dl>
+</section>
+<p>
+  <a class="button button--primary" href="{{ calendar_href }}" download>Add to your calendar</a>
+  <a class="button button--secondary" href="{{ patient_path }}">Your appointments</a>
+</p>
+{% endblock %}

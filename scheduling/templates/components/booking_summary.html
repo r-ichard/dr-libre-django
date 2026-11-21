@@ -1,0 +1,11 @@
+{% comment %}Parameters: summary (type_name, duration, provider, hospital, address, time_zone, when). The chosen appointment, on every booking page.{% endcomment %}
+<section class="card booking-summary" aria-labelledby="booking-summary-title">
+  <h2 id="booking-summary-title">{{ summary.type_name }}</h2>
+  <dl class="facts">
+    <div><dt>Length</dt><dd>{{ summary.duration }}</dd></div>
+    <div><dt>Provider</dt><dd>{{ summary.provider }}</dd></div>
+    {% if summary.when %}<div><dt>When</dt><dd>{{ summary.when }}</dd></div>{% endif %}
+    <div><dt>Time zone</dt><dd>{{ summary.time_zone }}</dd></div>
+    <div><dt>Where</dt><dd>{{ summary.hospital }}, {{ summary.address }}</dd></div>
+  </dl>
+</section>

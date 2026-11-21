@@ -16,6 +16,10 @@ from scheduling.views.auth import LinkVerifyView, LinkView, LoginView, LogoutVie
 from scheduling.views.booking import HoldsView, ResendView, VerifyView
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
+from scheduling.views.pages.booking_code import CodePage, ResendPage
+from scheduling.views.pages.booking_confirmation import CalendarFile, ConfirmationPage
+from scheduling.views.pages.booking_details import DetailsPage
+from scheduling.views.pages.booking_times import TimesPage
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
 from scheduling.views.pages.public_pages import RootPage, StylePage
 from scheduling.views.pages.sign_in import SignInPage
@@ -64,6 +68,12 @@ urlpatterns = [
     path("sign-in/check-email", CheckEmailPage.as_view()),
     path("sign-in/link", LinkContinuePage.as_view()),
     path("sign-out", SignOutPage.as_view()),
+    path("book/holds/<uuid:hold_id>/code", CodePage.as_view()),
+    path("book/holds/<uuid:hold_id>/resend", ResendPage.as_view()),
+    path("book/<uuid:appointment_type_id>", TimesPage.as_view()),
+    path("book/<uuid:appointment_type_id>/details", DetailsPage.as_view()),
+    path("appointments/<uuid:appointment_id>/confirmation", ConfirmationPage.as_view()),
+    path("appointments/<uuid:appointment_id>/calendar.ics", CalendarFile.as_view()),
     path("patient/", PatientPortal.as_view()),
     path("clinician/", ClinicianWorkspace.as_view()),
     path("admin-console/", AdminConsole.as_view()),

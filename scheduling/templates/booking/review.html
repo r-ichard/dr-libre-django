@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Review your appointment · DrLibre{% endblock %}
+{% block content %}
+<h1>Review your appointment</h1>
+{% include "components/booking_summary.html" %}
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  {% if error %}{% include "components/error_summary.html" with errors=review_errors %}{% endif %}
+  {% include "components/field.html" with name="reason" label="Reason for the visit (optional)" value=reason error=error autofocus=error %}
+  <button class="button button--primary" type="submit">Confirm appointment</button>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

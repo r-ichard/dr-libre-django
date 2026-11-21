@@ -1,6 +1,7 @@
-{% comment %}Parameters: name, label, checked, hint.{% endcomment %}
-<div class="checkbox">
-  <input class="checkbox__box" type="checkbox" id="id_{{ name }}" name="{{ name }}"{% if checked %} checked{% endif %}{% if hint %} aria-describedby="id_{{ name }}_hint"{% endif %}>
+{% comment %}Parameters: name, label, checked, hint, error, autofocus.{% endcomment %}
+<div class="checkbox{% if error %} checkbox--invalid{% endif %}">
+  <input class="checkbox__box" type="checkbox" id="id_{{ name }}" name="{{ name }}"{% if checked %} checked{% endif %}{% if hint or error %} aria-describedby="{% if hint %}id_{{ name }}_hint {% endif %}{% if error %}id_{{ name }}_error{% endif %}"{% endif %}{% if error %} aria-invalid="true"{% endif %}{% if autofocus %} data-autofocus{% endif %}>
   <label for="id_{{ name }}">{{ label }}</label>
   {% if hint %}<p class="field__hint" id="id_{{ name }}_hint">{{ hint }}</p>{% endif %}
+  {% if error %}<p class="field__error" id="id_{{ name }}_error">{% include "components/icon.html" with kind="error" %}<span><span class="visually-hidden">Error: </span>{{ error }}</span></p>{% endif %}
 </div>

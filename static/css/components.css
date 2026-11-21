@@ -129,3 +129,20 @@
 /* Style page */
 .specimen { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-4); }
 .specimen-stack { display: grid; gap: var(--space-4); max-width: 40rem; margin-bottom: var(--space-4); }
+
+/* Booking: week strip and appointment facts */
+.facts { display: grid; gap: var(--space-3); margin: 0; }
+.facts div { display: grid; gap: var(--space-1); }
+.facts dt { color: var(--colour-ink-muted); font-size: var(--text-small); font-weight: 600; }
+.facts dd { margin: 0; }
+.booking-summary { margin-bottom: var(--space-5); }
+.week-strip__nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.week-strip__title { margin: 0; font-size: var(--text-large); }
+.week-strip__days { display: grid; gap: var(--space-4); margin: var(--space-5) 0; padding: 0; list-style: none; }
+.week-strip__heading { margin: 0 0 var(--space-2); font-size: var(--text-body); }
+.week-strip__slots { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.week-strip__none { margin: 0; color: var(--colour-ink-muted); }
+@media (min-width: 64rem) {
+  .week-strip__days { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .week-strip__slots { flex-direction: column; }
+}

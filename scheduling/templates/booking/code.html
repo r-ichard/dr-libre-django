@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Enter your code · DrLibre{% endblock %}
+{% block content %}
+<h1>Enter your code</h1>
+{% if sent %}{% include "components/notice.html" with kind="success" text="We sent a new code." %}{% endif %}
+<p>We sent a 6 digit code to {{ masked_email }}. It is valid for 10 minutes.</p>
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  {% if error %}{% include "components/error_summary.html" with errors=code_errors %}{% endif %}
+  {% include "components/field.html" with name="code" label="6 digit code" autocomplete="one-time-code" error=error autofocus=error %}
+  <button class="button button--primary" type="submit">Confirm booking</button>
+</form>
+<form class="form" method="post" action="{{ resend_action }}">
+  {% csrf_token %}
+  <button class="button button--secondary" type="submit">Send a new code</button>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

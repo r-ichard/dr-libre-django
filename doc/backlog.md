@@ -30,7 +30,7 @@ as GitHub issues; the issue number is in the heading.
 | 03 | Repeatable demo seed | 16 | merged `8dd846f` |
 | 03a | Fast test suite: measure, fast hasher in tests, parallel workers | 16 | merged `d7ad7aa` |
 | 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | merged `1d3643c` |
-| 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | todo |
+| 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | running `01M7Z0WGGPWF` |
 | 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |

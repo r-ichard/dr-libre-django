@@ -31,9 +31,10 @@ as GitHub issues; the issue number is in the heading.
 | 03a | Fast test suite: measure, fast hasher in tests, parallel workers | 16 | merged `d7ad7aa` |
 | 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | merged `1d3643c` |
 | 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | merged `f8cb3d8` |
-| 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | running `01M7Z1DH5DCF` |
+| 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | merged `45d9150` |
 | | **M2 Sign-in and access (#2)** | | |
-| 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |
+| 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | todo |
+| 05a | Design foundation, sign-in screens, role homes, error pages | 12, 16 | todo |
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, conflicts, status changes, booking rules; bind `make mutate` | 5.1 to 5.3, 5.6 | todo |
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | todo |
@@ -92,3 +93,5 @@ Small findings waiting for the next task that touches the same file.
   path included. Decide the error pages with the first screens. Task 05a.
 - Start-up lines of `migrate` and the development server are plain text, not JSON. Settle
   with the production server choice. Task 26.
+- `SECURE_PROXY_SSL_HEADER` is not set; needed before any deployment behind a proxy that
+  ends TLS (review of 04b). Task 26.

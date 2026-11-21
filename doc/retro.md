@@ -145,3 +145,13 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Clean pass. Host leak check repeated on the running stack: planted email, path segment
   and token appear in no line; every request line is JSON with the route pattern.
 - What remains plain text is start-up output (`migrate`, development server banner).
+
+## 2026-11-21 task 04b, run 01M7Z1DH5DCF (10 minutes, merged 45d9150)
+
+- One plan bounce, then clean. 557 tests in 4 seconds.
+- Host check: the security headers are on 200 and on API errors; Django's deployment
+  check passes on production-like values and reports 4 warnings on the development ones;
+  the seed's audit row holds counts only.
+- A non-API 404 has no content security policy under `DEBUG`: Django leaves its debug
+  pages out on purpose. With `DEBUG` off the header is there. Check headers both ways.
+- Milestone M1 is complete: 9 runs, 8 merged, 1 failed and recovered.

@@ -17,6 +17,7 @@ class FailureCode(StrEnum):
     HAS_DEPENDENTS = "has_dependents"
     RULE_VIOLATION = "rule_violation"
     RATE_LIMITED = "rate_limited"
+    MAIL_UNAVAILABLE = "mail_unavailable"
 
 
 @dataclass(frozen=True)
@@ -75,6 +76,10 @@ class Failure:
     @classmethod
     def rate_limited(cls) -> Failure:
         return cls(FailureCode.RATE_LIMITED)
+
+    @classmethod
+    def mail_unavailable(cls) -> Failure:
+        return cls(FailureCode.MAIL_UNAVAILABLE)
 
 
 @dataclass(frozen=True)

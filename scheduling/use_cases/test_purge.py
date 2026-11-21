@@ -7,7 +7,7 @@ import pytest
 
 from scheduling.domain.lockout_rules import LOCKOUT_WINDOW
 from scheduling.domain.request_context import RequestContext
-from scheduling.models import AuditLogEntry, Session, SignInFailure
+from scheduling.models import AuditLogEntry, Session, SignInFailure, SignInLink
 from scheduling.models.builders import make, unique_hash
 from scheduling.use_cases.purge import PurgeCounts, purge_expired
 from scheduling.use_cases.request_context import bind_request_context
@@ -29,7 +29,9 @@ def returns_expired_session_deleted_when_purged() -> None:
 
     counts = purge_expired()
 
-    assert counts == PurgeCounts(session_count=1, sign_in_failure_count=0, rate_limit_hit_count=0)
+    assert counts == PurgeCounts(
+        session_count=1, sign_in_failure_count=0, rate_limit_hit_count=0, sign_in_link_count=0
+    )
     assert not Session.objects.filter(pk=expired.pk).exists()
 
 
@@ -53,7 +55,9 @@ def returns_failure_row_deleted_when_older_than_the_lockout_window() -> None:
 
     counts = purge_expired()
 
-    assert counts == PurgeCounts(session_count=0, sign_in_failure_count=1, rate_limit_hit_count=0)
+    assert counts == PurgeCounts(
+        session_count=0, sign_in_failure_count=1, rate_limit_hit_count=0, sign_in_link_count=0
+    )
     assert not SignInFailure.objects.filter(pk=old.pk).exists()
 
 
@@ -85,6 +89,7 @@ def returns_audit_entry_with_both_counts_when_rows_were_purged() -> None:
         "session_count": 2,
         "sign_in_failure_count": 1,
         "rate_limit_hit_count": 0,
+        "sign_in_link_count": 0,
     }
 
 
@@ -92,7 +97,7 @@ def returns_no_audit_entry_when_nothing_was_purged() -> None:
     make("Session", expires_at=NOW + ONE_SECOND)
 
     assert purge_expired() == PurgeCounts(
-        session_count=0, sign_in_failure_count=0, rate_limit_hit_count=0
+        session_count=0, sign_in_failure_count=0, rate_limit_hit_count=0, sign_in_link_count=0
     )
     assert AuditLogEntry.objects.filter(action="housekeeping.purge").count() == 0
 
@@ -107,6 +112,7 @@ def returns_audit_entry_when_only_failure_rows_were_purged() -> None:
         "session_count": 0,
         "sign_in_failure_count": 1,
         "rate_limit_hit_count": 0,
+        "sign_in_link_count": 0,
     }
 
 
@@ -120,6 +126,7 @@ def returns_audit_entry_when_only_sessions_were_purged() -> None:
         "session_count": 1,
         "sign_in_failure_count": 0,
         "rate_limit_hit_count": 0,
+        "sign_in_link_count": 0,
     }
 
 
@@ -145,3 +152,28 @@ def returns_rate_limit_hit_kept_when_exactly_an_hour_old() -> None:
 
     assert purge_expired().rate_limit_hit_count == 0
     assert type(boundary).objects.filter(pk=boundary.pk).exists()  # type: ignore[attr-defined]
+
+
+def returns_expired_link_deleted_and_open_link_kept_when_purged() -> None:
+    expired = make("SignInLink", expires_at=NOW - ONE_SECOND, created_at=NOW - timedelta(hours=1))
+    open_link = make("SignInLink", expires_at=NOW + ONE_SECOND, created_at=NOW - ONE_SECOND)
+
+    counts = purge_expired()
+
+    assert counts.sign_in_link_count == 1
+    assert not SignInLink.objects.filter(pk=expired.pk).exists()
+    assert SignInLink.objects.filter(pk=open_link.pk).exists()
+
+
+def returns_audit_entry_when_only_links_were_purged() -> None:
+    make("SignInLink", expires_at=NOW - ONE_SECOND, created_at=NOW - timedelta(hours=1))
+
+    purge_expired()
+
+    audit = AuditLogEntry.objects.get(action="housekeeping.purge")
+    assert audit.metadata["counts"] == {
+        "session_count": 0,
+        "sign_in_failure_count": 0,
+        "rate_limit_hit_count": 0,
+        "sign_in_link_count": 1,
+    }

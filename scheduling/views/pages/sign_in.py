@@ -49,6 +49,16 @@ class SignInForm:
         return [SummaryItem(f"id_{name}", text) for name, text in self.field_errors.items()]
 
 
+@dataclass(frozen=True)
+class LinkForm:
+    email: str = ""
+    error: str = ""
+
+    @property
+    def summary(self) -> list[SummaryItem]:
+        return [SummaryItem("id_link_email", self.error)] if self.error else []
+
+
 class SignInPage(PageView):
     template_name = "sign_in.html"
 
@@ -82,5 +92,16 @@ class SignInPage(PageView):
         set_session_cookie(response, opened.token, opened.session.expires_at)
         return response
 
-    def _form(self, request: HttpRequest, form: SignInForm) -> HttpResponse:
-        return self.page(request, {"form": form, "form_error_id": FORM_ERROR_ID})
+    def _form(
+        self,
+        request: HttpRequest,
+        form: SignInForm,
+        link_form: LinkForm | None = None,
+        status: int = 200,
+    ) -> HttpResponse:
+        context = {
+            "form": form,
+            "link_form": link_form or LinkForm(),
+            "form_error_id": FORM_ERROR_ID,
+        }
+        return self.page(request, context, status)

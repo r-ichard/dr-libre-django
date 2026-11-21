@@ -10,5 +10,12 @@
   {% include "components/field.html" with name="password" label="Password" type="password" autocomplete="current-password" error=form.field_errors.password invalid=form.form_error error_id=form_error_id autofocus=form.focus_password %}
   <button class="button button--primary" type="submit">Sign in</button>
 </form>
+<h2>Or sign in without a password</h2>
+<form class="form" method="post" action="/sign-in/email-link" novalidate>
+  {% csrf_token %}
+  {% if link_form.summary %}{% include "components/error_summary.html" with errors=link_form.summary %}{% endif %}
+  {% include "components/field.html" with name="link_email" label="Email address" type="email" value=link_form.email autocomplete="email" error=link_form.error hint="We send a link that works for 15 minutes and only once." %}
+  <button class="button button--secondary" type="submit">Email me a sign-in link</button>
+</form>
 {% endblock %}
 {% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

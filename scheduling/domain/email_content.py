@@ -49,3 +49,18 @@ def verification_code_email(code: str, valid_minutes: int) -> EmailText:
         "If you did not ask for this code, ignore this message."
     )
     return EmailText("Your DrLibre booking code", body)
+
+
+def sign_in_link_email(link_url: str, valid_minutes: int) -> EmailText:
+    """The only message of the product that signs its reader in."""
+    body = (
+        "Use this link to sign in to DrLibre:\n"
+        "\n"
+        f"{link_url}\n"
+        "\n"
+        f"The link is valid for {valid_minutes} minutes and works only once. Opening it shows "
+        "a page with a Continue button; you are signed in when you press it.\n"
+        "\n"
+        "If you did not ask for this link, ignore this message."
+    )
+    return EmailText("Your DrLibre sign-in link", body)

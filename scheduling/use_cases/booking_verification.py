@@ -100,8 +100,10 @@ def _book_for_visitor(hold: BookingHold, user_agent: str) -> Result[VerifiedBook
 
 
 def _patient_of(hold: BookingHold) -> Result[User]:
-    """An active patient keeps their profile. Staff and inactive users get the generic refusal."""
-    existing = User.objects.select_for_update().filter(email=hold.visitor_email).first()
+    """An active patient keeps their profile. Staff and inactive users get the generic refusal.
+    The user row is not locked here: placing locks clinicians, then the patient, then rooms, and
+    a lock taken earlier would reverse that order."""
+    existing = User.objects.filter(email=hold.visitor_email).first()
     if existing is not None:
         if existing.role == Role.PATIENT and existing.is_active:
             return Success(existing)

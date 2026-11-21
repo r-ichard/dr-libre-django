@@ -1,4 +1,4 @@
-"""Section 14 request schemas for login and logout."""
+"""Section 14 request schemas for login, logout and the sign-in link."""
 
 from rest_framework import serializers
 
@@ -7,6 +7,7 @@ from scheduling.views.schemas import StrictSerializer
 
 EMAIL_MAX_LENGTH = 254
 PASSWORD_MAX_LENGTH = 1000
+TOKEN_MAX_LENGTH = 200
 
 
 class LoginRequest(StrictSerializer):
@@ -27,3 +28,13 @@ class LoginRequest(StrictSerializer):
 
 class LogoutRequest(StrictSerializer):
     pass
+
+
+class LinkRequest(StrictSerializer):
+    email = serializers.EmailField(max_length=EMAIL_MAX_LENGTH)
+
+    validate_email = LoginRequest.validate_email
+
+
+class LinkVerifyRequest(StrictSerializer):
+    token = serializers.CharField(min_length=1, max_length=TOKEN_MAX_LENGTH, write_only=True)

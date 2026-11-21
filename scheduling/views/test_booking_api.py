@@ -203,7 +203,7 @@ def returns_429_rate_limited_with_wire_shape_when_sixth_hold_of_an_email_is_aske
     assert error["correlation_id"]
 
 
-def returns_500_generic_and_no_hold_when_mail_server_is_down(settings: object) -> None:
+def returns_503_mail_unavailable_and_no_hold_when_mail_server_is_down(settings: object) -> None:
     clinic = make_clinic()
     settings.MAILERS = {  # type: ignore[attr-defined]
         "default": {"BACKEND": f"{__name__}.MailServerDownBackend", "OPTIONS": {}}
@@ -213,8 +213,11 @@ def returns_500_generic_and_no_hold_when_mail_server_is_down(settings: object) -
         HOLDS, _body(clinic), content_type="application/json"
     )
 
-    assert response.status_code == 500
-    assert response.json()["error"]["code"] == "internal_error"
-    assert response.json()["error"]["message"] == "Something went wrong."
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "mail_unavailable"
+    assert (
+        response.json()["error"]["message"]
+        == "We could not send the email. Try again in a few minutes."
+    )
     assert EMAIL not in response.content.decode()
     assert BookingHold.objects.count() == 0

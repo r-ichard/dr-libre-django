@@ -101,3 +101,39 @@ def returns_exact_subject_and_body_when_code_email_is_built() -> None:
         "\n"
         "If you did not ask for this code, ignore this message."
     )
+
+
+def returns_link_lifetime_and_single_use_when_sign_in_link_email_is_built() -> None:
+    from scheduling.domain.email_content import sign_in_link_email  # noqa: PLC0415
+
+    text = sign_in_link_email("https://drlibre.example/sign-in/link?token=abc", 15)
+
+    assert "https://drlibre.example/sign-in/link?token=abc" in text.body.splitlines()
+    assert "15 minutes" in text.body
+    assert "only once" in text.body
+    assert "abc" not in text.subject
+
+
+def returns_no_signing_link_when_other_emails_are_built() -> None:
+    from scheduling.domain.email_content import verification_code_email  # noqa: PLC0415
+
+    assert "token=" not in patient_email(SUBJECT).body
+    assert "token=" not in verification_code_email("042917", 10).body
+
+
+def returns_exact_subject_and_body_when_sign_in_link_email_is_built() -> None:
+    from scheduling.domain.email_content import sign_in_link_email  # noqa: PLC0415
+
+    text = sign_in_link_email("https://drlibre.example/sign-in/link?token=abc", 15)
+
+    assert text.subject == "Your DrLibre sign-in link"
+    assert text.body == (
+        "Use this link to sign in to DrLibre:\n"
+        "\n"
+        "https://drlibre.example/sign-in/link?token=abc\n"
+        "\n"
+        "The link is valid for 15 minutes and works only once. Opening it shows a page with a "
+        "Continue button; you are signed in when you press it.\n"
+        "\n"
+        "If you did not ask for this link, ignore this message."
+    )

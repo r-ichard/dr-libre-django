@@ -50,3 +50,11 @@ def returns_hash_column_limited_to_64_characters_when_secret_model_is_inspected(
 def _field_attribute(field: object, attribute: str) -> object:
     assert isinstance(field, Field)
     return getattr(field, attribute)
+
+
+def returns_link_open_by_default_when_sign_in_link_is_created() -> None:
+    from scheduling.models.builders import make  # noqa: PLC0415
+
+    link = make("SignInLink")
+
+    assert link.cancelled_at is None  # type: ignore[attr-defined]

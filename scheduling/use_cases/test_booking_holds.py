@@ -321,8 +321,7 @@ def returns_no_hold_code_or_hit_when_mail_server_is_down_on_hold(settings: objec
         "default": {"BACKEND": f"{__name__}.MailServerDownBackend", "OPTIONS": {}}
     }
 
-    with pytest.raises(ConnectionRefusedError):
-        _create(clinic)
+    assert _create(clinic) == Failure.mail_unavailable()
 
     assert BookingHold.objects.count() == 0
     assert _model_rows("VerificationCode") == []
@@ -338,8 +337,7 @@ def returns_earlier_code_valid_when_mail_server_is_down_on_resend(settings: obje
         "default": {"BACKEND": f"{__name__}.MailServerDownBackend", "OPTIONS": {}}
     }
 
-    with pytest.raises(ConnectionRefusedError):
-        _resend(hold.pk)
+    assert _resend(hold.pk) == Failure.mail_unavailable()
 
     settings.MAILERS = working  # type: ignore[attr-defined]
     assert isinstance(_verify(hold.pk, earlier), Success)

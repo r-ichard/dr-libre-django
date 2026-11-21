@@ -12,13 +12,14 @@ from scheduling.views.appointment_actions import (
     RescheduleView,
 )
 from scheduling.views.appointments import AppointmentsView
-from scheduling.views.auth import LoginView, LogoutView
+from scheduling.views.auth import LinkVerifyView, LinkView, LoginView, LogoutView
 from scheduling.views.booking import HoldsView, ResendView, VerifyView
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
 from scheduling.views.pages.public_pages import RootPage, StylePage
 from scheduling.views.pages.sign_in import SignInPage
+from scheduling.views.pages.sign_in_link import CheckEmailPage, LinkContinuePage, LinkRequestPage
 from scheduling.views.pages.sign_out import SignOutPage
 from scheduling.views.search import (
     SearchHospitalsView,
@@ -36,6 +37,8 @@ urlpatterns = [
     path("api/v1/health", HealthView.as_view()),
     path("api/v1/auth/login", LoginView.as_view()),
     path("api/v1/auth/logout", LogoutView.as_view()),
+    path("api/v1/auth/link", LinkView.as_view()),
+    path("api/v1/auth/link/verify", LinkVerifyView.as_view()),
     path("api/v1/slots", SlotsView.as_view()),
     path("api/v1/search/providers", SearchProvidersView.as_view()),
     path("api/v1/search/hospitals", SearchHospitalsView.as_view()),
@@ -57,6 +60,9 @@ urlpatterns = [
     path("", RootPage.as_view()),
     path("favicon.ico", lambda request: redirect("/static/favicon.svg")),
     path("sign-in", SignInPage.as_view()),
+    path("sign-in/email-link", LinkRequestPage.as_view()),
+    path("sign-in/check-email", CheckEmailPage.as_view()),
+    path("sign-in/link", LinkContinuePage.as_view()),
     path("sign-out", SignOutPage.as_view()),
     path("patient/", PatientPortal.as_view()),
     path("clinician/", ClinicianWorkspace.as_view()),

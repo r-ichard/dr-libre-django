@@ -21,12 +21,9 @@ from scheduling.views.hold_schemas import (
     hold_body,
     hold_command_of,
 )
+from scheduling.views.network_address import network_address
 from scheduling.views.schemas import validate_body
 from scheduling.views.session_cookie import set_session_cookie
-
-
-def _network_address(request: Request) -> str:
-    return str(request.META.get("REMOTE_ADDR", ""))
 
 
 class HoldsView(ApiView):
@@ -36,7 +33,7 @@ class HoldsView(ApiView):
         body = validate_body(HoldRequest, request.data)
         if isinstance(body, Failure):
             return failure_response(body)
-        created = create_hold(hold_command_of(body.value), _network_address(request))
+        created = create_hold(hold_command_of(body.value), network_address(request))
         if isinstance(created, Failure):
             return failure_response(created)
         return Response(hold_body(created.value), status=201)
@@ -49,7 +46,7 @@ class ResendView(ApiView):
         body = validate_body(ResendRequest, request.data)
         if isinstance(body, Failure):
             return failure_response(body)
-        resent = resend_code(hold_id, _network_address(request))
+        resent = resend_code(hold_id, network_address(request))
         if isinstance(resent, Failure):
             return failure_response(resent)
         return Response(hold_body(resent.value))

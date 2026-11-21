@@ -76,7 +76,10 @@ def create_hold(command: HoldCommand, address: str) -> Result[BookingHold]:
             expires_at=now + HOLD_LIFETIME,
             terms_accepted_at=now,
         )
-        issue_code(hold)
+        sent = issue_code(hold)
+        if isinstance(sent, Failure):
+            transaction.set_rollback(True)
+            return sent
         metadata = AuditMetadata(
             ids={"clinician_id": hold.clinician_id}, email_domain=email_domain(email)
         )
@@ -98,7 +101,10 @@ def resend_code(hold_id: UUID, address: str) -> Result[BookingHold]:
         locked = BookingHold.objects.select_for_update().filter(pk=hold_id).first()
         if locked is None:
             return Failure.not_found()
-        issue_code(locked)
+        sent = issue_code(locked)
+        if isinstance(sent, Failure):
+            transaction.set_rollback(True)
+            return sent
         return Success(locked)
 
 

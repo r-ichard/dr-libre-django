@@ -12,10 +12,11 @@ SPECIFICATION_CODES = {
     "has_dependents",
     "rule_violation",
     "rate_limited",
+    "mail_unavailable",
 }
 
 
-def returns_exactly_the_eleven_specified_codes_when_failure_codes_are_listed() -> None:
+def returns_exactly_the_twelve_specified_codes_when_failure_codes_are_listed() -> None:
     listed = {code.value for code in FailureCode}
 
     assert listed == SPECIFICATION_CODES
@@ -76,4 +77,13 @@ def returns_rate_limited_with_empty_details_when_rate_limited_constructor_is_cal
     failure = Failure.rate_limited()
 
     assert failure.code.value == "rate_limited"
+    assert failure.details == {}
+
+
+def returns_mail_unavailable_with_empty_details_when_mail_unavailable_constructor_is_called() -> (
+    None
+):
+    failure = Failure.mail_unavailable()
+
+    assert failure.code.value == "mail_unavailable"
     assert failure.details == {}

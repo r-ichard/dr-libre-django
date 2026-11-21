@@ -25,6 +25,12 @@ def returns_three_and_ten_when_code_limits_are_read() -> None:
     )
 
 
+def returns_three_and_ten_when_link_limits_are_read() -> None:
+    assert _rules().RATE_LIMITS[_rules().RateLimitScope.LINK] == _rules().RateLimit(
+        per_email=3, per_address=10
+    )
+
+
 def returns_true_when_hits_equal_limit() -> None:
     assert _rules().is_limited(3, 3) is True
 

@@ -29,6 +29,7 @@ STATUS_BY_CODE: dict[FailureCode, int] = {
     FailureCode.HAS_DEPENDENTS: 409,
     FailureCode.RULE_VIOLATION: 422,
     FailureCode.RATE_LIMITED: 429,
+    FailureCode.MAIL_UNAVAILABLE: 503,
 }
 
 MESSAGE_BY_CODE: dict[FailureCode, str] = {
@@ -43,6 +44,7 @@ MESSAGE_BY_CODE: dict[FailureCode, str] = {
     FailureCode.HAS_DEPENDENTS: "Other records depend on this one.",
     FailureCode.RULE_VIOLATION: "A booking rule was violated.",
     FailureCode.RATE_LIMITED: "Too many requests.",
+    FailureCode.MAIL_UNAVAILABLE: "We could not send the email. Try again in a few minutes.",
 }
 
 

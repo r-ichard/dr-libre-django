@@ -132,6 +132,7 @@ class SignInLink(Record):
     patient = ForeignKey(User, on_delete=PROTECT)
     expires_at = DateTimeField()
     used_at = DateTimeField(null=True, blank=True)
+    cancelled_at = DateTimeField(null=True, blank=True)
 
     class Meta:
         constraints = [

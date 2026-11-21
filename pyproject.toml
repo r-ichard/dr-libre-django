@@ -30,7 +30,7 @@ python_functions = ["returns_*", "raises_*", "rejects_*"]
 # comment_cap.py is orchestrator-owned process tooling, not product code.
 [tool.ruff]
 line-length = 100
-extend-exclude = ["scripts/comment_cap.py"]
+extend-exclude = ["scripts/comment_cap.py", "scheduling/migrations"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "S", "SIM"]

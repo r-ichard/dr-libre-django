@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = require_env("SECRET_KEY")
 DEBUG = env_flag("DEBUG")
 ALLOWED_HOSTS = require_env_list("ALLOWED_HOSTS")
-INSTALLED_APPS = ["rest_framework", "scheduling"]
+INSTALLED_APPS = ["django.contrib.postgres", "rest_framework", "scheduling"]
 MIDDLEWARE = ["django.middleware.common.CommonMiddleware"]
 ROOT_URLCONF = "drlibre.urls"
 DATABASES = {
@@ -28,6 +28,7 @@ MAILERS = {
 TIME_ZONE = "UTC"
 USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = "scheduling.User"
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_AUTHENTICATION_CLASSES": [],

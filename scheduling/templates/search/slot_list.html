@@ -1,0 +1,6 @@
+{% comment %}Parameters: opening (visible, spoken, href, time_zone) or none.{% endcomment %}
+{% if opening %}
+<p class="result__label">Earliest free time</p>
+{% include "components/slot_link.html" with href=opening.href visible=opening.visible spoken=opening.spoken %}
+<p class="hint">Time zone {{ opening.time_zone }}</p>
+{% else %}<p class="hint">No availability in the next 90 days</p>{% endif %}

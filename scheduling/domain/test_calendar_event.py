@@ -54,7 +54,7 @@ def returns_calendar_wrapper_lines_when_event_is_built() -> None:
 
 
 def returns_escaped_comma_semicolon_backslash_and_newline_in_text() -> None:
-    assert "SUMMARY:a\\,b\;c\\\\d\\ne\r\n" in _text(summary="a,b;c\\d\ne")
+    assert "SUMMARY:a\\,b\\;c\\\\d\\ne\r\n" in _text(summary="a,b;c\\d\ne")
 
 
 def returns_folded_lines_longer_than_75_octets_with_a_leading_space() -> None:

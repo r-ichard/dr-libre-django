@@ -1,0 +1,8 @@
+{% with specialty=row.specialty %}
+<div class="result__heading">
+  {% include "components/specialty_icon.html" with file=row.icon %}
+  <h2 class="result__title">{{ specialty.name }}</h2>
+</div>
+<p>{{ specialty.provider_count }} provider{{ specialty.provider_count|pluralize }}, {{ specialty.hospital_count }} hospital{{ specialty.hospital_count|pluralize }}</p>
+{% include "search/slot_list.html" with opening=row.opening %}
+{% endwith %}

@@ -106,3 +106,7 @@ code { font-family: var(--font-code); font-size: 0.95em; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Stacked blocks keep the spacing of the tokens, on every page */
+.page > .notice, .page > .card { margin-block: var(--space-4); }
+.button-row { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }

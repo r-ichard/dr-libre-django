@@ -11,8 +11,8 @@
     <div><dt>Where</dt><dd>{{ hospital }}, {{ address }}. {{ department }}.{% if room %} Room: {{ room }}.{% endif %}</dd></div>
   </dl>
 </section>
-<p>
+<div class="button-row">
   <a class="button button--primary" href="{{ calendar_href }}" download>Add to your calendar</a>
   <a class="button button--secondary" href="{{ patient_path }}">Your appointments</a>
-</p>
+</div>
 {% endblock %}

@@ -1,0 +1,6 @@
+{% comment %}Parameters: switch (label, href, current). Links, not tabs, so it works without a script.{% endcomment %}
+<nav class="list-switch" aria-label="Kind of result">
+  <ul>
+    {% for item in switch %}<li><a class="list-switch__link{% if item.current %} list-switch__link--current{% endif %}" href="{{ item.href }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}{% if item.current %} <span class="visually-hidden">(current)</span><span aria-hidden="true">(current)</span>{% endif %}</a></li>{% endfor %}
+  </ul>
+</nav>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Search for a provider, hospital or specialty · DrLibre{% endblock %}
+{% block description %}Search hospitals, providers and specialties and book an appointment without an account.{% endblock %}
+{% block content %}
+<h1>Find care and book a time</h1>
+<form class="search-form" method="get" action="/" role="search">
+  <input type="hidden" name="list" value="{{ kind }}">
+  <input type="hidden" name="page_size" value="{{ query.page_size }}">
+  {% if location %}<input type="hidden" name="latitude" value="{{ location.latitude }}"><input type="hidden" name="longitude" value="{{ location.longitude }}">{% else %}<input type="hidden" name="latitude" value="" id="search-latitude" disabled><input type="hidden" name="longitude" value="" id="search-longitude" disabled>{% endif %}
+  <div class="search-form__grid">
+    {% include "components/field.html" with name="q" label="Search by name, hospital, city or specialty" value=query.text %}
+    {% include "components/select.html" with name="specialty" label="Specialty" options=fields.specialties selected=fields.specialty %}
+    {% include "components/select.html" with name="hospital" label="Hospital" options=fields.hospitals selected=fields.hospital %}
+    {% include "components/select.html" with name="city" label="City" options=fields.cities selected=fields.city %}
+    {% include "components/select.html" with name="appointment_type" label="Appointment type" options=fields.types selected=fields.appointment_type %}
+    {% include "components/field.html" with name="from" label="Earliest date" type="date" value=fields.from %}
+    {% include "components/select.html" with name="window" label="Within" options=fields.windows selected=fields.window %}
+    {% include "components/select.html" with name="time_of_day" label="Time of day" options=fields.times_of_day selected=fields.time_of_day %}
+    {% include "components/select.html" with name="sort" label="Sort by" options=fields.sorts selected=fields.sort %}
+  </div>
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Search</button>
+    <button class="button button--secondary" type="button" id="use-location" hidden>Use my location</button>
+  </div>
+</form>
+
+{% include "components/list_switch.html" %}
+
+<p class="results-summary">{{ total }} result{{ total|pluralize }}. Page {{ page }} of {{ page_count }}.</p>
+
+{% if rows %}
+<ol class="results">
+  {% for row in rows %}
+  <li class="card result">
+    {% if kind == "providers" %}{% include "search/provider_result.html" %}
+    {% elif kind == "hospitals" %}{% include "search/hospital_result.html" %}
+    {% else %}{% include "search/specialty_result.html" %}{% endif %}
+  </li>
+  {% endfor %}
+</ol>
+<nav class="page-sizes" aria-label="Results per page">
+  <p>Results per page:</p>
+  <ul>
+    {% for item in page_sizes %}<li><a href="{{ item.href }}"{% if item.current %} aria-current="true"{% endif %}>{{ item.size }}</a></li>{% endfor %}
+  </ul>
+</nav>
+{% include "components/pagination.html" %}
+{% else %}
+{% include "components/empty_state.html" with title="Nothing matches your search" text="Try fewer words or remove the filters." action_href=widen_href action_text="Widen the search" %}
+{% endif %}
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/search_location.js' %}" defer></script>{% endblock %}

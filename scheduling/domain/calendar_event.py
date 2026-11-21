@@ -40,7 +40,7 @@ def _utc_text(moment: datetime) -> str:
 
 
 def _escape(text: str) -> str:
-    escaped = text.replace("\\", "\\\\").replace(";", "\;").replace(",", "\\,")
+    escaped = text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,")
     return escaped.replace("\r\n", "\\n").replace("\n", "\\n")
 
 

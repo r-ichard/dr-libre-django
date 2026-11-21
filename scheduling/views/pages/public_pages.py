@@ -1,13 +1,8 @@
-"""Pages open to everyone: the root, and the component style page that exists only in DEBUG."""
+"""Pages open to everyone: the component style page that exists only in DEBUG."""
 
 from django.http import HttpRequest, HttpResponse
 
 from scheduling.views.pages.page_view import PageView
-
-
-class RootPage(PageView):
-    template_name = "home.html"
-
 
 SPECIALTIES = [("cardiology", "Cardiology"), ("dermatology", "Dermatology")]
 SAMPLE_ERRORS = [

@@ -263,6 +263,7 @@ def returns_css_when_static_file_is_requested(settings: object) -> None:
     settings.DEBUG = False  # type: ignore[attr-defined]
 
     response = Client().get("/static/css/tokens.css")
+    response.close()
 
     assert response.status_code == 200
     assert response["Content-Type"].startswith("text/css")

@@ -106,6 +106,7 @@ def returns_icon_when_favicon_is_requested() -> None:
 
     redirect = client.get("/favicon.ico")
     icon = client.get("/static/favicon.svg")
+    icon.close()
     page = client.get("/sign-in").content.decode()
 
     assert redirect.status_code == 302

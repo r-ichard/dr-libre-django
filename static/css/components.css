@@ -146,3 +146,41 @@
   .week-strip__days { grid-template-columns: repeat(7, minmax(0, 1fr)); }
   .week-strip__slots { flex-direction: column; }
 }
+
+/* Search */
+.search-form { display: grid; gap: var(--space-4); margin-bottom: var(--space-5); }
+.search-form__grid { display: grid; gap: var(--space-4); }
+.search-form .button-row { margin-top: 0; }
+.list-switch ul, .page-sizes ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.list-switch__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap-target);
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--colour-primary);
+  border-radius: var(--radius-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+.list-switch__link--current { background: var(--colour-primary); color: var(--colour-on-primary); }
+.results-summary { margin-block: var(--space-4); font-weight: 600; }
+.results { display: grid; gap: var(--space-4); margin: 0 0 var(--space-5); padding: 0; list-style: none; }
+.result p { margin-block: var(--space-2); }
+.result__title { margin: 0; font-size: var(--text-heading-3); }
+.result__heading { display: flex; align-items: center; gap: var(--space-3); }
+.result__label { color: var(--colour-ink-muted); font-size: var(--text-small); }
+.result__slots { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.slot-link { min-height: 2.75rem; }
+.specialty-icon { flex: none; width: 2.5rem; height: 2.5rem; }
+.page-sizes { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+.page-sizes p { margin: 0; }
+.page-sizes a { display: inline-flex; align-items: center; justify-content: center; min-width: var(--tap-target); min-height: var(--tap-target); }
+.page-sizes a[aria-current] { font-weight: 700; text-decoration: none; }
+@media (min-width: 48rem) {
+  .search-form__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 64rem) {
+  .search-form__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

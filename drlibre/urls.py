@@ -21,7 +21,8 @@ from scheduling.views.pages.booking_confirmation import CalendarFile, Confirmati
 from scheduling.views.pages.booking_details import DetailsPage
 from scheduling.views.pages.booking_times import TimesPage
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
-from scheduling.views.pages.public_pages import RootPage, StylePage
+from scheduling.views.pages.public_pages import StylePage
+from scheduling.views.pages.search_page import SearchPage
 from scheduling.views.pages.sign_in import SignInPage
 from scheduling.views.pages.sign_in_link import CheckEmailPage, LinkContinuePage, LinkRequestPage
 from scheduling.views.pages.sign_out import SignOutPage
@@ -61,7 +62,7 @@ urlpatterns = [
     path("api/v1/waitlist/<uuid:entry_id>/offer", OfferView.as_view()),
     path("api/v1/jobs/reminders", RemindersView.as_view()),
     re_path(r"^api/v1/", NotFoundView.as_view()),
-    path("", RootPage.as_view()),
+    path("", SearchPage.as_view()),
     path("favicon.ico", lambda request: redirect("/static/favicon.svg")),
     path("sign-in", SignInPage.as_view()),
     path("sign-in/email-link", LinkRequestPage.as_view()),

@@ -28,7 +28,8 @@ package = false
 DJANGO_SETTINGS_MODULE = "drlibre.settings"
 python_files = ["test_*.py"]
 pythonpath = ["."]
-norecursedirs = ["mutants"]
+norecursedirs = ["mutants", ".hypothesis"]
+filterwarnings = ["error"]
 python_functions = ["returns_*", "raises_*", "rejects_*"]
 
 # comment_cap.py is orchestrator-owned process tooling, not product code.

@@ -1,0 +1,14 @@
+{% with provider=row.provider %}
+<h2 class="result__title">{{ row.name }}</h2>
+<p>{{ provider.specialty_name }} · {{ provider.department_name }}, {{ provider.hospital_name }}, {{ provider.city }}</p>
+{% if row.slots %}
+<p class="result__label">{{ provider.appointment_type_name }}, {{ provider.appointment_type_minutes }} minutes. Next free times, time zone {{ provider.time_zone }}</p>
+<ul class="result__slots">
+  {% for slot in row.slots %}<li>{% include "components/slot_link.html" with href=slot.href visible=slot.visible spoken=slot.spoken %}</li>{% endfor %}
+</ul>
+<p><a href="{{ row.times_href }}">All times for {{ provider.appointment_type_name }}<span class="visually-hidden"> with {{ row.name }}</span></a></p>
+{% else %}
+<p class="result__label">{{ provider.appointment_type_name }}, {{ provider.appointment_type_minutes }} minutes</p>
+<p class="hint">No availability in the next 90 days</p>
+{% endif %}
+{% endwith %}

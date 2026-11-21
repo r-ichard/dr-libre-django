@@ -432,3 +432,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   cancelled notifications that read as if the appointment were on.
 - Copies of the issue bodies are in `doc/qa/2026-11-21-round-1.md`, because a task run has
   no GitHub access.
+
+## 2026-11-21 task 17, run 01M80115TVZ7 (24 minutes, merged a6609fc)
+
+- Clean pass, no bounce. 2298 tests.
+- As the demo clinician: a new Friday rule shows 4 slots in the public API at once, an
+  overlapping rule is refused, a touching one accepted, deleting leaves the right 2;
+  another clinician's rule answers 403. The patient list and its search show only the
+  clinician's own two patients out of six. The rooms timeline names the clinician's own
+  patient and nobody else.
+- The time grid now has hours and rows, but measuring it showed the labels 49 px above
+  the rows they name, and block text spilling out. A screenshot looked nearly right;
+  the numbers did not. Carried into task 17b.
+- Milestone M6 is complete, with that defect open.

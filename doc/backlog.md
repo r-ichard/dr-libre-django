@@ -65,7 +65,7 @@ tasks.
 | 15 | Patient portal: waitlist, notifications, profile, password | 8 | merged `9d36ae6` |
 | | **M6 Clinician workspace (#6)** | | |
 | 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
-| 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | running `01M80115TVZ7` |
+| 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | merged `a6609fc` |
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | todo |
 | 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) | 5, 6, 8, 12.3, 16 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
@@ -143,3 +143,5 @@ Small findings waiting for the next task that touches the same file.
   re-seed through the use cases.
 - `ClinicalNote` declares itself not exposed through FHIR, but section 15.3 maps clinical
   notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
+- The demo seed opens the clinics Sunday to Thursday: it numbers weekdays from Monday
+  while the product counts 0 as Sunday. With the re-seed through the use cases.

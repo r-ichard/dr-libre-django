@@ -67,7 +67,9 @@ tasks.
 | 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
 | 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | merged `a6609fc` |
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | running `01M802KYJ8DS` |
+| 17c | QA round 2, clinician: time grid alignment, multi-day time off, five smaller (#25 to #31) | 9, 16 | todo |
 | 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) | 5, 6, 8, 12.3, 16 | todo |
+| 17d | Demo seed books through the use cases (#32) | 16 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |
@@ -94,9 +96,9 @@ Small findings waiting for the next task that touches the same file.
   security review. Task 26.
 - Demo appointments are written straight through the models: some fall outside the
   clinician's availability (after 17:00, weekends) and outside the 07:00 to 19:00 calendar
-  grid. Re-seed through the booking use cases on real free slots. After task 08.
+  grid. Re-seed through the booking use cases on real free slots. Task 17d.
 - Seed review: identify seeded appointments by a marker, not by patient, clinician and
-  type; notifications through the same upsert. With the re-seed above.
+  type; notifications through the same upsert. Task 17d.
 - Test-only probe views live in `scheduling/views/` (`probe_views.py`, `probe_urls.py`).
   Move them out of the product package when a test support location exists.
 - Start-up lines of `migrate` and the development server are plain text, not JSON. Settle
@@ -139,9 +141,8 @@ Small findings waiting for the next task that touches the same file.
   the appointments without a notice; the notifications page goes from an h1 to h3
   headings; the profile form does not move focus to its first invalid field; notification
   times are shown in UTC while the rest of the portal uses the hospital's zone. Task 25.
-- The demo seed writes notification titles that are not those of section 11. With the
-  re-seed through the use cases.
+- The demo seed writes notification titles that are not those of section 11. Task 17d.
 - `ClinicalNote` declares itself not exposed through FHIR, but section 15.3 maps clinical
   notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
 - The demo seed opens the clinics Sunday to Thursday: it numbers weekdays from Monday
-  while the product counts 0 as Sunday. With the re-seed through the use cases.
+  while the product counts 0 as Sunday. Task 17d (#32).

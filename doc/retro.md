@@ -445,3 +445,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   the rows they name, and block text spilling out. A screenshot looked nearly right;
   the numbers did not. Carried into task 17b.
 - Milestone M6 is complete, with that defect open.
+
+## 2026-11-21 QA round 2, clinician area (run 01M802MMFCAQ, 11 minutes)
+
+- 8 issues filed, #25 to #32: 2 P1, 6 P2, no P0. No access-control hole and no leak of
+  another clinician's patients was found by a run that went looking for them.
+- #25 is the grid misalignment I had measured by hand after task 17 (49 px); the run
+  measured 48 px and gave the cause. #26 is new and worse: a time off of several days is
+  drawn in no day, so the week looks free. Both in task 17c, before the P2 batch.
+- #32 and the time off at 01:00 behind #26 are the demo seed, which still writes through
+  the models. The re-seed was carried "after task 08" and never scheduled: a carried item
+  with no task number does not get done. It is task 17d now, and it touches only
+  `scheduling/demo_seed/`, so it runs beside task 17a.
+- The two grid items I had put into task 17b moved to task 17c with the issues that
+  describe them better.

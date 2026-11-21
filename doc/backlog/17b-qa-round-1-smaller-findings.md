@@ -36,16 +36,6 @@ Forms (section 16):
     called wrong. One submission reports every error; an empty field says "enter", not
     "wrong".
 
-Found by the orchestrator in Chrome after task 17, in the shared time grid of the calendar
-week and the rooms timeline:
-11. The hour labels do not line up with the rows. Measured on the calendar: the "12:00"
-    label is at 1035 px and the block of an appointment from 12:00 to 12:30 starts at
-    1084 px, 49 px lower, the height of the day header that sits inside the column. A
-    block must start level with the label of its hour.
-12. A block's text overflows it: the patient's name and the status badge spill out below
-    a 30 minute block. Everything a block shows must fit inside it at 1440 px and at
-    375 px; the rest belongs on the appointment page.
-
 Write the commit so that merging it closes the issues: the reply of the last stage lists
 "Closes #11, #15, #16, #17, #19, #20, #21, #22, #23, #24".
 

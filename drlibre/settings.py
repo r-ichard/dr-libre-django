@@ -45,13 +45,17 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"json": {"()": "scheduling.views.json_logging.JsonFormatter"}},
-    "handlers": {"stdout": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "handlers": {
+        "stdout": {"class": "logging.StreamHandler", "formatter": "json"},
+        "discard": {"class": "logging.NullHandler"},
+    },
     "root": {"handlers": ["stdout"], "level": "INFO"},
-    # Django's own handlers interpolate paths into text; its records reach the JSON root instead.
+    # Django's request and server lines interpolate raw paths. A handler that discards, and no
+    # propagation, also keeps Python's last-resort handler from printing them. The request
+    # middleware writes the one request line and the trace.
     "loggers": {
         "django": {"handlers": [], "propagate": True},
-        # The request middleware writes the one request line; this one runs outside its context.
-        "django.request": {"handlers": [], "propagate": False},
-        "django.server": {"handlers": [], "propagate": True},
+        "django.request": {"handlers": ["discard"], "propagate": False},
+        "django.server": {"handlers": ["discard"], "propagate": False},
     },
 }

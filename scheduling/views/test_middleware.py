@@ -76,3 +76,30 @@ def raises_when_context_is_read_after_request_has_finished() -> None:
 
     with pytest.raises(LookupError):
         current_request_context()
+
+
+def returns_generic_json_500_with_correlation_id_when_plain_view_raises_on_api_path_under_debug(
+    probe_client: Client, settings: object
+) -> None:
+    settings.DEBUG = True  # type: ignore[attr-defined]
+
+    response = probe_client.get(
+        "/api/v1/probe/plain-explode", headers={"x-correlation-id": "cid-x"}
+    )
+
+    assert response.status_code == 500
+    error = response.json()["error"]
+    assert (error["code"], error["message"], error["correlation_id"]) == (
+        "internal_error",
+        "Something went wrong.",
+        "cid-x",
+    )
+    assert "patient reports chest pain" not in response.content.decode()
+
+
+def returns_correlation_id_header_when_plain_view_raises_on_page_path(
+    probe_client: Client,
+) -> None:
+    response = probe_client.get("/pages/explode", headers={"x-correlation-id": "cid-x"})
+
+    assert response["X-Correlation-Id"] == "cid-x"

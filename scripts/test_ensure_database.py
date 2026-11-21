@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.ensure_database import build_statements
+from scripts.ensure_database import build_statements, main
 
 CLEAN_ENVIRONMENT = {"DB_USER": "role_x", "DB_NAME": "database_x", "DB_PASSWORD": "secret_x"}
 
@@ -44,3 +44,16 @@ def returns_set_lines_with_values_when_values_are_clean(monkeypatch: pytest.Monk
     assert statements.startswith(
         "\\set role 'role_x'\n\\set database 'database_x'\n\\set password 'secret_x'\n"
     )
+
+
+def raises_system_exit_naming_variable_when_port_is_not_a_number(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DB_HOST", "db.invalid")
+    monkeypatch.setenv("DB_PORT", "abc")
+
+    with pytest.raises(SystemExit) as error:
+        main()
+
+    assert "DB_PORT" in str(error.value)
+    assert "abc" not in str(error.value)

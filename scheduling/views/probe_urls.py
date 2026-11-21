@@ -14,4 +14,7 @@ urlpatterns = [
     path("api/v1/probe/django-denied", probe_views.DjangoDeniedView.as_view()),
     path("api/v1/probe/auth-failed", probe_views.AuthenticationFailedView.as_view()),
     path("api/v1/probe/unsupported-media", probe_views.UnsupportedMediaView.as_view()),
+    path("api/v1/probe/plain-explode", probe_views.plain_explode),
+    path("api/v1/probe/nested-write", probe_views.NestedWriteView.as_view()),
+    path("pages/explode", probe_views.plain_explode),
 ]

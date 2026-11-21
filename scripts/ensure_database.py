@@ -22,7 +22,7 @@ CREATE_ROLE_AND_DATABASE = (
 
 def main() -> int:
     host = require_environment("DB_HOST")
-    port = int(require_environment("DB_PORT"))
+    port = require_port("DB_PORT")
     local_and_root = host in LOCAL_HOSTS and os.geteuid() == 0 and bool(shutil.which("apt-get"))
 
     if not answers(host, port):
@@ -61,6 +61,13 @@ def require_environment(name: str) -> str:
     if value is None:
         raise SystemExit(f"Missing required environment variable {name}")
     return value
+
+
+def require_port(name: str) -> int:
+    value = require_environment(name)
+    if not value.isdecimal():
+        raise SystemExit(f"{name} must be a whole number")
+    return int(value)
 
 
 def require_psql_safe(name: str) -> str:

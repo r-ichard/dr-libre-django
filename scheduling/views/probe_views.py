@@ -1,6 +1,7 @@
 """Views used only by tests, mounted through probe_urls with override_settings."""
 
 from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
+from django.http import HttpRequest, HttpResponse
 from rest_framework import exceptions, serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -92,3 +93,30 @@ class UnsupportedMediaView(APIView):
 
     def get(self, request: Request) -> Response:
         raise exceptions.UnsupportedMediaType("text/plain")
+
+
+def plain_explode(request: HttpRequest) -> HttpResponse:
+    raise ValueError(SENSITIVE_MESSAGE)
+
+
+class AddressSchema(serializers.Serializer[dict[str, object]]):
+    city = serializers.CharField()
+
+
+class ItemSchema(serializers.Serializer[dict[str, object]]):
+    name = serializers.CharField()
+
+
+class NestedSchema(StrictSerializer):
+    address = AddressSchema()
+    items = ItemSchema(many=True)
+
+
+class NestedWriteView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        result = validate_body(NestedSchema, request.data)
+        if isinstance(result, Failure):
+            return failure_response(result)
+        return Response({"accepted": True}, status=201)

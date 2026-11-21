@@ -42,6 +42,14 @@ SECURE_HSTS_PRELOAD = HTTPS_ONLY
 SESSION_COOKIE_SECURE = HTTPS_ONLY
 CSRF_COOKIE_SECURE = HTTPS_ONLY
 ROOT_URLCONF = "drlibre.urls"
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {"context_processors": []},
+    }
+]
+STATIC_URL = "/static/"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",

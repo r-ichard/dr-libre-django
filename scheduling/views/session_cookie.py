@@ -5,14 +5,14 @@ from datetime import datetime
 from typing import Literal
 
 from django.conf import settings
+from django.http.response import HttpResponseBase
 from django.utils.http import http_date
-from rest_framework.response import Response
 
 SESSION_COOKIE = "drlibre_session"
 SAME_SITE: Literal["Strict"] = "Strict"
 
 
-def set_session_cookie(response: Response, token: str, expires_at: datetime) -> None:
+def set_session_cookie(response: HttpResponseBase, token: str, expires_at: datetime) -> None:
     # An explicit expires string: Django would derive max-age from the wall clock.
     response.set_cookie(
         SESSION_COOKIE,
@@ -25,5 +25,5 @@ def set_session_cookie(response: Response, token: str, expires_at: datetime) -> 
     )
 
 
-def clear_session_cookie(response: Response) -> None:
+def clear_session_cookie(response: HttpResponseBase) -> None:
     response.delete_cookie(SESSION_COOKIE, path="/", samesite=SAME_SITE)

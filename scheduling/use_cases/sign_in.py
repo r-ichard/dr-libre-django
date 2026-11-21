@@ -75,3 +75,12 @@ def _audit(
     action: str, entity_type: str, entity_id: str, user: User | None, metadata: AuditMetadata
 ) -> None:
     record_audit(AuditEvent(action, entity_type, entity_id, metadata), user)
+
+
+def is_locked_out(email: str) -> bool:
+    """For the sign-in page, asked only after a failure: tells lockout from a wrong password."""
+    now = current_request_context().now
+    recent = SignInFailure.objects.filter(
+        email_hash=hash_email(email), failed_at__gt=window_start(now)
+    )
+    return is_locked(recent.count())

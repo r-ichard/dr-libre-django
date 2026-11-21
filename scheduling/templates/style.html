@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Style page · DrLibre{% endblock %}
+{% block content %}
+<h1>Style page</h1>
+<p class="hint">Every component in every state. Shown only when DEBUG is on.</p>
+
+<h2>Buttons</h2>
+<div class="specimen">
+  <button class="button button--primary" type="button">Primary</button>
+  <button class="button button--secondary" type="button">Secondary</button>
+  <button class="button button--danger" type="button">Danger</button>
+  <button class="button button--primary" type="button" disabled>Disabled</button>
+</div>
+
+<h2>Form controls</h2>
+<div class="specimen-stack">
+  {% include "components/field.html" with name="sample_plain" label="Full name" %}
+  {% include "components/field.html" with name="sample_hint" label="Email address" type="email" hint="We send a code to this address." %}
+  {% include "components/field.html" with name="sample_error" label="Date of birth" hint="For example 27 3 1984." error="Enter a date of birth." %}
+  {% include "components/select.html" with name="sample_select" label="Specialty" options=specialties selected="cardiology" %}
+  {% include "components/select.html" with name="sample_select_error" label="Hospital" options=specialties error="Choose a hospital." %}
+  {% include "components/checkbox.html" with name="sample_check" label="Email me a reminder" hint="One message the day before." %}
+  {% include "components/checkbox.html" with name="sample_checked" label="Join the waitlist" checked=True %}
+</div>
+
+<h2>Error summary</h2>
+<div class="specimen-stack">
+  {% include "components/error_summary.html" with errors=summary_errors %}
+</div>
+
+<h2>Notices</h2>
+<div class="specimen-stack">
+  {% include "components/notice.html" with kind="information" text="Appointments start on the hour." %}
+  {% include "components/notice.html" with kind="success" text="Your appointment is booked." %}
+  {% include "components/notice.html" with kind="warning" text="This slot is held for ten more minutes." %}
+  {% include "components/notice.html" with kind="error" text="The appointment could not be saved." %}
+</div>
+
+<h2>Status badges</h2>
+<div class="specimen">
+  {% include "components/badge.html" with kind="success" text="Confirmed" %}
+  {% include "components/badge.html" with kind="pending" text="Waiting" %}
+  {% include "components/badge.html" with kind="warning" text="Rescheduled" %}
+  {% include "components/badge.html" with kind="error" text="Cancelled" %}
+  {% include "components/badge.html" with kind="information" text="Completed" %}
+</div>
+
+<h2>Card</h2>
+<div class="card specimen-stack">
+  <h3>Dr Amara Okafor</h3>
+  <p>Cardiology, Northside Hospital</p>
+  <a class="button button--secondary" href="#">View availability</a>
+</div>
+
+<h2>Table</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Appointments table">
+  <table class="table">
+    <caption>Appointments today</caption>
+    <thead><tr><th scope="col">Time</th><th scope="col">Patient</th><th scope="col">Status</th><th scope="col" class="numeric">Minutes</th></tr></thead>
+    <tbody>
+      <tr><td>09:00</td><td>Jane Doe</td><td>{% include "components/badge.html" with kind="success" text="Confirmed" %}</td><td class="numeric">30</td></tr>
+      <tr><td>09:30</td><td>John Roe</td><td>{% include "components/badge.html" with kind="error" text="Cancelled" %}</td><td class="numeric">15</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>Pagination</h2>
+{% include "components/pagination.html" with page=2 page_count=5 previous_href="#" next_href="#" %}
+{% include "components/pagination.html" with page=1 page_count=1 %}
+
+<h2>Empty state</h2>
+{% include "components/empty_state.html" with title="No appointments yet" text="When you book, your appointments appear here." action_href="#" action_text="Book an appointment" %}
+
+<h2>Loading state</h2>
+{% include "components/loading.html" with text="Loading appointments" %}
+{% endblock %}

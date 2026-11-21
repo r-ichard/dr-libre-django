@@ -1,0 +1,2 @@
+{% comment %}Parameters: kind (success, warning, error, information, pending), text.{% endcomment %}
+<span class="badge badge--{{ kind }}">{% include "components/icon.html" with kind=kind %}{{ text }}</span>

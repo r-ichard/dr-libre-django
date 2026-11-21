@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Page not found · DrLibre{% endblock %}
+{% block content %}
+<h1>Page not found</h1>
+<p>This page does not exist or has moved.</p>
+{% if correlation_id %}<p class="hint">If you contact us, quote this reference: <code>{{ correlation_id }}</code></p>{% endif %}
+<p><a href="/">Go to the start page</a></p>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% comment %}Parameters: title, text, optional action_href and action_text.{% endcomment %}
+<div class="empty-state">
+  <p class="empty-state__title">{{ title }}</p>
+  <p>{{ text }}</p>
+  {% if action_href %}<a class="button button--primary" href="{{ action_href }}">{{ action_text }}</a>{% endif %}
+</div>

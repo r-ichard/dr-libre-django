@@ -1,0 +1,33 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}DrLibre{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <a class="site-header__name" href="/">DrLibre</a>
+    {% if signed_in_user %}
+    <div class="site-header__user">
+      <span>{{ signed_in_user.full_name }}</span>
+      <form method="post" action="/sign-out">
+        {% csrf_token %}
+        <button class="button button--secondary" type="submit">Sign out</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+  <main id="main" class="page">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <p>DrLibre appointment scheduling</p>
+  </footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

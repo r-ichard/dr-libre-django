@@ -1,0 +1,5 @@
+{% comment %}Parameters: kind (information, success, warning, error), text, optional id.{% endcomment %}
+<div class="notice notice--{{ kind }}"{% if id %} id="{{ id }}"{% endif %}{% if kind == "error" %} role="alert"{% else %} role="status"{% endif %}>
+  {% include "components/icon.html" with kind=kind %}
+  <p><strong>{% if kind == "success" %}Done.{% elif kind == "warning" %}Warning.{% elif kind == "error" %}Error.{% else %}Note.{% endif %}</strong> {{ text }}</p>
+</div>

@@ -1,0 +1,8 @@
+{% comment %}Parameters: errors (items with target and message). Put it first in the form so it is the first thing read.{% endcomment %}
+<div class="error-summary" role="alert" tabindex="-1" aria-labelledby="error-summary-title">
+  {% include "components/icon.html" with kind="error" %}
+  <div>
+    <h2 class="error-summary__title" id="error-summary-title">There is a problem</h2>
+    <ul>{% for item in errors %}<li><a href="#{{ item.target }}"{% if item.id %} id="{{ item.id }}"{% endif %}>{{ item.message }}</a></li>{% endfor %}</ul>
+  </div>
+</div>

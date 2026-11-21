@@ -1,0 +1,9 @@
+{% comment %}Parameters: name, label, options (list of (value, text)), selected, hint, error.{% endcomment %}
+<div class="field{% if error %} field--invalid{% endif %}">
+  <label class="field__label" for="id_{{ name }}">{{ label }}</label>
+  {% if hint %}<p class="field__hint" id="id_{{ name }}_hint">{{ hint }}</p>{% endif %}
+  {% if error %}<p class="field__error" id="id_{{ name }}_error">{% include "components/icon.html" with kind="error" %}<span><span class="visually-hidden">Error: </span>{{ error }}</span></p>{% endif %}
+  <select class="input select" id="id_{{ name }}" name="{{ name }}"{% if hint or error %} aria-describedby="{% if hint %}id_{{ name }}_hint {% endif %}{% if error %}id_{{ name }}_error{% endif %}"{% endif %}{% if error %} aria-invalid="true"{% endif %}>
+    {% for option_value, option_text in options %}<option value="{{ option_value }}"{% if option_value == selected %} selected{% endif %}>{{ option_text }}</option>{% endfor %}
+  </select>
+</div>

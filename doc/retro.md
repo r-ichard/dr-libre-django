@@ -282,3 +282,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   agree.
 - A grep for private data matched "phone" in the type name "Cardiology phone follow-up".
   Search for values, not words.
+
+## 2026-11-21 task 12, run 01M7ZMBW87BK (27 minutes, merged bc85ddf)
+
+- Clean pass, no bounce. 1624 tests in 12 seconds, mutation gate clean.
+- Host check as a visitor, code read from smtp4dev: terms required; a hold answers with
+  the slot only; the held slot leaves the slot list and a patient booking it gets
+  `conflict`; two wrong codes, then the right one books, creates a passwordless verified
+  patient and opens a 24 hour session; the code cannot be replayed. A new address, an
+  existing patient and a staff address get the same hold answer; the staff address is
+  refused after the right code and nothing is booked; an existing patient keeps their
+  profile; five wrong codes kill the code. Sixth hold in an hour and fourth resend
+  answer 429. No visitor data in audit rows or logs, no code in logs, hashes only.
+- My first pass used `birth_date` where the API says `date_of_birth`, and the strict
+  schema said so. Then random slot picks collided and looked like a leak. Read the schema
+  first and use distinct slots.
+- With the mail server down a hold answers a bare 500. Carried to task 13 with the lock
+  order finding of the review.

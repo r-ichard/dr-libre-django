@@ -48,7 +48,7 @@ as GitHub issues; the issue number is in the heading.
 | 10 | Public search, use case and API | 6.1 to 6.5, 14 | merged `2344ec0` |
 | 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
-| 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | running `01M7ZMBW87BK` |
+| 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | merged `bc85ddf` |
 | 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | todo |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | todo |
 | | **M5 Patient portal (#5)** | | |
@@ -75,7 +75,6 @@ as GitHub issues; the issue number is in the heading.
 Small findings waiting for the next task that touches the same file.
 
 - Start-up should refuse the development `SECRET_KEY` when `DEBUG` is off (task 26).
-- Acceptance of the terms and privacy notice (section 7.1) has no column. Task 12.
 - `If-Match` goes through a filtered `update` and its row count, not `save` (review of
   02a). Tasks 22 to 24.
 - Rules the model plan left to use cases: `doc/plans/2026-11-21-domain-model.md`, "Waits
@@ -87,8 +86,6 @@ Small findings waiting for the next task that touches the same file.
   grid. Re-seed through the booking use cases on real free slots. After task 08.
 - Seed review: identify seeded appointments by a marker, not by patient, clinician and
   type; notifications through the same upsert. With the re-seed above.
-- The failure mapper answers 500 for exception types it does not list, `Throttled`
-  included. Rate limiting needs its own answer (429). Task 12.
 - Test-only probe views live in `scheduling/views/` (`probe_views.py`, `probe_urls.py`).
   Move them out of the product package when a test support location exists.
 - Start-up lines of `migrate` and the development server are plain text, not JSON. Settle
@@ -109,20 +106,18 @@ Small findings waiting for the next task that touches the same file.
 - Review of 06a, small: the domain import guard does not look into subpackages; a stale
   line in `mutation-equivalents.txt` is printed but does not fail. With the next task that
   touches them.
-- Placing on a held slot answers `rule_violation` (`outside_availability`); section 7.1
-  says a held slot counts as a conflict. And a patient's own hold blocks the slot for
-  themself: converting a hold must leave it out (review of 07). Task 12.
 - Section 5.2 step 2 names no code for a named room that is inactive or of another
   department; the code answers `not_found`. Owner to confirm.
 - The email of a change is sent inside the request after commit and can hold the answer
   for up to the 10 second mail timeout when the server hangs (review of 08). Revisit when
   the worker of task 09 sends pending emails.
-- Notification titles differ from the table of section 11: "A slot opened for you" should
-  be "Waitlist slot offered" and "Waitlist appointment booked" should be "Waitlist slot
-  booked". Accepting an offer sends two emails, "Appointment booked" and the waitlist one,
-  for a single event. Task 12, which touches the booking emails.
 - Review of 09, small: a stale offer is detected by clinician overlap only; the manual
   offer loads every future cancelled slot of the type. With the admin waitlist screen,
   task 20.
 - Public search loads the whole catalogue and 90 days of schedules per request and has no
   rate limit (review of 10). Task 26, with the rate limits of task 12 as the mechanism.
+- The network address for rate limits is `REMOTE_ADDR`: behind a proxy every visitor
+  shares it (review of 12). Settle with `SECURE_PROXY_SSL_HEADER`. Task 26.
+- A hold blocks the clinician, not the room: a room taken meanwhile makes verification
+  answer `conflict` with the hold kept (review of 12). The booking page must say what to
+  do. Task 12a.

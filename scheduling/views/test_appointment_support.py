@@ -24,7 +24,7 @@ NEXT_MONDAY = STARTS_AT + timedelta(days=7)
 MONDAY_AFTER = STARTS_AT + timedelta(days=14)
 
 
-def signed_in(user: User) -> Client:
+def _signed_in(user: User) -> Client:
     user.password = make_password(RIGHT_PHRASE)
     user.save()
     client = Client()
@@ -35,20 +35,20 @@ def signed_in(user: User) -> Client:
     return client
 
 
-def admin() -> User:
+def _admin() -> User:
     admin = make("User", role="ADMIN")
     assert isinstance(admin, User)
     return admin
 
 
-def clinician_user(clinic: Clinic) -> User:
+def _clinician_user(clinic: Clinic) -> User:
     user = clinic.clinician.user
     assert isinstance(user, User)
     user.refresh_from_db()
     return user
 
 
-def make_appointment(clinic: Clinic, **overrides: object) -> Appointment:
+def _make_appointment(clinic: Clinic, **overrides: object) -> Appointment:
     starts_at = overrides.get("starts_at", STARTS_AT)
     assert isinstance(starts_at, datetime)
     fields = {
@@ -63,7 +63,7 @@ def make_appointment(clinic: Clinic, **overrides: object) -> Appointment:
     return row
 
 
-def post(
+def _post(
     client: Client, appointment: Appointment, action: str, body: Mapping[str, object] | None = None
 ) -> _MonkeyPatchedWSGIResponse:
     return client.post(
@@ -71,22 +71,22 @@ def post(
     )
 
 
-def cancel(
+def _cancel(
     client: Client, appointment: Appointment, reason: str = "No longer needed"
 ) -> _MonkeyPatchedWSGIResponse:
-    return post(client, appointment, "cancel", {"reason": reason})
+    return _post(client, appointment, "cancel", {"reason": reason})
 
 
-def reschedule(
+def _reschedule(
     client: Client, appointment: Appointment, starts_at: datetime
 ) -> _MonkeyPatchedWSGIResponse:
-    return post(client, appointment, "reschedule", {"starts_at": starts_at.isoformat()})
+    return _post(client, appointment, "reschedule", {"starts_at": starts_at.isoformat()})
 
 
-def status_of(appointment: Appointment) -> str:
+def _status_of(appointment: Appointment) -> str:
     appointment.refresh_from_db()
     return appointment.status
 
 
-def error_code(response: _MonkeyPatchedWSGIResponse) -> str:
+def _error_code(response: _MonkeyPatchedWSGIResponse) -> str:
     return str(response.json()["error"]["code"])

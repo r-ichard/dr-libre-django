@@ -28,3 +28,10 @@ class SessionKind(StrEnum):
     PASSWORD = "PASSWORD"  # noqa: S105 - a kind of sign-in, not a secret
     EMAIL_LINK = "EMAIL_LINK"
     BOOKING_CODE = "BOOKING_CODE"
+
+
+class WaitlistStatus(StrEnum):
+    WAITING = "WAITING"
+    OFFERED = "OFFERED"
+    BOOKED = "BOOKED"
+    EXPIRED = "EXPIRED"

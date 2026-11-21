@@ -14,11 +14,13 @@ from scheduling.views.appointment_actions import (
 from scheduling.views.appointments import AppointmentsView
 from scheduling.views.auth import LoginView, LogoutView
 from scheduling.views.health import HealthView
+from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
 from scheduling.views.pages.public_pages import RootPage, StylePage
 from scheduling.views.pages.sign_in import SignInPage
 from scheduling.views.pages.sign_out import SignOutPage
 from scheduling.views.slots import SlotsView
+from scheduling.views.waitlist import AcceptView, OfferView, WaitlistView
 
 handler403 = "scheduling.views.pages.errors.forbidden_page"
 handler404 = "scheduling.views.pages.errors.not_found_page"
@@ -35,6 +37,10 @@ urlpatterns = [
     path("api/v1/appointments/<uuid:appointment_id>/check-in", CheckInView.as_view()),
     path("api/v1/appointments/<uuid:appointment_id>/complete", CompleteView.as_view()),
     path("api/v1/appointments/<uuid:appointment_id>/no-show", NoShowView.as_view()),
+    path("api/v1/waitlist", WaitlistView.as_view()),
+    path("api/v1/waitlist/<uuid:entry_id>/accept", AcceptView.as_view()),
+    path("api/v1/waitlist/<uuid:entry_id>/offer", OfferView.as_view()),
+    path("api/v1/jobs/reminders", RemindersView.as_view()),
     re_path(r"^api/v1/", NotFoundView.as_view()),
     path("", RootPage.as_view()),
     path("favicon.ico", lambda request: redirect("/static/favicon.svg")),

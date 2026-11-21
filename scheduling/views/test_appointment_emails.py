@@ -21,16 +21,16 @@ from scheduling.models.builders import make, make_clinic
 from scheduling.use_cases.email_delivery import send_notification_email, send_pending_emails
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.views import clock
-from scheduling.views.appointment_action_support import (
+from scheduling.views.test_appointment_support import (
     MONDAY_AFTER,
     NEXT_MONDAY,
     NOW,
-    admin,
-    cancel,
-    make_appointment,
-    reschedule,
-    signed_in,
-    status_of,
+    _admin,
+    _cancel,
+    _make_appointment,
+    _reschedule,
+    _signed_in,
+    _status_of,
 )
 
 if TYPE_CHECKING:
@@ -70,11 +70,11 @@ def returns_one_email_with_local_time_and_names_after_commit_when_cancelling(
     django_capture_on_commit_callbacks: OnCommit,
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
+    appointment = _make_appointment(clinic)
     _plant_free_text(appointment)
 
     with django_capture_on_commit_callbacks(execute=True):
-        cancel(signed_in(admin()), appointment, PLANTED_REASON)
+        _cancel(_signed_in(_admin()), appointment, PLANTED_REASON)
 
     assert len(mail.outbox) == 1
     message = mail.outbox[0]
@@ -91,13 +91,13 @@ def returns_no_reason_or_note_in_any_email_when_cancelling_and_rescheduling(
     django_capture_on_commit_callbacks: OnCommit,
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
     _plant_free_text(appointment)
-    client = signed_in(clinic.patient)
+    client = _signed_in(clinic.patient)
 
     with django_capture_on_commit_callbacks(execute=True):
-        reschedule(client, appointment, MONDAY_AFTER)
-        cancel(client, appointment, PLANTED_REASON)
+        _reschedule(client, appointment, MONDAY_AFTER)
+        _cancel(client, appointment, PLANTED_REASON)
 
     assert len(mail.outbox) == 2
     for message in mail.outbox:
@@ -110,11 +110,11 @@ def returns_no_email_and_no_notification_when_the_change_is_refused(
     django_capture_on_commit_callbacks: OnCommit,
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
-    make_appointment(clinic, starts_at=MONDAY_AFTER, patient=make("User"))
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
+    _make_appointment(clinic, starts_at=MONDAY_AFTER, patient=make("User"))
 
     with django_capture_on_commit_callbacks(execute=True):
-        response = reschedule(signed_in(clinic.patient), appointment, MONDAY_AFTER)
+        response = _reschedule(_signed_in(clinic.patient), appointment, MONDAY_AFTER)
 
     assert response.status_code == 409
     assert mail.outbox == []
@@ -125,16 +125,16 @@ def returns_pending_notification_and_kept_change_when_mail_server_is_down(
     settings: object, django_capture_on_commit_callbacks: OnCommit
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
+    appointment = _make_appointment(clinic)
     settings.MAILERS = {  # type: ignore[attr-defined]
         "default": {"BACKEND": f"{__name__}.MailServerDownBackend", "OPTIONS": {}}
     }
 
     with django_capture_on_commit_callbacks(execute=True):
-        response = cancel(signed_in(admin()), appointment)
+        response = _cancel(_signed_in(_admin()), appointment)
 
     assert response.status_code == 200
-    assert status_of(appointment) == "CANCELLED"
+    assert _status_of(appointment) == "CANCELLED"
     assert Notification.objects.get(appointment=appointment).email_pending is True
 
 
@@ -142,13 +142,13 @@ def returns_one_email_when_pending_emails_are_retried_after_a_failed_send(
     settings: object, django_capture_on_commit_callbacks: OnCommit
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
+    appointment = _make_appointment(clinic)
     working_mailers = settings.MAILERS  # type: ignore[attr-defined]
     settings.MAILERS = {  # type: ignore[attr-defined]
         "default": {"BACKEND": f"{__name__}.MailServerDownBackend", "OPTIONS": {}}
     }
     with django_capture_on_commit_callbacks(execute=True):
-        cancel(signed_in(admin()), appointment)
+        _cancel(_signed_in(_admin()), appointment)
     settings.MAILERS = working_mailers  # type: ignore[attr-defined]
     output = StringIO()
 
@@ -165,11 +165,11 @@ def returns_no_email_before_commit_and_one_after_when_cancelling(
     django_capture_on_commit_callbacks: OnCommit,
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
-    client = signed_in(admin())
+    appointment = _make_appointment(clinic)
+    client = _signed_in(_admin())
 
     with django_capture_on_commit_callbacks(execute=False) as callbacks:
-        cancel(client, appointment)
+        _cancel(client, appointment)
 
     assert mail.outbox == []
     assert len(callbacks) == 1
@@ -179,8 +179,8 @@ def returns_no_email_before_commit_and_one_after_when_cancelling(
 
 def returns_false_and_sends_nothing_when_the_notification_was_already_emailed() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
-    cancel(signed_in(admin()), appointment)
+    appointment = _make_appointment(clinic)
+    _cancel(_signed_in(_admin()), appointment)
     notification = Notification.objects.get(appointment=appointment)
 
     with bind_request_context(RequestContext(correlation_id="test", now=NOW)):
@@ -191,12 +191,12 @@ def returns_false_and_sends_nothing_when_the_notification_was_already_emailed() 
 
 def returns_only_pending_notifications_within_the_limit_when_sending_in_batches() -> None:
     clinic = make_clinic()
-    first = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
-    second = make_appointment(clinic, starts_at=NOW + timedelta(hours=72))
-    third = make_appointment(clinic, starts_at=NOW + timedelta(hours=96))
-    admin_client = signed_in(admin())
+    first = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    second = _make_appointment(clinic, starts_at=NOW + timedelta(hours=72))
+    third = _make_appointment(clinic, starts_at=NOW + timedelta(hours=96))
+    admin_client = _signed_in(_admin())
     for appointment in (first, second, third):
-        cancel(admin_client, appointment)
+        _cancel(admin_client, appointment)
     Notification.objects.filter(appointment=first).update(
         email_pending=False, version=F("version") + 1
     )

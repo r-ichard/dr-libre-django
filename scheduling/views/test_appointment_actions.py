@@ -17,21 +17,21 @@ from django.test.utils import CaptureQueriesContext
 from scheduling.models import Appointment, AuditLogEntry, Notification, User
 from scheduling.models.builders import add_clinician, make, make_clinic
 from scheduling.views import clock
-from scheduling.views.appointment_action_support import (
+from scheduling.views.test_appointment_support import (
     APPOINTMENTS,
     MONDAY_AFTER,
     NEXT_MONDAY,
     NOW,
     THIRTY_MINUTES,
-    admin,
-    cancel,
-    clinician_user,
-    error_code,
-    make_appointment,
-    post,
-    reschedule,
-    signed_in,
-    status_of,
+    _admin,
+    _cancel,
+    _clinician_user,
+    _error_code,
+    _make_appointment,
+    _post,
+    _reschedule,
+    _signed_in,
+    _status_of,
 )
 
 pytestmark = pytest.mark.django_db
@@ -50,10 +50,10 @@ def frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def returns_200_and_records_cancellation_when_patient_cancels_25_hours_ahead() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=25))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=25))
     version_before = appointment.version
 
-    response = cancel(signed_in(clinic.patient), appointment, PLANTED_REASON)
+    response = _cancel(_signed_in(clinic.patient), appointment, PLANTED_REASON)
 
     appointment.refresh_from_db()
     assert response.status_code == 200
@@ -66,93 +66,93 @@ def returns_200_and_records_cancellation_when_patient_cancels_25_hours_ahead() -
 
 def returns_200_when_patient_cancels_exactly_24_hours_ahead() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=24))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=24))
 
-    response = cancel(signed_in(clinic.patient), appointment)
+    response = _cancel(_signed_in(clinic.patient), appointment)
 
     assert response.status_code == 200
 
 
 def returns_422_cancellation_window_closed_when_patient_cancels_23h59m_ahead() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(
+    appointment = _make_appointment(
         clinic, starts_at=NOW + timedelta(hours=24) - timedelta(minutes=1)
     )
 
-    response = cancel(signed_in(clinic.patient), appointment)
+    response = _cancel(_signed_in(clinic.patient), appointment)
 
     assert response.status_code == 422
     assert response.json()["error"]["details"]["violated_rules"] == ["cancellation_window_closed"]
-    assert status_of(appointment) == "BOOKED"
+    assert _status_of(appointment) == "BOOKED"
 
 
 def returns_200_when_appointment_clinician_cancels_inside_24_hours() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=2))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=2))
 
-    response = cancel(signed_in(clinician_user(clinic)), appointment)
+    response = _cancel(_signed_in(_clinician_user(clinic)), appointment)
 
     assert response.status_code == 200
 
 
 def returns_200_when_admin_cancels_inside_24_hours() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=2))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=2))
 
-    response = cancel(signed_in(admin()), appointment)
+    response = _cancel(_signed_in(_admin()), appointment)
 
     assert response.status_code == 200
 
 
 def returns_403_when_patient_cancels_someone_elses_appointment() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
 
-    response = cancel(signed_in(make("User")), appointment)  # type: ignore[arg-type]
+    response = _cancel(_signed_in(make("User")), appointment)  # type: ignore[arg-type]
 
     assert response.status_code == 403
-    assert status_of(appointment) == "BOOKED"
+    assert _status_of(appointment) == "BOOKED"
 
 
 def returns_403_when_other_clinician_cancels() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
     other = add_clinician(clinic.department)
     other_user = other.user
     assert isinstance(other_user, User)
     other_user.refresh_from_db()
 
-    response = cancel(signed_in(other_user), appointment)
+    response = _cancel(_signed_in(other_user), appointment)
 
     assert response.status_code == 403
 
 
 def returns_400_when_cancel_reason_is_blank() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
 
-    response = cancel(signed_in(clinic.patient), appointment, "   ")
+    response = _cancel(_signed_in(clinic.patient), appointment, "   ")
 
     assert response.status_code == 400
-    assert error_code(response) == "invalid_input"
+    assert _error_code(response) == "invalid_input"
 
 
 def returns_400_when_cancel_body_has_unknown_field() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
 
-    response = post(
-        signed_in(clinic.patient), appointment, "cancel", {"reason": "x", "status": "BOOKED"}
+    response = _post(
+        _signed_in(clinic.patient), appointment, "cancel", {"reason": "x", "status": "BOOKED"}
     )
 
     assert response.status_code == 400
-    assert error_code(response) == "invalid_input"
+    assert _error_code(response) == "invalid_input"
 
 
 def returns_401_when_cancelling_without_session() -> None:
-    appointment = make_appointment(make_clinic())
+    appointment = _make_appointment(make_clinic())
 
-    response = cancel(Client(), appointment)
+    response = _cancel(Client(), appointment)
 
     assert response.status_code == 401
 
@@ -162,7 +162,7 @@ def returns_409_invalid_transition_with_current_status_when_cancelling_a_closed_
     status: str,
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
     Appointment.objects.filter(pk=appointment.pk).update(
         version=F("version") + 1,
         status=status,
@@ -170,18 +170,18 @@ def returns_409_invalid_transition_with_current_status_when_cancelling_a_closed_
         cancellation_reason="earlier" if status == "CANCELLED" else "",
     )
 
-    response = cancel(signed_in(admin()), appointment)
+    response = _cancel(_signed_in(_admin()), appointment)
 
     assert response.status_code == 409
-    assert error_code(response) == "invalid_transition"
+    assert _error_code(response) == "invalid_transition"
     assert response.json()["error"]["details"]["current_status"] == status
 
 
 def returns_audit_entry_without_the_reason_when_cancelling() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
 
-    cancel(signed_in(clinic.patient), appointment, PLANTED_REASON)
+    _cancel(_signed_in(clinic.patient), appointment, PLANTED_REASON)
 
     entries = AuditLogEntry.objects.filter(
         action="appointment.cancel", entity_id=str(appointment.pk)
@@ -192,9 +192,9 @@ def returns_audit_entry_without_the_reason_when_cancelling() -> None:
 
 def returns_cancelled_notification_with_time_only_text_when_cancelling() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=48))
 
-    cancel(signed_in(clinic.patient), appointment, PLANTED_REASON)
+    _cancel(_signed_in(clinic.patient), appointment, PLANTED_REASON)
 
     notification = Notification.objects.get(appointment=appointment, title="Appointment cancelled")
     assert notification.kind == "APPOINTMENT_CANCELLED"
@@ -209,10 +209,10 @@ def returns_cancelled_notification_with_time_only_text_when_cancelling() -> None
 
 def returns_200_and_moves_appointment_keeping_clinician_and_type_when_slot_is_free() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
     version_before = appointment.version
 
-    response = reschedule(signed_in(clinic.patient), appointment, MONDAY_AFTER)
+    response = _reschedule(_signed_in(clinic.patient), appointment, MONDAY_AFTER)
 
     appointment.refresh_from_db()
     assert response.status_code == 200
@@ -225,46 +225,46 @@ def returns_200_and_moves_appointment_keeping_clinician_and_type_when_slot_is_fr
 
 def returns_200_when_new_slot_overlaps_the_appointments_own_old_slot() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
     overlapping = NEXT_MONDAY + timedelta(minutes=15)
 
-    response = reschedule(signed_in(clinic.patient), appointment, overlapping)
+    response = _reschedule(_signed_in(clinic.patient), appointment, overlapping)
 
     assert response.status_code == 200
-    assert status_of(appointment) == "BOOKED"
+    assert _status_of(appointment) == "BOOKED"
 
 
 def returns_409_conflict_and_changes_nothing_when_new_slot_is_taken() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
-    make_appointment(clinic, starts_at=MONDAY_AFTER, patient=make("User"))
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
+    _make_appointment(clinic, starts_at=MONDAY_AFTER, patient=make("User"))
     notifications_before = Notification.objects.count()
 
-    response = reschedule(signed_in(clinic.patient), appointment, MONDAY_AFTER)
+    response = _reschedule(_signed_in(clinic.patient), appointment, MONDAY_AFTER)
 
     appointment.refresh_from_db()
     assert response.status_code == 409
-    assert error_code(response) == "conflict"
+    assert _error_code(response) == "conflict"
     assert appointment.starts_at == NEXT_MONDAY
     assert Notification.objects.count() == notifications_before
 
 
 def returns_422_when_new_slot_is_outside_availability() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
     at_night = MONDAY_AFTER.replace(hour=2)
 
-    response = reschedule(signed_in(admin()), appointment, at_night)
+    response = _reschedule(_signed_in(_admin()), appointment, at_night)
 
     assert response.status_code == 422
-    assert status_of(appointment) == "BOOKED"
+    assert _status_of(appointment) == "BOOKED"
 
 
 def returns_422_cancellation_window_closed_when_patient_reschedules_inside_24_hours() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NOW + timedelta(hours=10))
+    appointment = _make_appointment(clinic, starts_at=NOW + timedelta(hours=10))
 
-    response = reschedule(signed_in(clinic.patient), appointment, MONDAY_AFTER)
+    response = _reschedule(_signed_in(clinic.patient), appointment, MONDAY_AFTER)
 
     assert response.status_code == 422
     assert "cancellation_window_closed" in response.json()["error"]["details"]["violated_rules"]
@@ -272,9 +272,9 @@ def returns_422_cancellation_window_closed_when_patient_reschedules_inside_24_ho
 
 def returns_409_invalid_transition_when_rescheduling_a_checked_in_appointment() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY, status="CHECKED_IN")
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY, status="CHECKED_IN")
 
-    response = reschedule(signed_in(admin()), appointment, MONDAY_AFTER)
+    response = _reschedule(_signed_in(_admin()), appointment, MONDAY_AFTER)
 
     assert response.status_code == 409
     assert response.json()["error"]["details"]["current_status"] == "CHECKED_IN"
@@ -282,10 +282,10 @@ def returns_409_invalid_transition_when_rescheduling_a_checked_in_appointment() 
 
 def returns_400_when_reschedule_start_has_no_offset() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
 
-    response = post(
-        signed_in(clinic.patient), appointment, "reschedule", {"starts_at": "2030-01-21T10:00:00"}
+    response = _post(
+        _signed_in(clinic.patient), appointment, "reschedule", {"starts_at": "2030-01-21T10:00:00"}
     )
 
     assert response.status_code == 400
@@ -293,9 +293,9 @@ def returns_400_when_reschedule_start_has_no_offset() -> None:
 
 def returns_rescheduled_notification_and_audit_entry_when_rescheduling() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
 
-    reschedule(signed_in(clinic.patient), appointment, MONDAY_AFTER)
+    _reschedule(_signed_in(clinic.patient), appointment, MONDAY_AFTER)
 
     notification = Notification.objects.get(
         appointment=appointment, title="Appointment rescheduled"
@@ -322,10 +322,10 @@ def returns_200_and_new_status_when_appointment_clinician_changes_status(
     action: str, start_status: str, end_status: str
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, status=start_status)
+    appointment = _make_appointment(clinic, status=start_status)
     version_before = appointment.version
 
-    response = post(signed_in(clinician_user(clinic)), appointment, action)
+    response = _post(_signed_in(_clinician_user(clinic)), appointment, action)
 
     appointment.refresh_from_db()
     assert response.status_code == 200
@@ -338,34 +338,34 @@ def returns_200_and_new_status_when_appointment_clinician_changes_status(
 @pytest.mark.parametrize("action", ["check-in", "complete", "no-show"])
 def returns_403_when_patient_changes_status_of_own_appointment(action: str) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, status="CHECKED_IN")
+    appointment = _make_appointment(clinic, status="CHECKED_IN")
 
-    response = post(signed_in(clinic.patient), appointment, action)
+    response = _post(_signed_in(clinic.patient), appointment, action)
 
     assert response.status_code == 403
-    assert status_of(appointment) == "CHECKED_IN"
+    assert _status_of(appointment) == "CHECKED_IN"
 
 
 def returns_403_when_other_clinician_checks_in() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
+    appointment = _make_appointment(clinic)
     other_user = add_clinician(clinic.department).user
     assert isinstance(other_user, User)
     other_user.refresh_from_db()
 
-    response = post(signed_in(other_user), appointment, "check-in")
+    response = _post(_signed_in(other_user), appointment, "check-in")
 
     assert response.status_code == 403
 
 
 def returns_200_when_admin_checks_in_any_appointment() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
+    appointment = _make_appointment(clinic)
 
-    response = post(signed_in(admin()), appointment, "check-in")
+    response = _post(_signed_in(_admin()), appointment, "check-in")
 
     assert response.status_code == 200
-    assert status_of(appointment) == "CHECKED_IN"
+    assert _status_of(appointment) == "CHECKED_IN"
 
 
 @pytest.mark.parametrize(
@@ -384,28 +384,28 @@ def returns_409_invalid_transition_with_current_status_when_table_forbids_the_ch
 ) -> None:
     clinic = make_clinic()
     closed_fields = {"cancelled_at": NOW, "cancellation_reason": "earlier"}
-    appointment = make_appointment(
+    appointment = _make_appointment(
         clinic, status=status, **(closed_fields if status == "CANCELLED" else {})
     )
 
-    response = post(signed_in(admin()), appointment, action)
+    response = _post(_signed_in(_admin()), appointment, action)
 
     assert response.status_code == 409
-    assert error_code(response) == "invalid_transition"
+    assert _error_code(response) == "invalid_transition"
     assert response.json()["error"]["details"]["current_status"] == status
 
 
 def returns_404_when_status_action_names_no_appointment() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
-    admin_client = signed_in(admin())
-    assert post(admin_client, appointment, "check-in").status_code == 200
+    appointment = _make_appointment(clinic)
+    admin_client = _signed_in(_admin())
+    assert _post(admin_client, appointment, "check-in").status_code == 200
     appointment.delete()
 
-    response = post(admin_client, appointment, "check-in")
+    response = _post(admin_client, appointment, "check-in")
 
     assert response.status_code == 404
-    assert error_code(response) == "not_found"
+    assert _error_code(response) == "not_found"
 
 
 @pytest.mark.parametrize(
@@ -420,9 +420,9 @@ def returns_one_audit_entry_named_for_the_action_when_a_status_action_succeeds(
     action: str, start_status: str, audit_action: str
 ) -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic, status=start_status)
+    appointment = _make_appointment(clinic, status=start_status)
 
-    post(signed_in(clinician_user(clinic)), appointment, action)
+    _post(_signed_in(_clinician_user(clinic)), appointment, action)
 
     entries = AuditLogEntry.objects.filter(entity_id=str(appointment.pk), action=audit_action)
     assert entries.count() == 1
@@ -430,11 +430,11 @@ def returns_one_audit_entry_named_for_the_action_when_a_status_action_succeeds(
 
 def returns_row_lock_query_when_an_appointment_is_changed() -> None:
     clinic = make_clinic()
-    appointment = make_appointment(clinic)
-    client = signed_in(admin())
+    appointment = _make_appointment(clinic)
+    client = _signed_in(_admin())
 
     with CaptureQueriesContext(connection) as queries:
-        cancel(client, appointment)
+        _cancel(client, appointment)
 
     locking = [query for query in queries.captured_queries if "FOR UPDATE" in query["sql"]]
     assert any('"scheduling_appointment"' in query["sql"] for query in locking)
@@ -442,10 +442,10 @@ def returns_row_lock_query_when_an_appointment_is_changed() -> None:
 
 def returns_403_when_a_patient_uses_a_status_action_on_a_missing_appointment() -> None:
     clinic = make_clinic()
-    missing = make_appointment(clinic)
+    missing = _make_appointment(clinic)
     missing_id = missing.pk
     missing.delete()
-    client = signed_in(clinic.patient)
+    client = _signed_in(clinic.patient)
 
     response = client.post(
         f"{APPOINTMENTS}/{missing_id}/check-in", {}, content_type="application/json"
@@ -457,10 +457,10 @@ def returns_403_when_a_patient_uses_a_status_action_on_a_missing_appointment() -
 def returns_the_same_room_when_the_new_slot_overlaps_the_only_room_s_old_booking() -> None:
     clinic = make_clinic(type_fields={"needs_room": True})
     room = make("Room", department=clinic.department)
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY, room=room)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY, room=room)
     overlapping = NEXT_MONDAY + timedelta(minutes=15)
 
-    response = reschedule(signed_in(clinic.patient), appointment, overlapping)
+    response = _reschedule(_signed_in(clinic.patient), appointment, overlapping)
 
     appointment.refresh_from_db()
     assert response.status_code == 200
@@ -471,9 +471,9 @@ def returns_the_current_room_when_a_free_room_earlier_in_code_order_exists() -> 
     clinic = make_clinic(type_fields={"needs_room": True})
     make("Room", department=clinic.department, code="a-first")
     current = make("Room", department=clinic.department, code="b-current")
-    appointment = make_appointment(clinic, starts_at=NEXT_MONDAY, room=current)
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY, room=current)
 
-    response = reschedule(signed_in(clinic.patient), appointment, MONDAY_AFTER)
+    response = _reschedule(_signed_in(clinic.patient), appointment, MONDAY_AFTER)
 
     appointment.refresh_from_db()
     assert response.status_code == 200

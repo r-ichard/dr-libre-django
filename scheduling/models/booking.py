@@ -16,7 +16,7 @@ from django.db.models import (
     UniqueConstraint,
 )
 
-from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus
+from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, WaitlistStatus
 from scheduling.models.base import (
     Versioned,
     check,
@@ -30,13 +30,6 @@ from scheduling.models.people import ClinicianProfile, User
 
 CLINICAL_NOTES_MAXIMUM = 5000
 TITLE_MAXIMUM = 200
-
-
-class WaitlistStatus(TextChoices):
-    WAITING = "WAITING"
-    OFFERED = "OFFERED"
-    BOOKED = "BOOKED"
-    EXPIRED = "EXPIRED"
 
 
 class NotificationKind(TextChoices):
@@ -122,7 +115,7 @@ class WaitlistEntry(Versioned):
     )
     earliest_at = DateTimeField()
     latest_at = DateTimeField()
-    status = CharField(max_length=20, choices=WaitlistStatus)
+    status = CharField(max_length=20, choices=choices_of(WaitlistStatus))
     offered_appointment = ForeignKey(
         Appointment, null=True, blank=True, on_delete=PROTECT, related_name="+"
     )

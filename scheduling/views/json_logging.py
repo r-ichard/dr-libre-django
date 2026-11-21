@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from scheduling.use_cases.request_context import current_request_context
 
-REQUEST_KEYS = ("method", "route", "status", "duration_ms")
+REQUEST_KEYS = ("method", "route", "status", "duration_ms", "job", "counts")
 
 
 class JsonFormatter(logging.Formatter):

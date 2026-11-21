@@ -9,8 +9,8 @@ from zoneinfo import ZoneInfo
 
 from scheduling.domain.vocabulary import AppointmentSource as Source
 from scheduling.domain.vocabulary import AppointmentStatus as Status
+from scheduling.domain.vocabulary import WaitlistStatus
 from scheduling.models.booking import NotificationKind as Kind
-from scheduling.models.booking import WaitlistStatus
 
 AppointmentKey = tuple[str, str, str]
 WaitlistKey = tuple[str, str]

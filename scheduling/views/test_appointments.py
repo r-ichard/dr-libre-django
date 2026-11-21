@@ -13,13 +13,13 @@ from django.test import Client
 from scheduling.models import Appointment, User
 from scheduling.models.builders import STARTS_AT, add_clinician, make, make_clinic
 from scheduling.views import clock
-from scheduling.views.appointment_action_support import (
+from scheduling.views.test_appointment_support import (
     APPOINTMENTS,
     NOW,
     THIRTY_MINUTES,
-    admin,
-    make_appointment,
-    signed_in,
+    _admin,
+    _make_appointment,
+    _signed_in,
 )
 
 if TYPE_CHECKING:
@@ -63,10 +63,10 @@ def returns_401_when_booking_without_session() -> None:
 
 def returns_only_own_when_patient_lists() -> None:
     clinic = make_clinic()
-    own = make_appointment(clinic)
-    make_appointment(clinic, patient=make("User"), clinician=add_clinician(clinic.department))
+    own = _make_appointment(clinic)
+    _make_appointment(clinic, patient=make("User"), clinician=add_clinician(clinic.department))
 
-    response = signed_in(clinic.patient).get(APPOINTMENTS)
+    response = _signed_in(clinic.patient).get(APPOINTMENTS)
 
     assert _ids(response) == [str(own.pk)]
     assert response.json()["count"] == 1
@@ -75,9 +75,9 @@ def returns_only_own_when_patient_lists() -> None:
 def returns_empty_page_when_patient_filters_by_other_patient() -> None:
     clinic = make_clinic()
     stranger = make("User")
-    make_appointment(clinic, patient=stranger)
+    _make_appointment(clinic, patient=stranger)
 
-    response = signed_in(clinic.patient).get(f"{APPOINTMENTS}?patient_id={stranger.pk}")
+    response = _signed_in(clinic.patient).get(f"{APPOINTMENTS}?patient_id={stranger.pk}")
 
     assert response.status_code == 200
     assert response.json()["results"] == []
@@ -86,25 +86,25 @@ def returns_empty_page_when_patient_filters_by_other_patient() -> None:
 
 def returns_only_own_calendar_when_clinician_lists() -> None:
     clinic = make_clinic()
-    mine = make_appointment(clinic)
-    make_appointment(clinic, clinician=add_clinician(clinic.department), patient=make("User"))
+    mine = _make_appointment(clinic)
+    _make_appointment(clinic, clinician=add_clinician(clinic.department), patient=make("User"))
     user = clinic.clinician.user
     assert isinstance(user, User)
     user.refresh_from_db()  # the stored version moved on after the clinician row was built
 
-    response = signed_in(user).get(APPOINTMENTS)
+    response = _signed_in(user).get(APPOINTMENTS)
 
     assert _ids(response) == [str(mine.pk)]
 
 
 def returns_all_when_admin_lists() -> None:
     clinic = make_clinic()
-    first = make_appointment(clinic)
-    second = make_appointment(
+    first = _make_appointment(clinic)
+    second = _make_appointment(
         clinic, clinician=add_clinician(clinic.department), patient=make("User")
     )
 
-    response = signed_in(admin()).get(APPOINTMENTS)
+    response = _signed_in(_admin()).get(APPOINTMENTS)
 
     assert sorted(_ids(response)) == sorted([str(first.pk), str(second.pk)])
 
@@ -113,8 +113,8 @@ def returns_page_of_20_with_count_when_25_exist() -> None:
     clinic = make_clinic()
     for day in range(25):
         start = STARTS_AT + timedelta(days=day)
-        make_appointment(clinic, starts_at=start, ends_at=start + THIRTY_MINUTES)
-    client = signed_in(clinic.patient)
+        _make_appointment(clinic, starts_at=start, ends_at=start + THIRTY_MINUTES)
+    client = _signed_in(clinic.patient)
 
     first = client.get(APPOINTMENTS).json()
     second = client.get(f"{APPOINTMENTS}?page=2").json()
@@ -130,24 +130,24 @@ def returns_page_of_20_with_count_when_25_exist() -> None:
 
 def returns_only_matching_status_when_filtered_by_status() -> None:
     clinic = make_clinic()
-    make_appointment(clinic)
+    _make_appointment(clinic)
     later = STARTS_AT + timedelta(days=1)
-    done = make_appointment(
+    done = _make_appointment(
         clinic, starts_at=later, ends_at=later + THIRTY_MINUTES, status="COMPLETED"
     )
 
-    response = signed_in(clinic.patient).get(f"{APPOINTMENTS}?status=COMPLETED")
+    response = _signed_in(clinic.patient).get(f"{APPOINTMENTS}?status=COMPLETED")
 
     assert _ids(response) == [str(done.pk)]
 
 
 def returns_only_appointments_inside_range_when_filtered_by_range() -> None:
     clinic = make_clinic()
-    make_appointment(clinic)
+    _make_appointment(clinic)
     later = STARTS_AT + timedelta(days=3)
-    inside = make_appointment(clinic, starts_at=later, ends_at=later + THIRTY_MINUTES)
+    inside = _make_appointment(clinic, starts_at=later, ends_at=later + THIRTY_MINUTES)
 
-    response = signed_in(clinic.patient).get(
+    response = _signed_in(clinic.patient).get(
         f"{APPOINTMENTS}?from=2030-01-10T00:00:00Z&to=2030-01-11T00:00:00Z"
     )
 
@@ -156,9 +156,9 @@ def returns_only_appointments_inside_range_when_filtered_by_range() -> None:
 
 def returns_utc_times_with_zone_and_no_free_text_when_listing() -> None:
     clinic = make_clinic()
-    make_appointment(clinic, patient_reason="private", clinical_notes="private")
+    _make_appointment(clinic, patient_reason="private", clinical_notes="private")
 
-    item = signed_in(clinic.patient).get(APPOINTMENTS).json()["results"][0]
+    item = _signed_in(clinic.patient).get(APPOINTMENTS).json()["results"][0]
 
     assert item["starts_at"] == "2030-01-07T10:00:00Z"
     assert item["ends_at"] == "2030-01-07T10:30:00Z"
@@ -175,7 +175,7 @@ def returns_201_with_end_from_type_when_patient_books() -> None:
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 201
     created = response.json()
@@ -192,7 +192,7 @@ def returns_201_round_robin_when_patient_names_no_clinician() -> None:
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 201
     assert response.json()["source"] == "ROUND_ROBIN"
@@ -207,7 +207,7 @@ def returns_403_when_patient_names_patient() -> None:
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "forbidden"
@@ -224,7 +224,7 @@ def returns_400_when_body_has_a_field_the_schema_does_not_know(extra: dict[str, 
         **extra,
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "invalid_input"
@@ -239,21 +239,21 @@ def returns_400_when_starts_at_has_no_offset() -> None:
         "starts_at": "2030-01-07T10:00:00",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 400
 
 
 def returns_409_conflict_with_resources_list_when_clinician_is_busy() -> None:
     clinic = make_clinic()
-    make_appointment(clinic, patient=make("User"))
+    _make_appointment(clinic, patient=make("User"))
     body = {
         "appointment_type_id": str(clinic.appointment_type.pk),
         "clinician_id": str(clinic.clinician.pk),
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 409
     error = response.json()["error"]
@@ -269,7 +269,7 @@ def returns_422_rule_violation_when_type_is_not_bookable_online() -> None:
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 422
     error = response.json()["error"]
@@ -279,13 +279,13 @@ def returns_422_rule_violation_when_type_is_not_bookable_online() -> None:
 
 def returns_409_no_clinician_available_when_nobody_is_free() -> None:
     clinic = make_clinic()
-    make_appointment(clinic, patient=make("User"))
+    _make_appointment(clinic, patient=make("User"))
     body = {
         "appointment_type_id": str(clinic.appointment_type.pk),
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body)
+    response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 409
     assert response.json()["error"]["code"] == "no_clinician_available"
@@ -299,7 +299,7 @@ def returns_403_when_booking_origin_is_foreign() -> None:
         "starts_at": "2030-01-07T10:00:00Z",
     }
 
-    response = _book(signed_in(clinic.patient), body, origin=FOREIGN_ORIGIN)
+    response = _book(_signed_in(clinic.patient), body, origin=FOREIGN_ORIGIN)
 
     assert response.status_code == 403
     assert Appointment.objects.count() == 0

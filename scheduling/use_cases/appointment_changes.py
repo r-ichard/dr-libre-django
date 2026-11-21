@@ -23,6 +23,7 @@ from scheduling.use_cases.notifications import CANCELLED_TITLE, RESCHEDULED_TITL
 from scheduling.use_cases.placement import replace_placement
 from scheduling.use_cases.record_access import guard_record
 from scheduling.use_cases.request_context import current_request_context
+from scheduling.use_cases.waitlist import offer_freed_slot
 
 STATUS_ACTION_NAMES = {
     AppointmentStatus.CHECKED_IN: "appointment.check_in",
@@ -54,6 +55,7 @@ def cancel_appointment(appointment_id: UUID, reason: str, actor: User) -> Result
             ["status", "cancelled_at", "cancellation_reason"],
         )
         notify_patient(appointment, NotificationKind.APPOINTMENT_CANCELLED, CANCELLED_TITLE)
+        offer_freed_slot(appointment, actor)
         return Success(appointment)
 
 

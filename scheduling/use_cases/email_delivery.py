@@ -29,7 +29,11 @@ def send_notification_email(notification_id: UUID) -> bool:
     with transaction.atomic():
         locked = Notification.objects.select_for_update(skip_locked=True, of=("self",))
         notification = (
-            locked.select_related("recipient", "appointment__clinician__user")
+            locked.select_related(
+                "recipient",
+                "appointment__clinician__user",
+                "waitlist_entry__offered_appointment__clinician__user",
+            )
             .filter(pk=notification_id, email_pending=True)
             .first()
         )
@@ -63,6 +67,9 @@ def send_notification_email(notification_id: UUID) -> bool:
 def _message_of(notification: Notification) -> EmailMessage:
     sign_in_url = f"{settings.PUBLIC_BASE_URL}/sign-in"
     appointment = notification.appointment
+    if appointment is None and notification.waitlist_entry is not None:
+        # An offer shows the freed slot's time, provider and hospital, read here and never copied.
+        appointment = notification.waitlist_entry.offered_appointment
     if appointment is None:
         subject = EmailSubject(title=notification.title, sign_in_url=sign_in_url)
     else:

@@ -103,7 +103,7 @@ def _place(
     now = current_request_context().now
     slot = slot_of(appointment_type, command.starts_at, now)
     ignored_id = replacing.pk if replacing is not None else None
-    free_ids = _free_clinician_ids(pool, slot, ignored_id)
+    free_ids = free_clinician_ids(pool, slot, ignored_id)
     chosen = _choose_clinician(pool, free_ids, parties, slot)
     if isinstance(chosen, Failure):
         return chosen
@@ -117,7 +117,7 @@ def _place(
     return _book(chosen, patient, room_id.value, parties, context)
 
 
-def _free_clinician_ids(
+def free_clinician_ids(
     pool: list[ClinicianProfile], slot: PlacementSlot, ignored_id: UUID | None
 ) -> set[UUID]:
     schedules = load_schedules(

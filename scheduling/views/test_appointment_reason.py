@@ -18,14 +18,14 @@ from scheduling.models import Appointment, AuditLogEntry, Notification, User
 from scheduling.models.builders import STARTS_AT, Clinic, add_clinician, make, make_clinic
 from scheduling.use_cases import notifications
 from scheduling.views import clock
-from scheduling.views.appointment_action_support import (
+from scheduling.views.test_appointment_support import (
     APPOINTMENTS,
     NOW,
     THIRTY_MINUTES,
-    admin,
-    clinician_user,
-    make_appointment,
-    signed_in,
+    _admin,
+    _clinician_user,
+    _make_appointment,
+    _signed_in,
 )
 
 if TYPE_CHECKING:
@@ -59,7 +59,7 @@ def _booking_body(clinic: Clinic, **extra: object) -> dict[str, object]:
 def returns_201_and_reason_when_patient_books_with_reason() -> None:
     clinic = make_clinic()
 
-    response = _book(signed_in(clinic.patient), _booking_body(clinic, reason="knee pain"))
+    response = _book(_signed_in(clinic.patient), _booking_body(clinic, reason="knee pain"))
 
     assert response.status_code == 201
     assert response.json()["reason"] == "knee pain"
@@ -69,7 +69,7 @@ def returns_201_and_reason_when_patient_books_with_reason() -> None:
 def returns_empty_reason_when_booking_without_one() -> None:
     clinic = make_clinic()
 
-    response = _book(signed_in(clinic.patient), _booking_body(clinic))
+    response = _book(_signed_in(clinic.patient), _booking_body(clinic))
 
     assert response.status_code == 201
     assert response.json()["reason"] == ""
@@ -78,7 +78,7 @@ def returns_empty_reason_when_booking_without_one() -> None:
 def returns_201_when_reason_is_200_characters() -> None:
     clinic = make_clinic()
 
-    response = _book(signed_in(clinic.patient), _booking_body(clinic, reason="a" * 200))
+    response = _book(_signed_in(clinic.patient), _booking_body(clinic, reason="a" * 200))
 
     assert response.status_code == 201
     assert response.json()["reason"] == "a" * 200
@@ -87,7 +87,7 @@ def returns_201_when_reason_is_200_characters() -> None:
 def returns_201_and_empty_reason_when_reason_is_an_empty_string() -> None:
     clinic = make_clinic()
 
-    response = _book(signed_in(clinic.patient), _booking_body(clinic, reason=""))
+    response = _book(_signed_in(clinic.patient), _booking_body(clinic, reason=""))
 
     assert response.status_code == 201
     assert response.json()["reason"] == ""
@@ -96,7 +96,7 @@ def returns_201_and_empty_reason_when_reason_is_an_empty_string() -> None:
 def returns_400_invalid_input_when_reason_is_201_characters() -> None:
     clinic = make_clinic()
 
-    response = _book(signed_in(clinic.patient), _booking_body(clinic, reason="a" * 201))
+    response = _book(_signed_in(clinic.patient), _booking_body(clinic, reason="a" * 201))
 
     assert response.status_code == 400
     error = response.json()["error"]
@@ -109,7 +109,7 @@ def returns_no_reason_in_audit_notification_email_or_log_when_booking_with_reaso
     django_capture_on_commit_callbacks: OnCommit, caplog: pytest.LogCaptureFixture
 ) -> None:
     clinic = make_clinic()
-    client = signed_in(clinic.patient)
+    client = _signed_in(clinic.patient)
     body = _booking_body(clinic, reason=PLANTED_VISIT_REASON)
 
     with caplog.at_level(logging.DEBUG), django_capture_on_commit_callbacks(execute=True):
@@ -127,19 +127,23 @@ def returns_no_reason_in_audit_notification_email_or_log_when_booking_with_reaso
 
 def returns_reason_to_patient_clinician_and_admin_only() -> None:
     clinic = make_clinic()
-    make_appointment(clinic, patient_reason=PLANTED_VISIT_REASON)
+    _make_appointment(clinic, patient_reason=PLANTED_VISIT_REASON)
     other_clinician = add_clinician(clinic.department).user
     assert isinstance(other_clinician, User)
     other_clinician.refresh_from_db()
 
-    allowed = [signed_in(clinic.patient), signed_in(clinician_user(clinic)), signed_in(admin())]
+    allowed = [
+        _signed_in(clinic.patient),
+        _signed_in(_clinician_user(clinic)),
+        _signed_in(_admin()),
+    ]
     shown = [
         [item["reason"] for item in client.get(APPOINTMENTS).json()["results"]]
         for client in allowed
     ]
     stranger = make("User")
     assert isinstance(stranger, User)
-    outsiders = [signed_in(stranger), signed_in(other_clinician)]
+    outsiders = [_signed_in(stranger), _signed_in(other_clinician)]
 
     assert shown == [[PLANTED_VISIT_REASON]] * 3
     for outsider in outsiders:
@@ -149,7 +153,7 @@ def returns_reason_to_patient_clinician_and_admin_only() -> None:
 def returns_reason_unchanged_when_appointment_is_rescheduled() -> None:
     clinic = make_clinic()
     original_start = STARTS_AT + timedelta(days=7)
-    appointment = make_appointment(
+    appointment = _make_appointment(
         clinic,
         patient_reason=PLANTED_VISIT_REASON,
         starts_at=original_start,
@@ -157,7 +161,7 @@ def returns_reason_unchanged_when_appointment_is_rescheduled() -> None:
     )
     moved_to = STARTS_AT + timedelta(days=14)
 
-    response = signed_in(clinic.patient).post(
+    response = _signed_in(clinic.patient).post(
         f"{APPOINTMENTS}/{appointment.pk}/reschedule",
         {"starts_at": moved_to.isoformat()},
         content_type="application/json",
@@ -186,7 +190,7 @@ def returns_201_pending_notification_and_logged_trace_when_mail_backend_raises_r
     body = _booking_body(clinic, reason=PLANTED_VISIT_REASON)
 
     with caplog.at_level(logging.WARNING), django_capture_on_commit_callbacks(execute=True):
-        response = _book(signed_in(clinic.patient), body)
+        response = _book(_signed_in(clinic.patient), body)
 
     assert response.status_code == 201
     assert Notification.objects.get().email_pending is True
@@ -208,7 +212,7 @@ def returns_201_and_logged_trace_when_the_send_lookup_fails_after_commit(
     monkeypatch.setattr(notifications, "send_notification_email", broken_lookup)
 
     with caplog.at_level(logging.WARNING), django_capture_on_commit_callbacks(execute=True):
-        response = _book(signed_in(clinic.patient), _booking_body(clinic))
+        response = _book(_signed_in(clinic.patient), _booking_body(clinic))
 
     assert response.status_code == 201
     assert Notification.objects.get().email_pending is True

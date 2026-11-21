@@ -5,11 +5,13 @@ from django.db.models import (
     DateTimeField,
     EmailField,
     ForeignKey,
+    Index,
     SmallIntegerField,
     TextChoices,
     TextField,
     UniqueConstraint,
 )
+from django.utils import timezone
 
 from scheduling.models.base import (
     Record,
@@ -32,6 +34,12 @@ class CodePurpose(TextChoices):
     BOOKING = "BOOKING"
 
 
+class SessionKind(TextChoices):
+    PASSWORD = "PASSWORD"  # noqa: S105 - a kind of sign-in, not a secret
+    EMAIL_LINK = "EMAIL_LINK"
+    BOOKING_CODE = "BOOKING_CODE"
+
+
 class HoldSource(TextChoices):
     ONLINE = AppointmentSource.ONLINE.value
     ROUND_ROBIN = AppointmentSource.ROUND_ROBIN.value
@@ -39,8 +47,11 @@ class HoldSource(TextChoices):
 
 class Session(Record):
     fhir_not_exposed = "credential, never served; sign-in events are AuditEvent"
+    # No auto_now_add: the session is opened at the request instant, which tests move.
+    created_at = DateTimeField(editable=False, default=timezone.now)
     user = ForeignKey(User, on_delete=PROTECT)
     token_hash = CharField(max_length=HASH_LENGTH)
+    opened_by = CharField(max_length=20, choices=SessionKind, default=SessionKind.PASSWORD)
     expires_at = DateTimeField()
     user_agent = CharField(max_length=300, blank=True, default="")
 
@@ -52,8 +63,20 @@ class Session(Record):
                 violation_error_message="token_hash is taken",
             ),
             hash_is_64_characters("session", "token_hash"),
+            one_of("session", "opened_by", SessionKind),
             expires_after_creation("session"),
         ]
+
+
+class SignInFailure(Record):
+    fhir_not_exposed = "lockout bookkeeping, never served; sign-in events are AuditEvent"
+    # Keyed hash of the lower-cased address: no readable address is stored.
+    email_hash = CharField(max_length=HASH_LENGTH)
+    failed_at = DateTimeField()
+
+    class Meta:
+        indexes = [Index(fields=["email_hash", "failed_at"], name="signinfailure_hash_time")]
+        constraints = [hash_is_64_characters("signinfailure", "email_hash")]
 
 
 class BookingHold(Versioned):

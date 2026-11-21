@@ -167,9 +167,11 @@ def _defaults() -> dict[str, dict[str, Callable[[], object]]]:
         "Session": {
             "user": lambda: make("User"),
             "token_hash": unique_hash,
+            "opened_by": lambda: "PASSWORD",
             "expires_at": lambda: FAR_FUTURE,
             "user_agent": lambda: "",
         },
+        "SignInFailure": {"email_hash": unique_hash, "failed_at": lambda: STARTS_AT},
         "BookingHold": _hold_defaults(),
         "VerificationCode": {
             "code_hash": unique_hash,

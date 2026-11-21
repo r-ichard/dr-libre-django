@@ -11,7 +11,7 @@ from scheduling.models import AuditLogEntry, User
 from scheduling.use_cases.request_context import current_request_context
 
 
-class TransactionRequired(Exception):  # noqa: N818 - name fixed by the published contract tests
+class TransactionRequiredError(Exception):
     """An audit entry written outside the transaction of its change is a broken invariant."""
 
 
@@ -25,7 +25,7 @@ class AuditEvent:
 
 def record_audit(event: AuditEvent, actor: User | None) -> None:
     if not connection.in_atomic_block:
-        raise TransactionRequired("record_audit must run inside transaction.atomic")
+        raise TransactionRequiredError("record_audit must run inside transaction.atomic")
     context = current_request_context()
     AuditLogEntry.objects.create(
         actor=actor,

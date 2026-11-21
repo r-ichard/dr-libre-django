@@ -52,6 +52,10 @@ class AuditMetadata:
     email_domain: EmailDomain | None = None
 
     def __post_init__(self) -> None:
+        for name in self.changed_fields:
+            field_name(name)
+        if self.email_domain is not None and HOSTNAME_PATTERN.fullmatch(self.email_domain) is None:
+            raise ValueError("an email domain is a host name taken from an address")
         for key, identifier in self.ids.items():
             _check_key(key, ID_SUFFIXES)
             if not isinstance(identifier, UUID) and not _is_plain_int(identifier):

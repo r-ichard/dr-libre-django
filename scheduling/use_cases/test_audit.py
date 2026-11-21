@@ -11,7 +11,7 @@ from scheduling.models import AuditLogEntry, Specialty, User
 from scheduling.models.builders import make
 from scheduling.use_cases.audit import (
     AuditEvent,
-    TransactionRequired,
+    TransactionRequiredError,
     changed_field_names,
     record_audit,
 )
@@ -71,8 +71,8 @@ def returns_entry_with_actor_when_actor_is_given() -> None:
     assert AuditLogEntry.objects.get().actor_id == actor.pk
 
 
-def raises_transaction_required_when_recorded_outside_transaction() -> None:
-    with bind_request_context(CONTEXT), pytest.raises(TransactionRequired):
+def raises_transaction_required_error_when_recorded_outside_transaction() -> None:
+    with bind_request_context(CONTEXT), pytest.raises(TransactionRequiredError):
         record_audit(_event(), None)
 
 

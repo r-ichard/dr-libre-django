@@ -154,3 +154,17 @@ def rejects_key_when_free_text_precedes_a_valid_suffix() -> None:
         AuditMetadata(counts={"Jane Doe_count": 1})
     with pytest.raises(ValueError):
         AuditMetadata(counts={"row count_count": 1})
+
+
+@pytest.mark.parametrize("forbidden", ["Jane Doe", "jane@example.test", "+33 6 12 34 56 78"])
+def rejects_changed_field_when_it_is_not_a_field_name(forbidden: str) -> None:
+    with pytest.raises(ValueError):
+        AuditMetadata(changed_fields=(forbidden,))  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "forbidden", ["jane@example.test", "patient has chest pain", "Example.test"]
+)
+def rejects_email_domain_when_it_is_an_address_or_text(forbidden: str) -> None:
+    with pytest.raises(ValueError):
+        AuditMetadata(email_domain=forbidden)  # type: ignore[arg-type]

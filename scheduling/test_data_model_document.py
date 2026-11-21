@@ -8,7 +8,7 @@ from django.apps import apps
 
 DOCUMENT = Path(__file__).resolve().parent.parent / "doc" / "data-model.md"
 REGENERATE = "python manage.py render_data_model"
-EXPECTED_MODEL_COUNT = 17
+EXPECTED_MODEL_COUNT = 18
 
 
 def _rendered() -> str:

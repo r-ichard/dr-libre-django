@@ -350,19 +350,40 @@ FHIR: not exposed, credential, never served; sign-in events are AuditEvent
 | Field | Type | Null | Rule |
 | --- | --- | --- | --- |
 | `id` | UUIDField | no | primary key; at most 32 characters |
-| `created_at` | DateTimeField | no |  |
 | `updated_at` | DateTimeField | no |  |
 | `created_by` | ForeignKey | yes | refers to User, protected |
+| `created_at` | DateTimeField | no |  |
 | `user` | ForeignKey | no | refers to User, protected |
 | `token_hash` | CharField | no | at most 64 characters |
+| `opened_by` | CharField | no | at most 20 characters; one of PASSWORD, EMAIL_LINK, BOOKING_CODE |
 | `expires_at` | DateTimeField | no |  |
 | `user_agent` | CharField | no | at most 300 characters |
 
 Constraints:
 
 - `session_expires_after_creation` (check): expires_at must be after created_at
+- `session_opened_by_listed` (check): opened_by must be one of PASSWORD, EMAIL_LINK, BOOKING_CODE
 - `session_token_hash_64_characters` (check): token_hash must be exactly 64 characters
 - `session_token_hash_unique` (unique): token_hash is taken
+
+## SignInFailure
+
+Table `scheduling_signinfailure`.
+
+FHIR: not exposed, lockout bookkeeping, never served; sign-in events are AuditEvent
+
+| Field | Type | Null | Rule |
+| --- | --- | --- | --- |
+| `id` | UUIDField | no | primary key; at most 32 characters |
+| `created_at` | DateTimeField | no |  |
+| `updated_at` | DateTimeField | no |  |
+| `created_by` | ForeignKey | yes | refers to User, protected |
+| `email_hash` | CharField | no | at most 64 characters |
+| `failed_at` | DateTimeField | no |  |
+
+Constraints:
+
+- `signinfailure_email_hash_64_characters` (check): email_hash must be exactly 64 characters
 
 ## SignInLink
 

@@ -88,6 +88,28 @@ def returns_log_line_without_body_or_address_when_mail_server_is_down(
     assert PATIENT_EMAIL not in caplog.text
 
 
+class UnexpectedFailureBackend(BaseEmailBackend):
+    def send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
+        raise RuntimeError(f"{PATIENT_EMAIL} {PLANTED_BODY}")
+
+
+def returns_log_line_without_body_or_address_when_send_raises_other_exception(
+    django_capture_on_commit_callbacks: object,
+    settings: object,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _use_backend(settings, UnexpectedFailureBackend)
+
+    with caplog.at_level(logging.ERROR):
+        with django_capture_on_commit_callbacks(execute=True):  # type: ignore[operator]
+            send_after_commit(_message())
+        wait_until_idle()
+
+    assert [record.getMessage() for record in caplog.records] == ["background mail not sent"]
+    assert PLANTED_BODY not in caplog.text
+    assert PATIENT_EMAIL not in caplog.text
+
+
 def returns_link_address_with_only_the_token_when_link_is_mailed(
     django_capture_on_commit_callbacks: object, settings: object
 ) -> None:

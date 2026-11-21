@@ -130,10 +130,24 @@ def returns_same_page_when_link_page_is_opened_with_unknown_token() -> None:
     assert "Continue" in unknown.content.decode()
 
 
-def returns_no_referrer_policy_when_link_page_is_opened() -> None:
+def returns_origin_only_referrer_policy_when_link_page_is_opened() -> None:
     response = Client().get(f"{LINK}?token={TOKEN}")
 
-    assert response["Referrer-Policy"] == "no-referrer"
+    assert response["Referrer-Policy"] == "strict-origin"
+
+
+def returns_origin_only_referrer_policy_when_link_cannot_be_used() -> None:
+    response = Client().post(LINK, {"token": "never-sent-token"})
+
+    assert (response.status_code, response["Referrer-Policy"]) == (400, "strict-origin")
+
+
+def returns_origin_only_referrer_policy_when_button_is_pressed() -> None:
+    _stored_link()
+
+    response = Client().post(LINK, {"token": TOKEN})
+
+    assert (response.status_code, response["Referrer-Policy"]) == (303, "strict-origin")
 
 
 def returns_303_to_patient_home_without_token_and_cookie_when_button_is_pressed() -> None:

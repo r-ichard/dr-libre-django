@@ -52,7 +52,7 @@ class LinkContinuePage(PageView):
     template_name = "sign_in_link.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
-        return _without_referrer(self.page(request))
+        return _origin_only_referrer(self.page(request))
 
     def post(self, request: HttpRequest) -> HttpResponse:
         # The form has no action, so the browser posts to the address it opened, token included.
@@ -60,12 +60,12 @@ class LinkContinuePage(PageView):
         used = use_link(token, request.headers.get("User-Agent", ""))
         if isinstance(used, Failure):
             invalid = render_page(request, INVALID_TEMPLATE, status=400)
-            return _without_referrer(invalid)
+            return _origin_only_referrer(invalid)
         response = HttpResponseRedirect(PATIENT_HOME, status=303)
         set_session_cookie(response, used.value.token, used.value.session.expires_at)
-        return _without_referrer(response)
+        return _origin_only_referrer(response)
 
 
-def _without_referrer[Response: HttpResponse](response: Response) -> Response:
-    response["Referrer-Policy"] = "no-referrer"
+def _origin_only_referrer[Response: HttpResponse](response: Response) -> Response:
+    response["Referrer-Policy"] = "strict-origin"
     return response

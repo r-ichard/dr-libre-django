@@ -9,6 +9,11 @@ def forbidden_page(request: HttpRequest, exception: Exception) -> HttpResponse:
     return render_page(request, "errors/403.html", status=403)
 
 
+def csrf_failure_page(request: HttpRequest, reason: str = "") -> HttpResponse:
+    """The reason names internals, so it is not shown; Django's own page is never used."""
+    return render_page(request, "errors/403.html", status=403)
+
+
 def not_found_page(request: HttpRequest, exception: Exception) -> HttpResponse:
     return render_page(request, "errors/404.html", status=404)
 

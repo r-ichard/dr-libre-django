@@ -27,7 +27,7 @@ as GitHub issues; the issue number is in the heading.
 | 01a | Scaffold hardening: host defects and reviewer "Later" list of 01 | 16 | merged `b972eac` |
 | 02 | Domain model and migrations | 3 | merged `bc0c746` with 02a |
 | 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | merged `bc0c746` |
-| 03 | Repeatable demo seed | 16 | todo |
+| 03 | Repeatable demo seed | 16 | running `01M7YX1M5WPW` |
 | 04 | Platform baseline: result codes, correlation id, structured logs, audit writer, security headers | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |

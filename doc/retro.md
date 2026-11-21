@@ -197,3 +197,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - `apt-get install postgresql` could not resolve `deb.debian.org`: a network blip, nothing
   in the repository. Relaunched unchanged. First such failure in 16 runs; if it repeats,
   bake PostgreSQL and uv into the sandbox image instead of installing them per run.
+
+## 2026-11-21 task 06, run 01M7Z6MJ3HR7 (13 minutes, merged 5d18572)
+
+- Plan bounced once; the reviewer blocked on `make mutate` not being bound, and the
+  address stage bound it. 856 tests. Mutation run: 17 seconds, 96 percent on the engine.
+- Reading the engine against section 5 line by line found no rule error. It found three
+  fit problems the review rated "Later": the domain imports its enumerations from the
+  model layer, clinician ids are typed `int` while identifiers are UUIDs, and on a
+  clock-change day the real end of a slot can pass the rule's wall-clock end.
+- `make mutate` covers all of `scheduling/domain`: 21 of the 38 survivors are in
+  `audit_metadata.py`, written before mutation testing existed. Task 06a.
+- "Welcome" in a task means skipped. Property-based tests were welcome; none were written.
+  Ask for what is wanted.

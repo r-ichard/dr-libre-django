@@ -49,7 +49,7 @@ as GitHub issues; the issue number is in the heading.
 | 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
 | 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | merged `bc85ddf` |
-| 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | todo |
+| 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | running `01M7ZRJ0D432` |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | merged `b3192e7` |
 | 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | merged `84412f9` |
 | | **M5 Patient portal (#5)** | | |

@@ -26,7 +26,7 @@ as GitHub issues; the issue number is in the heading.
 | 01 | Scaffold and stack binding | 14, 16 | merged `eaf7ef2` |
 | 01a | Scaffold hardening: host defects and reviewer "Later" list of 01 | 16 | merged `b972eac` |
 | 02 | Domain model and migrations | 3 | green, run `01M7YR6HE159` failed after it; continued in 02a |
-| 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | running `For more inf` on `task/02-domain-model` |
+| 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | running `01M7YV57N924` on `task/02-domain-model` |
 | 03 | Repeatable demo seed | 16 | todo |
 | 04 | Platform baseline: result codes, correlation id, structured logs, audit writer, security headers | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.shortcuts import redirect
 from django.urls import path, re_path
 from django.views.static import serve
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path("api/v1/auth/logout", LogoutView.as_view()),
     re_path(r"^api/v1/", NotFoundView.as_view()),
     path("", RootPage.as_view()),
+    path("favicon.ico", lambda request: redirect("/static/favicon.svg")),
     path("sign-in", SignInPage.as_view()),
     path("sign-out", SignOutPage.as_view()),
     path("patient/", PatientPortal.as_view()),

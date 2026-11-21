@@ -14,8 +14,8 @@ from scheduling.domain.failure import Failure
 from scheduling.models import User
 from scheduling.models.people import Role
 from scheduling.use_cases.request_context import current_request_context
-from scheduling.use_cases.session import resolve_session
-from scheduling.views.session_cookie import SESSION_COOKIE
+from scheduling.use_cases.session import ResolvedSession, resolve_session
+from scheduling.views.session_cookie import SESSION_COOKIE, set_session_cookie
 
 SIGN_IN_PATH = "/sign-in"
 
@@ -49,9 +49,23 @@ class PageView(View):
     template_name = ""
     allowed_roles: frozenset[Role] | None = None
     user: User | None = None
+    resolved: ResolvedSession | None = None
 
     def dispatch(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponseBase:
-        self.user = self._resolve_user(request)
+        response = self._guarded_dispatch(request, *args, **kwargs)
+        # The server moved expires_at; without a fresh cookie the browser drops the old one.
+        resolved = self.resolved
+        if resolved and resolved.extended and SESSION_COOKIE not in response.cookies:
+            set_session_cookie(
+                response, request.COOKIES[SESSION_COOKIE], resolved.session.expires_at
+            )
+        return response
+
+    def _guarded_dispatch(
+        self, request: HttpRequest, *args: object, **kwargs: object
+    ) -> HttpResponseBase:
+        self.resolved = self._resolve_session(request)
+        self.user = self.resolved.user if self.resolved else None
         if self.allowed_roles is not None:
             if self.user is None:
                 query = urlencode({"next": request.get_full_path()}, safe="/")
@@ -71,9 +85,9 @@ class PageView(View):
         )
 
     @staticmethod
-    def _resolve_user(request: HttpRequest) -> User | None:
+    def _resolve_session(request: HttpRequest) -> ResolvedSession | None:
         token = request.COOKIES.get(SESSION_COOKIE)
         if not token:
             return None
         result = resolve_session(token)
-        return None if isinstance(result, Failure) else result.value.user
+        return None if isinstance(result, Failure) else result.value

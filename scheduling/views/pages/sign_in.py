@@ -14,7 +14,7 @@ from scheduling.views.pages.safe_redirect import local_path_or_home
 from scheduling.views.session_cookie import set_session_cookie
 
 WRONG_CREDENTIALS = "Email or password is not correct."
-LOCKED_OUT = "Too many attempts. Wait 15 minutes, then try again later."
+LOCKED_OUT = "Too many attempts. Try again in 15 minutes."
 MISSING_MESSAGES = {"email": "Enter your email address.", "password": "Enter your password."}
 FORM_ERROR_ID = "form-error"
 

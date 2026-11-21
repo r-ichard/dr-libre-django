@@ -115,7 +115,7 @@ def returns_lockout_message_when_ten_failures_in_window() -> None:
 
     html = response.content.decode()
     assert response.status_code == 200
-    assert "try again later" in html.lower()
+    assert "try again in 15 minutes" in html.lower()
     assert WRONG_MESSAGE not in html
 
 

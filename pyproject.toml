@@ -17,6 +17,7 @@ dev = [
     "django-stubs==6.1.2",
     "djangorestframework-stubs==3.18.2",
     "pytest-xdist==3.8.0",
+    "mutmut==3.8.1",
 ]
 
 [tool.uv]
@@ -26,12 +27,13 @@ package = false
 DJANGO_SETTINGS_MODULE = "drlibre.settings"
 python_files = ["test_*.py"]
 pythonpath = ["."]
+norecursedirs = ["mutants"]
 python_functions = ["returns_*", "raises_*", "rejects_*"]
 
 # comment_cap.py is orchestrator-owned process tooling, not product code.
 [tool.ruff]
 line-length = 100
-extend-exclude = ["scripts/comment_cap.py", "scheduling/migrations"]
+extend-exclude = ["scripts/comment_cap.py", "scheduling/migrations", "mutants"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "S", "SIM"]
@@ -42,8 +44,15 @@ select = ["E", "F", "I", "B", "UP", "N", "S", "SIM"]
 [tool.mypy]
 strict = true
 explicit_package_bases = true
-exclude = ["scripts/comment_cap.py"]
+exclude = ["scripts/comment_cap.py", "mutants/"]
 plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "drlibre.settings"
+
+[tool.mutmut]
+source_paths = ["scheduling/domain/"]
+also_copy = ["scheduling/__init__.py", "scheduling/models", "scheduling/identifiers.py", "scheduling/use_cases", "scheduling/views", "scheduling/management", "scheduling/templates", "drlibre", "manage.py", ".env.example"]
+do_not_mutate = ["*/test_*.py", "*/__init__.py"]
+pytest_add_cli_args = ["-p", "no:xdist", "-p", "no:cacheprovider"]
+pytest_add_cli_args_test_selection = ["scheduling/domain/"]

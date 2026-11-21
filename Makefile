@@ -26,4 +26,6 @@ gate:
 	sh scripts/escape_hatches.sh
 
 mutate:
-	@echo "make mutate: not configured" >&2; exit 1
+	rm -rf mutants
+	uv run --env-file .env.example mutmut run
+	uv run --env-file .env.example mutmut results

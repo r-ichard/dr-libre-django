@@ -6,6 +6,8 @@
 PATTERN='"run_in_background"[[:space:]]*:[[:space:]]*true'
 PATTERN="$PATTERN"'|(^|[^[:alnum:]_])(nohup|setsid|disown)([^[:alnum:]_]|$)'
 PATTERN="$PATTERN"'|[^&]&([[:space:]]|\\n)*"[[:space:]]*[,}]'
+# A subshell that ends in "&)" detaches just as well.
+PATTERN="$PATTERN"'|[^&]&[[:space:]]*\)'
 
 starts_background() {
     printf '%s' "$1" | grep -Eq "$PATTERN"
@@ -21,6 +23,7 @@ if [ "$1" = "--self-test" ]; then
     expect blocked '{"tool_input":{"command":"nohup sleep 5 > /dev/null"}}'
     expect blocked '{"tool_input":{"command":"python run.py &"}}'
     expect blocked '{"tool_input":{"command":"python run.py &\n"},"x":1}'
+    expect blocked '{"tool_input":{"command":"(timeout 10 sleep 30 &)"}}'
     expect allowed '{"tool_input":{"command":"make test 2>&1 | tail -5"}}'
     expect allowed '{"tool_input":{"command":"make lint && make test"}}'
     expect allowed '{"tool_input":{"command":"sleep 5","run_in_background":false}}'

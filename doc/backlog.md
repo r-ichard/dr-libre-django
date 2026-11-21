@@ -54,7 +54,7 @@ as GitHub issues; the issue number is in the heading.
 | 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | merged `84412f9` |
 | | **M5 Patient portal (#5)** | | |
 | 14 | Patient portal: home, appointments, booking wizard, reschedule, cancel | 8, 7.4 | merged `abb50a6` |
-| 15 | Waitlist, notifications, profile | 8 | todo |
+| 15 | Waitlist, notifications, profile | 8 | running `01M7ZXYSSG2P` |
 | | **M6 Clinician workspace (#6)** | | |
 | 16 | Today, calendar, appointment, clinical notes | 9 | todo |
 | 17 | Availability, time off, patients, rooms | 9 | todo |

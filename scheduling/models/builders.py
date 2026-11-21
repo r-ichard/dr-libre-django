@@ -3,6 +3,7 @@ as a LookupError in the test that needs it, not as an import error for the whole
 
 import itertools
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 
 import pytest
@@ -10,6 +11,9 @@ from django.apps import apps
 from django.contrib.auth.hashers import make_password
 from django.db import DatabaseError, transaction
 from django.db.models import Model
+
+from scheduling.models.organisation import AppointmentType, Department
+from scheduling.models.people import ClinicianProfile, User
 
 STARTS_AT = datetime(2030, 1, 7, 10, 0, tzinfo=UTC)
 ENDS_AT = STARTS_AT + timedelta(minutes=30)
@@ -207,3 +211,40 @@ def field_of(row: Model, field_name: str) -> object:
 def change_and_save(row: Model, field_name: str, value: object) -> None:
     setattr(row, field_name, value)
     row.save()
+
+
+@dataclass(frozen=True)
+class Clinic:
+    department: Department
+    appointment_type: AppointmentType
+    clinician: ClinicianProfile
+    patient: User
+
+
+def _typed[Row: Model](row: Model, kind: type[Row]) -> Row:
+    if not isinstance(row, kind):
+        raise TypeError(f"expected {kind.__name__}")
+    return row
+
+
+def make_clinic(
+    type_fields: dict[str, object] | None = None, rule_fields: dict[str, object] | None = None
+) -> Clinic:
+    """One department with a bookable type, a clinician available Mondays and a patient."""
+    department = _typed(make("Department"), Department)
+    appointment_type = make("AppointmentType", department=department, **(type_fields or {}))
+    clinician = add_clinician(department, rule_fields)
+    return Clinic(
+        department,
+        _typed(appointment_type, AppointmentType),
+        clinician,
+        _typed(make("User"), User),
+    )
+
+
+def add_clinician(
+    department: Model, rule_fields: dict[str, object] | None = None, **profile_fields: object
+) -> ClinicianProfile:
+    clinician = make("ClinicianProfile", department=department, **profile_fields)
+    make("AvailabilityRule", clinician=clinician, **(rule_fields or {}))
+    return _typed(clinician, ClinicianProfile)

@@ -48,7 +48,7 @@ as GitHub issues; the issue number is in the heading.
 | 10 | Public search, use case and API | 6.1 to 6.5, 14 | merged `2344ec0` |
 | 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
-| 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | todo |
+| 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | running `01M7ZMBW87BK` |
 | 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | todo |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | todo |
 | | **M5 Patient portal (#5)** | | |

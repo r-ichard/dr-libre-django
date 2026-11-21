@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Review the new time · DrLibre{% endblock %}
+{% block content %}
+<h1>Review the new time</h1>
+<section class="card" aria-labelledby="reschedule-title">
+  <h2 id="reschedule-title">{{ current.type_name }}, {{ current.provider }}</h2>
+  <dl class="facts">
+    <div><dt>Old time</dt><dd>{{ current.day }}, {{ current.starts }} to {{ current.ends }} ({{ current.time_zone }})</dd></div>
+    <div><dt>New time</dt><dd>{{ new_day }}, {{ new_starts }} to {{ new_ends }} ({{ current.time_zone }})</dd></div>
+  </dl>
+</section>
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Confirm new time</button>
+    <a class="button button--secondary" href="{{ times_path }}">Choose another time</a>
+  </div>
+</form>
+{% endblock %}

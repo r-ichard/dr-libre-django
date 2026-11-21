@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Your appointments · DrLibre{% endblock %}
+{% block content %}
+<h1>Your appointments</h1>
+{% if notice %}{% include "components/notice.html" with kind="success" text=notice %}{% endif %}
+<section aria-labelledby="upcoming-title">
+  <h2 id="upcoming-title">Upcoming appointments</h2>
+  {% for row in upcoming %}{% include "components/appointment_card.html" %}
+  {% empty %}{% include "components/empty_state.html" with title="No upcoming appointments" text="Book a time with a provider." action_href="/book" action_text="Book an appointment" %}{% endfor %}
+</section>
+<section aria-labelledby="past-title">
+  <h2 id="past-title">Past appointments</h2>
+  {% for row in past %}{% include "components/appointment_card.html" %}
+  {% empty %}{% include "components/empty_state.html" with title="No past appointments" text="Appointments that are over or cancelled appear here." %}{% endfor %}
+  {% if page_count > 1 %}{% include "components/pagination.html" %}{% endif %}
+</section>
+{% endblock %}

@@ -117,3 +117,44 @@ def _week_shown(asked_week: date | None, time_zone: ZoneInfo) -> date:
     if asked_week is None or not earliest <= asked_week <= latest:
         return today - timedelta(days=today.weekday())
     return asked_week - timedelta(days=asked_week.weekday())
+
+
+@dataclass(frozen=True)
+class DepartmentServices:
+    name: str
+    types: list[AppointmentType]
+
+
+@dataclass(frozen=True)
+class HospitalServices:
+    name: str
+    departments: list[DepartmentServices]
+
+
+def bookable_services() -> list[HospitalServices]:
+    """Active online-bookable types, grouped hospital then department, in name order."""
+    types = AppointmentType.objects.filter(
+        is_active=True, is_bookable_online=True, department__hospital__is_active=True
+    ).select_related("department__hospital")
+    ordered = types.order_by("department__hospital__name", "department__name", "name")
+    hospitals: dict[str, dict[str, list[AppointmentType]]] = {}
+    for appointment_type in ordered:
+        department = appointment_type.department
+        by_department = hospitals.setdefault(department.hospital.name, {})
+        by_department.setdefault(department.name, []).append(appointment_type)
+    return [
+        HospitalServices(
+            hospital, [DepartmentServices(name, found) for name, found in departments.items()]
+        )
+        for hospital, departments in hospitals.items()
+    ]
+
+
+def type_providers(
+    appointment_type_id: UUID,
+) -> tuple[AppointmentType, list[ClinicianProfile]] | None:
+    appointment_type = active_appointment_type(appointment_type_id)
+    if appointment_type is None:
+        return None
+    clinicians = department_clinicians(appointment_type, None).select_related("user", "specialty")
+    return appointment_type, list(clinicians.order_by("user__full_name"))

@@ -19,9 +19,12 @@ from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.booking_code import CodePage, ResendPage
 from scheduling.views.pages.booking_confirmation import CalendarFile, ConfirmationPage
 from scheduling.views.pages.booking_details import DetailsPage
+from scheduling.views.pages.booking_steps import ProviderChoicePage, ServicePage
 from scheduling.views.pages.booking_times import TimesPage
 from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
+from scheduling.views.pages.patient_appointments import AppointmentsPage, CancelPage
+from scheduling.views.pages.patient_reschedule import ReschedulePage, RescheduleReviewPage
 from scheduling.views.pages.public_pages import StylePage
 from scheduling.views.pages.search_page import SearchPage
 from scheduling.views.pages.sign_in import SignInPage
@@ -83,11 +86,20 @@ urlpatterns = [
     path("sign-out", SignOutPage.as_view()),
     path("book/holds/<uuid:hold_id>/code", CodePage.as_view()),
     path("book/holds/<uuid:hold_id>/resend", ResendPage.as_view()),
+    path("book", ServicePage.as_view()),
+    path("book/<uuid:appointment_type_id>/provider", ProviderChoicePage.as_view()),
     path("book/<uuid:appointment_type_id>", TimesPage.as_view()),
     path("book/<uuid:appointment_type_id>/details", DetailsPage.as_view()),
     path("appointments/<uuid:appointment_id>/confirmation", ConfirmationPage.as_view()),
     path("appointments/<uuid:appointment_id>/calendar.ics", CalendarFile.as_view()),
     path("patient/", PatientPortal.as_view()),
+    path("patient/appointments", AppointmentsPage.as_view()),
+    path("patient/appointments/<uuid:appointment_id>/cancel", CancelPage.as_view()),
+    path("patient/appointments/<uuid:appointment_id>/reschedule", ReschedulePage.as_view()),
+    path(
+        "patient/appointments/<uuid:appointment_id>/reschedule/review",
+        RescheduleReviewPage.as_view(),
+    ),
     path("clinician/", ClinicianWorkspace.as_view()),
     path("admin-console/", AdminConsole.as_view()),
     # Local-only product, so Django's development file server is enough and works with DEBUG off.

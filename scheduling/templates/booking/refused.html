@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Booking not completed · DrLibre{% endblock %}
+{% block title %}{{ heading|default:"Booking not completed" }} · DrLibre{% endblock %}
 {% block content %}
-<h1>Booking not completed</h1>
+<h1>{{ heading|default:"Booking not completed" }}</h1>
 {% include "components/notice.html" with kind="error" text=message %}
 <p><a class="button button--primary" href="{{ action_href }}">{{ action_text }}</a></p>
 {% if correlation_id %}<p class="hint">If you contact us, quote this reference: <code>{{ correlation_id }}</code></p>{% endif %}

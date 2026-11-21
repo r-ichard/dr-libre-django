@@ -1,0 +1,20 @@
+{% comment %}Parameters: row (from patient_rows.appointment_row), optional show_actions. One appointment, with the plain reason when a change is not allowed.{% endcomment %}
+<article class="card appointment" aria-labelledby="appointment-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+  <h3 id="appointment-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">{{ row.type_name }} {% include "components/badge.html" with kind=row.badge_kind text=row.badge_text %}</h3>
+  <dl class="facts">
+    <div><dt>With</dt><dd>{{ row.provider }}, {{ row.specialty }}</dd></div>
+    <div><dt>When</dt><dd>{{ row.day }}, {{ row.starts }} to {{ row.ends }} ({{ row.time_zone }})</dd></div>
+    <div><dt>Where</dt><dd>{{ row.hospital }}, {{ row.address }}. {{ row.department }}.{% if row.room %} Room: {{ row.room }}.{% endif %}</dd></div>
+    {% if row.reason %}<div><dt>Your reason</dt><dd>{{ row.reason }}</dd></div>{% endif %}
+  </dl>
+  {% if not row.options.cancel.allowed %}
+  <p class="hint">{{ row.options.cancel.reason }} Call {{ row.hospital }} on {{ row.phone }}.</p>
+  {% elif not row.options.reschedule.allowed %}
+  <p class="hint">{{ row.options.reschedule.reason }} Call {{ row.hospital }} on {{ row.phone }}.</p>
+  {% endif %}
+  <div class="button-row">
+    {% if row.calendar_href %}<a class="button button--secondary" href="{{ row.calendar_href }}" download>Add to calendar<span class="visually-hidden">: {{ row.type_name }}, {{ row.day }}</span></a>{% endif %}
+    {% if row.options.reschedule.allowed %}<a class="button button--secondary" href="{{ row.reschedule_href }}">Reschedule<span class="visually-hidden">: {{ row.type_name }}, {{ row.day }}</span></a>{% endif %}
+    {% if row.options.cancel.allowed %}<a class="button button--secondary" href="{{ row.cancel_href }}">Cancel<span class="visually-hidden">: {{ row.type_name }}, {{ row.day }}</span></a>{% endif %}
+  </div>
+</article>

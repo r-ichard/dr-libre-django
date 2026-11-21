@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Choose a provider · DrLibre{% endblock %}
+{% block content %}
+<h1>Choose a provider</h1>
+<p>For {{ type_name }}.</p>
+<ul>
+  <li><a href="{{ first_available_href }}">First available</a></li>
+  {% for provider in providers %}<li><a href="{{ provider.href }}">{{ provider.name }}</a>, {{ provider.specialty }}</li>{% endfor %}
+</ul>
+<p><a href="/book">Change service</a></p>
+{% endblock %}

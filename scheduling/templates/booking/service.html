@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Choose a service · DrLibre{% endblock %}
+{% block content %}
+<h1>Choose a service</h1>
+{% for hospital in hospitals %}
+<section aria-labelledby="hospital-{{ forloop.counter }}">
+  <h2 id="hospital-{{ forloop.counter }}">{{ hospital.name }}</h2>
+  {% for department in hospital.departments %}
+  <h3>{{ department.name }}</h3>
+  <ul>
+    {% for type in department.types %}<li><a href="{{ type.href }}">{{ type.name }}</a> ({{ type.duration }})</li>{% endfor %}
+  </ul>
+  {% endfor %}
+</section>
+{% empty %}{% include "components/empty_state.html" with title="No services to book online" text="Search for a hospital or a provider instead." action_href="/" action_text="Search" %}{% endfor %}
+{% endblock %}

@@ -1,7 +1,7 @@
 """Task 12a, times: a week of free slots in the hospital's zone."""
 
 from collections.abc import Callable
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from django.http import Http404, HttpRequest, HttpResponse
 
@@ -41,7 +41,11 @@ class TimesPage(PageView):
         return self.page(request, context)
 
 
-def week_strip(week: WeekOfSlots, week_href: Callable[[date], str]) -> dict[str, object]:
+def week_strip(
+    week: WeekOfSlots,
+    week_href: Callable[[date], str],
+    slot_href: Callable[[datetime], str] | None = None,
+) -> dict[str, object]:
     """The context of components/week_strip.html, for every page that shows a week of slots."""
     type_id = week.choice.appointment_type.pk
     clinician = week.choice.clinician
@@ -54,7 +58,9 @@ def week_strip(week: WeekOfSlots, week_href: Callable[[date], str]) -> dict[str,
         slots = [
             {
                 "label": clock_label(start, week.time_zone),
-                "href": details_href(type_id, provider_id, start),
+                "href": slot_href(start)
+                if slot_href
+                else details_href(type_id, provider_id, start),
                 "day": spoken_day,
             }
             for start in week.days.get(day, [])

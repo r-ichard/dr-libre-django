@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Cancel your appointment · DrLibre{% endblock %}
+{% block content %}
+<h1>Cancel your appointment</h1>
+<section class="card" aria-labelledby="cancel-summary-title">
+  <h2 id="cancel-summary-title">{{ row.type_name }}</h2>
+  <dl class="facts">
+    <div><dt>With</dt><dd>{{ row.provider }}, {{ row.specialty }}</dd></div>
+    <div><dt>When</dt><dd>{{ row.day }}, {{ row.starts }} to {{ row.ends }} ({{ row.time_zone }})</dd></div>
+    <div><dt>Where</dt><dd>{{ row.hospital }}, {{ row.address }}</dd></div>
+  </dl>
+</section>
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  {% if error %}{% include "components/error_summary.html" with errors=cancel_errors %}{% endif %}
+  {% include "components/field.html" with name="reason" label="Why are you cancelling?" value=reason error=error autofocus=error %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Cancel appointment</button>
+    <a class="button button--secondary" href="{{ list_path }}">Keep appointment</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

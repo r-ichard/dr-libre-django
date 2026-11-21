@@ -36,7 +36,8 @@ start() {
     setsid nohup "$@" > "scratch/qa/$name.log" 2>&1 < /dev/null &
 }
 start mail uv run --with aiosmtpd==1.4.6 python -u -m aiosmtpd -n -l 127.0.0.1:1025
-start server uv run --env-file .env.example python manage.py runserver 127.0.0.1:8000 --noreload
+# All interfaces of the sandbox, so `fabro sandbox preview <run> 8000` can show this instance.
+start server uv run --env-file .env.example python manage.py runserver 0.0.0.0:8000 --noreload
 start worker uv run --env-file .env.example python manage.py run_worker
 
 attempts=0

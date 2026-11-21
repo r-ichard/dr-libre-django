@@ -1,7 +1,7 @@
-Task 04a: audit writer, security headers, deployment checks.
+Task 04b: audit writer, security headers, deployment checks.
 
 The rest of the platform baseline (`drlibre-specs.md` sections 4 and 16), on top of the
-request plumbing of task 04. No feature endpoint.
+request plumbing of tasks 04 and 04a. No feature endpoint.
 
 1. Audit writer: the one way a use case records an `AuditLogEntry`. It takes the actor
    (may be empty), the action, the entity type and id and the metadata, and reads the
@@ -27,8 +27,5 @@ request plumbing of task 04. No feature endpoint.
    slip in later. The development key in `.env.example` must fail that check. Every
    setting it needs comes from the environment; add them to `.env.example` with
    development values.
-7. `scripts/ensure_database.py`: a non-numeric `DB_PORT` names the variable instead of
-   raising a bare `ValueError` (carried from the review of task 01a).
-
 Done when `make setup && make lint && make test && make gate` pass from a fresh clone.
 The sandbox cannot run Docker; the orchestrator checks the headers on the host.

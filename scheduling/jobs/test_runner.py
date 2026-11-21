@@ -210,6 +210,7 @@ def returns_the_documented_interval_for_each_job() -> None:
         "expire_waitlist": timedelta(minutes=5),
         "send_pending_emails": timedelta(minutes=1),
         "purge_expired": timedelta(hours=1),
+        "expire_booking_holds": timedelta(minutes=1),
     }
 
 

@@ -6,6 +6,7 @@ from django.db.models import (
     EmailField,
     ForeignKey,
     Index,
+    OneToOneField,
     SmallIntegerField,
     TextChoices,
     TextField,
@@ -13,6 +14,7 @@ from django.db.models import (
 )
 from django.utils import timezone
 
+from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.domain.vocabulary import AppointmentSource, SessionKind
 from scheduling.models.base import (
     Record,
@@ -89,9 +91,15 @@ class BookingHold(Versioned):
     visitor_phone = CharField(max_length=30)
     visitor_reason = TextField(blank=True, default="")
     expires_at = DateTimeField()
+    terms_accepted_at = DateTimeField()
 
     class Meta:
         constraints = [
+            UniqueConstraint(
+                fields=["visitor_email"],
+                name="bookinghold_visitor_email_unique",
+                violation_error_message="visitor_email has a hold",
+            ),
             ends_after_start("bookinghold", "starts_at", "ends_at"),
             expires_after_creation("bookinghold"),
             lower_case("bookinghold", "visitor_email"),
@@ -101,6 +109,7 @@ class BookingHold(Versioned):
 
 class VerificationCode(Record):
     fhir_not_exposed = "credential, never served; sign-in events are AuditEvent"
+    hold = OneToOneField(BookingHold, on_delete=PROTECT)
     code_hash = CharField(max_length=HASH_LENGTH)
     email = EmailField(max_length=254)
     purpose = CharField(max_length=20, choices=CodePurpose)
@@ -133,4 +142,19 @@ class SignInLink(Record):
             ),
             hash_is_64_characters("signinlink", "token_hash"),
             expires_after_creation("signinlink"),
+        ]
+
+
+class RateLimitHit(Record):
+    fhir_not_exposed = "rate limit bookkeeping, never served; holds the keyed hash of an address"
+    scope = CharField(max_length=20, choices=choices_of(RateLimitScope))
+    # Keyed hash of the lower-cased email or of the network address: nothing readable is stored.
+    key_hash = CharField(max_length=HASH_LENGTH)
+    hit_at = DateTimeField()
+
+    class Meta:
+        indexes = [Index(fields=["scope", "key_hash", "hit_at"], name="ratelimithit_key_time")]
+        constraints = [
+            hash_is_64_characters("ratelimithit", "key_hash"),
+            one_of("ratelimithit", "scope", RateLimitScope),
         ]

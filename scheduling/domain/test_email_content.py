@@ -75,3 +75,29 @@ def returns_only_the_lines_whose_value_is_present_when_the_appointment_is_partly
         "\n"
         "Sign in to see your appointments: https://drlibre.example/sign-in"
     )
+
+
+def returns_code_expiry_and_no_link_when_code_email_is_built() -> None:
+    from scheduling.domain.email_content import verification_code_email  # noqa: PLC0415
+
+    text = verification_code_email("042917", 10)
+
+    assert "042917" in text.body
+    assert "10 minutes" in text.body
+    assert "http" not in text.body
+    assert "042917" not in text.subject
+
+
+def returns_exact_subject_and_body_when_code_email_is_built() -> None:
+    from scheduling.domain.email_content import verification_code_email  # noqa: PLC0415
+
+    text = verification_code_email("042917", 10)
+
+    assert text.subject == "Your DrLibre booking code"
+    assert text.body == (
+        "Your DrLibre booking code is 042917.\n"
+        "\n"
+        "It is valid for 10 minutes. Enter it on the booking page to finish your booking.\n"
+        "\n"
+        "If you did not ask for this code, ignore this message."
+    )

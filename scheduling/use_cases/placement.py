@@ -3,23 +3,20 @@
 Lock order, global against deadlock: clinicians by id, patient, rooms by id. Checks run after
 all locks; the exclusion constraints stay the last line."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
 from uuid import UUID
 
 from django.db import IntegrityError, transaction
 
-from scheduling.domain.audit_metadata import AuditMetadata
+from scheduling.domain.audit_metadata import AuditMetadata, EmailDomain
 from scheduling.domain.failure import Failure, Result, Success
-from scheduling.domain.first_available import Candidate, first_available
 from scheduling.domain.placement_rules import (
     BookingActor,
     BookingParties,
     NamedParties,
     authorize_booking,
-    choose_room,
 )
-from scheduling.domain.slot_search import QueryTooWide, free_slots_by_start
 from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, Role
 from scheduling.models import (
     Appointment,
@@ -32,12 +29,24 @@ from scheduling.use_cases import placement_checks
 from scheduling.use_cases.audit import AuditEvent, changed_field_names, record_audit
 from scheduling.use_cases.notifications import BOOKED_TITLE, notify_patient
 from scheduling.use_cases.placement_checks import PlacementSlot, slot_of
+from scheduling.use_cases.placement_choice import (
+    choose_clinician,
+    choose_free_room,
+    free_clinician_ids,
+)
 from scheduling.use_cases.placement_locks import lock_clinicians, lock_patient, lock_rooms
 from scheduling.use_cases.request_context import current_request_context
-from scheduling.use_cases.schedule_loading import (
-    active_appointment_type,
-    load_schedules,
-)
+from scheduling.use_cases.schedule_loading import active_appointment_type
+
+
+@dataclass(frozen=True)
+class HoldClaim:
+    """A visitor's own hold, placed on their behalf: it is left out of the conflict check, it sets
+    the source of the appointment, and its email domain goes into the booking's audit entry."""
+
+    hold_id: UUID
+    source: AppointmentSource
+    email_domain: EmailDomain
 
 
 @dataclass(frozen=True)
@@ -48,6 +57,14 @@ class PlacementCommand:
     patient_id: UUID | None
     room_id: UUID | None
     reason: str = ""
+    via_hold: HoldClaim | None = None
+    announce: bool = True
+
+
+@dataclass(frozen=True)
+class Probe:
+    clinician: ClinicianProfile
+    ends_at: datetime
 
 
 def place_appointment(command: PlacementCommand, actor: User) -> Result[Appointment]:
@@ -55,8 +72,24 @@ def place_appointment(command: PlacementCommand, actor: User) -> Result[Appointm
     authorized = authorize_booking(_booking_actor(actor), named)
     if isinstance(authorized, Failure):
         return authorized
+    parties = authorized.value
+    if command.via_hold is not None:
+        parties = replace(parties, source=command.via_hold.source)
     with transaction.atomic():
-        return _place(command, actor, authorized.value)
+        return _place(command, actor, parties)
+
+
+def probe_placement(command: PlacementCommand, ignoring_hold_id: UUID | None) -> Result[Probe]:
+    """The placement checks for a patient who does not exist yet. The two that read a patient's own
+    appointments wait for the verified code, so the answer cannot tell an account from a new
+    address. Returns the clinician it would take and the slot end."""
+    with transaction.atomic():
+        request = _Request(command, command.clinician_id, None, None, None, ignoring_hold_id)
+        selected = _select(request)
+        if isinstance(selected, Failure):
+            return selected
+        chosen = selected.value
+        return Success(Probe(chosen.clinician, chosen.context.slot.window.ends_at))
 
 
 def replace_placement(
@@ -85,130 +118,154 @@ def _booking_actor(actor: User) -> BookingActor:
     return BookingActor(role, actor.pk, clinician_id)
 
 
-def _place(
-    command: PlacementCommand,
-    actor: User,
-    parties: BookingParties,
-    replacing: Appointment | None = None,
-) -> Result[Appointment]:
-    appointment_type = active_appointment_type(command.appointment_type_id)
-    if appointment_type is None:
-        return Failure.not_found()
-    pool = lock_clinicians(appointment_type, parties.clinician_id)
-    patient = lock_patient(parties.patient_id)
-    rooms = lock_rooms(appointment_type, parties.room_id)
-    named_clinician_missing = parties.clinician_id is not None and not pool
-    if named_clinician_missing or patient is None or rooms is None:
-        return Failure.not_found()
-    now = current_request_context().now
-    slot = slot_of(appointment_type, command.starts_at, now)
-    ignored_id = replacing.pk if replacing is not None else None
-    free_ids = free_clinician_ids(pool, slot, ignored_id)
-    chosen = _choose_clinician(pool, free_ids, parties, slot)
-    if isinstance(chosen, Failure):
-        return chosen
-    context = ChangeContext(slot, chosen.pk in free_ids, actor, replacing, command.reason)
-    refused = _first_refusal(chosen, patient, parties, context)
-    if refused is not None:
-        return refused
-    room_id = _choose_room(chosen, rooms, parties, context)
-    if isinstance(room_id, Failure):
-        return room_id
-    return _book(chosen, patient, room_id.value, parties, context)
+@dataclass(frozen=True)
+class _Request:
+    """What one run of the checks needs. No actor and no patient id is a probe for a visitor."""
 
-
-def free_clinician_ids(
-    pool: list[ClinicianProfile], slot: PlacementSlot, ignored_id: UUID | None
-) -> set[UUID]:
-    schedules = load_schedules(
-        [clinician.pk for clinician in pool], slot.slot_type, slot.window, slot.now, ignored_id
-    )
-    offers = free_slots_by_start(schedules, slot.slot_type, slot.window, slot.now, slot.zone)
-    if isinstance(offers, QueryTooWide):
-        raise ValueError("a placement window is one appointment long")
-    return {
-        clinician_id
-        for offer in offers
-        if offer.start == slot.window.starts_at
-        for clinician_id in offer.clinician_ids
-    }
-
-
-def _choose_clinician(
-    pool: list[ClinicianProfile], free_ids: set[UUID], parties: BookingParties, slot: PlacementSlot
-) -> ClinicianProfile | Failure:
-    if parties.clinician_id is not None:
-        return pool[0]
-    candidates = [
-        Candidate(clinician.pk, clinician.round_robin_weight, clinician.last_assigned_at)
-        for clinician in pool
-        if clinician.pk in free_ids
-    ]
-    winner = first_available(candidates, slot.now)
-    if winner is None:
-        return Failure.no_clinician_available()
-    return next(clinician for clinician in pool if clinician.pk == winner)
+    command: PlacementCommand
+    clinician_id: UUID | None
+    room_id: UUID | None
+    actor: User | None
+    patient_id: UUID | None
+    ignoring_hold_id: UUID | None
+    replacing: Appointment | None = None
 
 
 @dataclass(frozen=True)
 class ChangeContext:
     slot: PlacementSlot
     slot_is_free: bool
-    actor: User
+    actor: User | None
     replacing: Appointment | None
     reason: str = ""
+    email_domain: EmailDomain | None = None
+    announce: bool = True
 
     @property
     def replacing_id(self) -> UUID | None:
         return self.replacing.pk if self.replacing is not None else None
 
+    @property
+    def actor_role(self) -> Role:
+        return Role(self.actor.role) if self.actor is not None else Role.PATIENT
+
+
+@dataclass(frozen=True)
+class _Selection:
+    clinician: ClinicianProfile
+    patient: User | None
+    room_id: UUID | None
+    context: ChangeContext
+
+
+def _place(
+    command: PlacementCommand,
+    actor: User,
+    parties: BookingParties,
+    replacing: Appointment | None = None,
+) -> Result[Appointment]:
+    hold_id = command.via_hold.hold_id if command.via_hold is not None else None
+    request = _Request(
+        command,
+        parties.clinician_id,
+        parties.room_id,
+        actor,
+        parties.patient_id,
+        hold_id,
+        replacing,
+    )
+    selected = _select(request)
+    if isinstance(selected, Failure):
+        return selected
+    chosen = selected.value
+    if chosen.patient is None:
+        raise ValueError("a placement for an actor has a patient")
+    return _book(chosen, chosen.patient, parties, actor)
+
+
+def _select(request: _Request) -> Result[_Selection]:
+    command = request.command
+    appointment_type = active_appointment_type(command.appointment_type_id)
+    if appointment_type is None:
+        return Failure.not_found()
+    pool = lock_clinicians(appointment_type, request.clinician_id)
+    patient = None if request.patient_id is None else lock_patient(request.patient_id)
+    rooms = lock_rooms(appointment_type, request.room_id)
+    named_clinician_missing = request.clinician_id is not None and not pool
+    patient_missing = request.patient_id is not None and patient is None
+    if named_clinician_missing or patient_missing or rooms is None:
+        return Failure.not_found()
+    now = current_request_context().now
+    slot = slot_of(appointment_type, command.starts_at, now)
+    replacing_id = request.replacing.pk if request.replacing is not None else None
+    free_ids = free_clinician_ids(pool, slot, replacing_id, request.ignoring_hold_id)
+    chosen = choose_clinician(pool, free_ids, request.clinician_id, slot)
+    if isinstance(chosen, Failure):
+        return chosen
+    email_domain = command.via_hold.email_domain if command.via_hold is not None else None
+    context = ChangeContext(
+        slot,
+        chosen.pk in free_ids,
+        request.actor,
+        request.replacing,
+        command.reason,
+        email_domain,
+        command.announce,
+    )
+    refused = _first_refusal(chosen, patient, request, context)
+    if refused is not None:
+        return refused
+    room_id = _choose_room(chosen, rooms, request, context)
+    if isinstance(room_id, Failure):
+        return room_id
+    return Success(_Selection(chosen, patient, room_id.value, context))
+
 
 def _first_refusal(
-    clinician: ClinicianProfile, patient: User, parties: BookingParties, context: ChangeContext
+    clinician: ClinicianProfile, patient: User | None, request: _Request, context: ChangeContext
 ) -> Failure | None:
-    replacing = context.replacing
+    replacing, slot = context.replacing, context.slot
+    held = placement_checks.clinician_is_held(
+        clinician.pk, slot.window, slot.now, request.ignoring_hold_id
+    )
     conflicts = placement_checks.find_conflicts(
-        clinician.pk, patient.pk, parties.room_id, context.slot.window, context.replacing_id
+        clinician.pk,
+        patient.pk if patient is not None else None,
+        request.room_id,
+        slot.window,
+        context.replacing_id,
+        held,
     )
     if conflicts:
         return Failure.conflict(conflicts)
     violations = placement_checks.violated_booking_rules(
-        Role(context.actor.role),
-        patient.pk,
+        context.actor_role,
+        patient.pk if patient is not None else None,
         context.slot_is_free,
-        context.slot,
+        slot,
         replacing.starts_at if replacing is not None else None,
     )
     return Failure.rule_violation(violations) if violations else None
 
 
 def _choose_room(
-    clinician: ClinicianProfile,
-    rooms: list[Room],
-    parties: BookingParties,
-    context: ChangeContext,
+    clinician: ClinicianProfile, rooms: list[Room], request: _Request, context: ChangeContext
 ) -> Result[UUID | None]:
-    in_code_order = [room.pk for room in sorted(rooms, key=lambda room: (room.code, room.pk))]
-    slot, replacing = context.slot, context.replacing
-    busy = placement_checks.busy_room_ids(in_code_order, slot.window, context.replacing_id)
-    # A moved appointment keeps its room when that room is free at the new time.
+    replacing = context.replacing
     current_room_id = replacing.room_id if replacing is not None else None
-    preferred = current_room_id or clinician.default_room_id
-    needs_room = slot.appointment_type.needs_room
-    return choose_room(needs_room, parties.room_id, preferred, in_code_order, busy)
+    return choose_free_room(
+        clinician, rooms, request.room_id, context.slot, current_room_id, context.replacing_id
+    )
 
 
 def _book(
-    clinician: ClinicianProfile,
-    patient: User,
-    room_id: UUID | None,
-    parties: BookingParties,
-    context: ChangeContext,
+    chosen: _Selection, patient: User, parties: BookingParties, actor: User
 ) -> Result[Appointment]:
-    slot, actor, replacing = context.slot, context.actor, context.replacing
+    clinician, context = chosen.clinician, chosen.context
+    slot, replacing = context.slot, context.replacing
     try:
         with transaction.atomic():
-            appointment = _write(clinician, patient, room_id, parties, context)
+            appointment = _write(chosen, patient, parties.source)
     except IntegrityError as error:
         resource = placement_checks.violated_resource(error)
         if resource is None:
@@ -216,19 +273,14 @@ def _book(
         return Failure.conflict([resource])
     if replacing is not None:
         return Success(appointment)
-    _record_booking(appointment, actor)
+    _record_booking(appointment, actor, context)
     if parties.source == AppointmentSource.ROUND_ROBIN:
         _record_assignment(clinician, actor, slot.now)
     return Success(appointment)
 
 
-def _write(
-    clinician: ClinicianProfile,
-    patient: User,
-    room_id: UUID | None,
-    parties: BookingParties,
-    context: ChangeContext,
-) -> Appointment:
+def _write(chosen: _Selection, patient: User, source: AppointmentSource) -> Appointment:
+    clinician, room_id, context = chosen.clinician, chosen.room_id, chosen.context
     window = context.slot.window
     if context.replacing is None:
         return Appointment.objects.create(
@@ -239,7 +291,7 @@ def _write(
             starts_at=window.starts_at,
             ends_at=window.ends_at,
             status=AppointmentStatus.BOOKED,
-            source=parties.source,
+            source=source,
             patient_reason=context.reason,
         )
     moved = context.replacing
@@ -248,7 +300,7 @@ def _write(
     return moved
 
 
-def _record_booking(appointment: Appointment, actor: User) -> None:
+def _record_booking(appointment: Appointment, actor: User, context: ChangeContext) -> None:
     ids = {
         "appointment_id": appointment.pk,
         "patient_id": appointment.patient_id,
@@ -261,11 +313,12 @@ def _record_booking(appointment: Appointment, actor: User) -> None:
         "appointment_status": AppointmentStatus(appointment.status),
         "source_status": AppointmentSource(appointment.source),
     }
-    metadata = AuditMetadata(ids=ids, statuses=statuses)
+    metadata = AuditMetadata(ids=ids, statuses=statuses, email_domain=context.email_domain)
     record_audit(
         AuditEvent("appointment.book", "Appointment", str(appointment.pk), metadata), actor
     )
-    notify_patient(appointment, NotificationKind.SCHEDULE_CHANGED, BOOKED_TITLE)
+    if context.announce:
+        notify_patient(appointment, NotificationKind.SCHEDULE_CHANGED, BOOKED_TITLE)
 
 
 def _record_assignment(clinician: ClinicianProfile, actor: User, now: datetime) -> None:

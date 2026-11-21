@@ -20,7 +20,7 @@ from scheduling.domain.booking_rules import (
 )
 from scheduling.domain.free_slots import SlotType, TimeRange
 from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, Role
-from scheduling.models import Appointment, AppointmentType
+from scheduling.models import Appointment, AppointmentType, BookingHold
 from scheduling.use_cases.schedule_loading import slot_type_of
 
 RESOURCE_BY_CONSTRAINT = {
@@ -52,13 +52,16 @@ def slot_of(appointment_type: AppointmentType, starts_at: datetime, now: datetim
 
 def find_conflicts(
     clinician_id: UUID,
-    patient_id: UUID,
+    patient_id: UUID | None,
     room_id: UUID | None,
     window: TimeRange,
     ignoring_appointment_id: UUID | None = None,
+    clinician_held: bool = False,
 ) -> list[str]:
     """Resources with an active appointment overlapping the window, in the order of 5.2."""
-    sharing = Q(clinician_id=clinician_id) | Q(patient_id=patient_id)
+    sharing = Q(clinician_id=clinician_id)
+    if patient_id is not None:
+        sharing |= Q(patient_id=patient_id)
     if room_id is not None:
         sharing |= Q(room_id=room_id)
     overlapping = Appointment.objects.filter(
@@ -73,12 +76,27 @@ def find_conflicts(
     return [
         resource
         for resource, taken in (
-            ("clinician", any(row[0] == clinician_id for row in rows)),
-            ("patient", any(row[1] == patient_id for row in rows)),
+            ("clinician", clinician_held or any(row[0] == clinician_id for row in rows)),
+            ("patient", patient_id is not None and any(row[1] == patient_id for row in rows)),
             ("room", room_id is not None and any(row[2] == room_id for row in rows)),
         )
         if taken
     ]
+
+
+def clinician_is_held(
+    clinician_id: UUID, window: TimeRange, now: datetime, ignoring_hold_id: UUID | None = None
+) -> bool:
+    """A live hold of someone else on the clinician counts as a conflict (7.1 step 3)."""
+    holds = BookingHold.objects.filter(
+        clinician_id=clinician_id,
+        expires_at__gt=now,
+        starts_at__lt=window.ends_at,
+        ends_at__gt=window.starts_at,
+    )
+    if ignoring_hold_id is not None:
+        holds = holds.exclude(pk=ignoring_hold_id)
+    return holds.exists()
 
 
 def busy_room_ids(
@@ -98,7 +116,7 @@ def busy_room_ids(
 
 def violated_booking_rules(
     actor_role: Role,
-    patient_id: UUID,
+    patient_id: UUID | None,
     slot_is_free: bool,
     slot: PlacementSlot,
     current_start: datetime | None = None,
@@ -117,7 +135,9 @@ def violated_booking_rules(
     return [rule.value for rule in violated_rules(attempt)]
 
 
-def _open_online_bookings(patient_id: UUID, now: datetime) -> int:
+def _open_online_bookings(patient_id: UUID | None, now: datetime) -> int:
+    if patient_id is None:
+        return 0
     rows = Appointment.objects.filter(patient_id=patient_id, starts_at__gt=now).values_list(
         "starts_at", "status", "source"
     )

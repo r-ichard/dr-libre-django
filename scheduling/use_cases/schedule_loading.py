@@ -33,6 +33,7 @@ def load_schedules(
     window: TimeRange,
     now: datetime,
     ignoring_appointment_id: UUID | None = None,
+    ignoring_hold_id: UUID | None = None,
 ) -> dict[UUID, ClinicianSchedule]:
     rules: dict[UUID, list[AvailabilityWindow]] = {key: [] for key in clinician_ids}
     time_off: dict[UUID, list[BusyInterval]] = {key: [] for key in clinician_ids}
@@ -64,6 +65,8 @@ def load_schedules(
         starts_at__lt=window.ends_at,
         ends_at__gt=earliest_end,
     )
+    if ignoring_hold_id is not None:
+        holds = holds.exclude(pk=ignoring_hold_id)
     for hold in holds:
         appointments[hold.clinician_id].append(
             ExistingAppointment(hold.starts_at, hold.ends_at, AppointmentStatus.BOOKED)

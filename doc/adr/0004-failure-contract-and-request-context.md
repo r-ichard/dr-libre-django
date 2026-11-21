@@ -27,13 +27,14 @@ Status: accepted, 2026-11-21.
   | `invalid_transition` | 409 | `{"current_status": "completed"}` |
   | `has_dependents` | 409 | `{"dependents": ["appointments"]}` |
   | `rule_violation` | 422 | `{"violated_rules": ["lead_time"]}` |
+  | `rate_limited` | 429 | `{}`; message "Too many requests."; hold and code requests, per email address and per network address |
   | `internal_error` | 500 | `{}`; message "Something went wrong."; only for the unexpected |
 
   Nested validation paths join with `.` (`address.city`); DRF `non_field_errors` keeps that name.
   The screens and the FHIR `OperationOutcome` mapper both read this shape: `code` maps to
   `issue.code`, `details` to `issue.details` and `issue.expression`, `correlation_id` to
   `issue.diagnostics`.
-- **Transport failures reuse the ten codes** (the one judgement call). Unknown path and wrong
+- **Transport failures reuse the eleven codes** (the one judgement call). Unknown path and wrong
   method are `not_found` 404, with no `Allow` header. Unreadable body and unsupported media type
   are `invalid_input` 400 with field `body`. Failed validation, and an unknown field on a write
   (`StrictSerializer`), are `invalid_input`. A view without an access rule is `forbidden` 403;
@@ -60,3 +61,14 @@ Status: accepted, 2026-11-21.
 - Known gaps, tracked in the review: log message text is not scrubbed (callers must not
   interpolate sensitive data), nested serializers are not strict, non-API paths under `DEBUG`
   still show Django's technical page.
+
+## Amendment, task 12: `rate_limited` and the hold rules
+
+- `rate_limited` (429, empty details, message "Too many requests.") is the eleventh code. It is
+  answered for hold requests (5 an hour per email address, 20 per network address) and code
+  requests (3 an hour per email address, 10 per network address). The counters are `RateLimitHit`
+  rows holding a keyed hash, never a readable address.
+- A second hold for the same email replaces the first, so a visitor is not locked out of
+  rebooking. Anyone who knows an address can therefore drop its hold; the rate limits bound that.
+- A wrong, expired or used-up code is one `invalid_input` answer on field `code`. A correct code
+  for a staff or inactive address is a generic `forbidden`.

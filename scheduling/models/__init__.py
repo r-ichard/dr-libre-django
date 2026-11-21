@@ -1,5 +1,6 @@
 from scheduling.models.access import (
     BookingHold,
+    RateLimitHit,
     Session,
     SignInFailure,
     SignInLink,
@@ -13,7 +14,8 @@ from scheduling.models.people import ClinicianProfile, User
 
 __all__ = [
     "Appointment", "AppointmentType", "AuditLogEntry", "AvailabilityRule", "BookingHold",
-    "ClinicianProfile", "Department", "Hospital", "Notification", "Room", "Session",
-    "SignInFailure", "SignInLink", "Specialty", "TimeOff", "User", "VerificationCode",
-    "WaitlistEntry",
+    "ClinicianProfile", "Department", "Hospital", "Notification", "RateLimitHit", "Room",
+    "Session",
+    "SignInFailure", "SignInLink", "Specialty", "TimeOff", "User",
+    "VerificationCode", "WaitlistEntry",
 ]  # fmt: skip

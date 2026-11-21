@@ -1,9 +1,11 @@
 """Section 5.8: joining, the manual offer and accepting an offer, through the use cases."""
 
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager
 from datetime import timedelta
 
 import pytest
+from django.core import mail
 
 from scheduling.domain.failure import Failure, Success
 from scheduling.domain.request_context import RequestContext
@@ -29,6 +31,8 @@ from scheduling.use_cases.waitlist import (
 )
 
 pytestmark = pytest.mark.django_db
+
+OnCommit = Callable[..., AbstractContextManager[list[Callable[[], object]]]]
 
 
 @pytest.fixture(autouse=True)
@@ -417,3 +421,29 @@ def returns_no_foreign_reason_when_offer_shown() -> None:
     notification = Notification.objects.get(kind="WAITLIST_OFFERED")
     assert FOREIGN_REASON not in f"{notification.title} {notification.body}"
     assert FOREIGN_REASON not in str(AuditLogEntry.objects.get(action="waitlist.offer").metadata)
+
+
+def returns_waitlist_slot_offered_title_when_manual_offer_made() -> None:
+    clinic = make_clinic()
+    _cancelled_slot(clinic)
+    entry = _entry_for(clinic)
+
+    offer_waitlist_entry(entry.pk, _admin_user())
+
+    assert Notification.objects.get(kind="WAITLIST_OFFERED").title == "Waitlist slot offered"
+
+
+def returns_waitlist_slot_booked_title_and_one_email_when_offer_is_accepted(
+    django_capture_on_commit_callbacks: OnCommit,
+) -> None:
+    clinic = make_clinic()
+    entry = _offered_entry(clinic, _cancelled_slot(clinic))
+
+    with django_capture_on_commit_callbacks(execute=True):
+        accept_offer(entry.pk, clinic.patient)
+
+    titles = list(
+        Notification.objects.filter(recipient=clinic.patient).values_list("title", flat=True)
+    )
+    assert titles == ["Waitlist slot booked"]
+    assert [message.subject for message in mail.outbox] == ["Waitlist slot booked"]

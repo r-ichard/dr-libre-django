@@ -36,3 +36,16 @@ def patient_email(content: EmailSubject) -> EmailText:
         lines += [*details, ""]
     lines.append(f"Sign in to see your appointments: {content.sign_in_url}")
     return EmailText(content.title, "\n".join(lines))
+
+
+def verification_code_email(code: str, valid_minutes: int) -> EmailText:
+    """Only the code: nothing in this message signs the reader in or opens a page."""
+    body = (
+        f"Your DrLibre booking code is {code}.\n"
+        "\n"
+        f"It is valid for {valid_minutes} minutes. Enter it on the booking page to finish "
+        "your booking.\n"
+        "\n"
+        "If you did not ask for this code, ignore this message."
+    )
+    return EmailText("Your DrLibre booking code", body)

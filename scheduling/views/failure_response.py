@@ -28,6 +28,7 @@ STATUS_BY_CODE: dict[FailureCode, int] = {
     FailureCode.INVALID_TRANSITION: 409,
     FailureCode.HAS_DEPENDENTS: 409,
     FailureCode.RULE_VIOLATION: 422,
+    FailureCode.RATE_LIMITED: 429,
 }
 
 MESSAGE_BY_CODE: dict[FailureCode, str] = {
@@ -41,6 +42,7 @@ MESSAGE_BY_CODE: dict[FailureCode, str] = {
     FailureCode.INVALID_TRANSITION: "The status change is not allowed.",
     FailureCode.HAS_DEPENDENTS: "Other records depend on this one.",
     FailureCode.RULE_VIOLATION: "A booking rule was violated.",
+    FailureCode.RATE_LIMITED: "Too many requests.",
 }
 
 

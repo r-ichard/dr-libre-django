@@ -6,7 +6,8 @@ from django.db import transaction
 
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.lockout_rules import window_start
-from scheduling.models import Session, SignInFailure
+from scheduling.domain.rate_limit_rules import window_start as rate_limit_window_start
+from scheduling.models import RateLimitHit, Session, SignInFailure
 from scheduling.use_cases.audit import AuditEvent, record_audit
 from scheduling.use_cases.request_context import current_request_context
 
@@ -15,6 +16,7 @@ from scheduling.use_cases.request_context import current_request_context
 class PurgeCounts:
     session_count: int
     sign_in_failure_count: int
+    rate_limit_hit_count: int
 
 
 def purge_expired() -> PurgeCounts:
@@ -23,12 +25,15 @@ def purge_expired() -> PurgeCounts:
         session_count, _ = Session.objects.filter(expires_at__lt=now).delete()
         failures = SignInFailure.objects.filter(failed_at__lt=window_start(now))
         failure_count, _ = failures.delete()
-        counts = PurgeCounts(session_count, failure_count)
-        if session_count or failure_count:
+        hits = RateLimitHit.objects.filter(hit_at__lt=rate_limit_window_start(now))
+        hit_count, _ = hits.delete()
+        counts = PurgeCounts(session_count, failure_count, hit_count)
+        if session_count or failure_count or hit_count:
             metadata = AuditMetadata(
                 counts={
                     "session_count": session_count,
                     "sign_in_failure_count": failure_count,
+                    "rate_limit_hit_count": hit_count,
                 }
             )
             record_audit(

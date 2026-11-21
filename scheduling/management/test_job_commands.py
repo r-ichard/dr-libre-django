@@ -60,7 +60,7 @@ def returns_both_counts_when_purge_expired_runs_alone() -> None:
     make("SignInFailure", failed_at=long_ago)
     make("SignInFailure", failed_at=long_ago)
 
-    assert _run("purge_expired") == ["1", "2"]
+    assert _run("purge_expired") == ["1", "2", "0"]
     assert Session.objects.count() == 0
     assert SignInFailure.objects.count() == 0
 

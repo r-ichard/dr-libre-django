@@ -13,6 +13,7 @@ from scheduling.views.appointment_actions import (
 )
 from scheduling.views.appointments import AppointmentsView
 from scheduling.views.auth import LoginView, LogoutView
+from scheduling.views.booking import HoldsView, ResendView, VerifyView
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
@@ -39,6 +40,9 @@ urlpatterns = [
     path("api/v1/search/providers", SearchProvidersView.as_view()),
     path("api/v1/search/hospitals", SearchHospitalsView.as_view()),
     path("api/v1/search/specialties", SearchSpecialtiesView.as_view()),
+    path("api/v1/booking/holds", HoldsView.as_view()),
+    path("api/v1/booking/holds/<uuid:hold_id>/resend", ResendView.as_view()),
+    path("api/v1/booking/holds/<uuid:hold_id>/verify", VerifyView.as_view()),
     path("api/v1/appointments", AppointmentsView.as_view()),
     path("api/v1/appointments/<uuid:appointment_id>/cancel", CancelView.as_view()),
     path("api/v1/appointments/<uuid:appointment_id>/reschedule", RescheduleView.as_view()),

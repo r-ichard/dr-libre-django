@@ -16,6 +16,7 @@ class FailureCode(StrEnum):
     INVALID_TRANSITION = "invalid_transition"
     HAS_DEPENDENTS = "has_dependents"
     RULE_VIOLATION = "rule_violation"
+    RATE_LIMITED = "rate_limited"
 
 
 @dataclass(frozen=True)
@@ -70,6 +71,10 @@ class Failure:
     @classmethod
     def rule_violation(cls, violated_rules: Sequence[str]) -> Failure:
         return cls(FailureCode.RULE_VIOLATION, {"violated_rules": list(violated_rules)})
+
+    @classmethod
+    def rate_limited(cls) -> Failure:
+        return cls(FailureCode.RATE_LIMITED)
 
 
 @dataclass(frozen=True)

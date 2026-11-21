@@ -34,6 +34,7 @@ erDiagram
     User ||--o{ Session : "user"
     User ||--o{ SignInLink : "patient"
     ClinicianProfile ||--o{ TimeOff : "clinician"
+    BookingHold ||--o| VerificationCode : "hold"
     User ||--o{ WaitlistEntry : "patient"
     AppointmentType ||--o{ WaitlistEntry : "appointment_type"
     ClinicianProfile |o--o{ WaitlistEntry : "preferred_clinician"
@@ -193,6 +194,7 @@ FHIR: Appointment
 | `visitor_phone` | CharField | no | at most 30 characters |
 | `visitor_reason` | TextField | no |  |
 | `expires_at` | DateTimeField | no |  |
+| `terms_accepted_at` | DateTimeField | no |  |
 
 Constraints:
 
@@ -200,6 +202,7 @@ Constraints:
 - `bookinghold_expires_after_creation` (check): expires_at must be after created_at
 - `bookinghold_source_listed` (check): source must be one of ONLINE, ROUND_ROBIN
 - `bookinghold_visitor_email_lower_case` (check): visitor_email must be lower case
+- `bookinghold_visitor_email_unique` (unique): visitor_email has a hold
 
 ## ClinicianProfile
 
@@ -313,6 +316,27 @@ Constraints:
 - `notification_kind_listed` (check): kind must be one of APPOINTMENT_REMINDER, APPOINTMENT_CANCELLED, SCHEDULE_CHANGED, WAITLIST_OFFERED, WAITLIST_BOOKED
 - `notification_one_reminder_per_appointment` (partial unique): the appointment already has a reminder
 - `notification_title_not_blank` (check): title must not be empty
+
+## RateLimitHit
+
+Table `scheduling_ratelimithit`.
+
+FHIR: not exposed, rate limit bookkeeping, never served; holds the keyed hash of an address
+
+| Field | Type | Null | Rule |
+| --- | --- | --- | --- |
+| `id` | UUIDField | no | primary key; at most 32 characters |
+| `created_at` | DateTimeField | no |  |
+| `updated_at` | DateTimeField | no |  |
+| `created_by` | ForeignKey | yes | refers to User, protected |
+| `scope` | CharField | no | at most 20 characters; one of hold, code |
+| `key_hash` | CharField | no | at most 64 characters |
+| `hit_at` | DateTimeField | no |  |
+
+Constraints:
+
+- `ratelimithit_key_hash_64_characters` (check): key_hash must be exactly 64 characters
+- `ratelimithit_scope_listed` (check): scope must be one of hold, code
 
 ## Room
 
@@ -476,6 +500,7 @@ FHIR: Practitioner, Patient
 | `phone` | CharField | no | at most 30 characters |
 | `date_of_birth` | DateField | yes |  |
 | `email_verified_at` | DateTimeField | yes |  |
+| `terms_accepted_at` | DateTimeField | yes |  |
 
 Constraints:
 
@@ -499,6 +524,7 @@ FHIR: not exposed, credential, never served; sign-in events are AuditEvent
 | `created_at` | DateTimeField | no |  |
 | `updated_at` | DateTimeField | no |  |
 | `created_by` | ForeignKey | yes | refers to User, protected |
+| `hold` | OneToOneField | no | unique; refers to BookingHold, protected |
 | `code_hash` | CharField | no | at most 64 characters |
 | `email` | CharField | no | at most 254 characters |
 | `purpose` | CharField | no | at most 20 characters; one of BOOKING |

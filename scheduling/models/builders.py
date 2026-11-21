@@ -87,6 +87,18 @@ def _hold_defaults() -> dict[str, Callable[[], object]]:
         "visitor_phone": lambda: "+49 30 5555",
         "visitor_reason": lambda: "",
         "expires_at": lambda: FAR_FUTURE,
+        "terms_accepted_at": lambda: STARTS_AT,
+    }
+
+
+def _verification_code_defaults() -> dict[str, Callable[[], object]]:
+    return {
+        "hold": lambda: make("BookingHold"),
+        "code_hash": unique_hash,
+        "email": lambda: f"{unique_text('code')}@example.com",
+        "purpose": lambda: "BOOKING",
+        "expires_at": lambda: FAR_FUTURE,
+        "attempts_used": lambda: 0,
     }
 
 
@@ -177,13 +189,7 @@ def _defaults() -> dict[str, dict[str, Callable[[], object]]]:
         },
         "SignInFailure": {"email_hash": unique_hash, "failed_at": lambda: STARTS_AT},
         "BookingHold": _hold_defaults(),
-        "VerificationCode": {
-            "code_hash": unique_hash,
-            "email": lambda: f"{unique_text('code')}@example.com",
-            "purpose": lambda: "BOOKING",
-            "expires_at": lambda: FAR_FUTURE,
-            "attempts_used": lambda: 0,
-        },
+        "VerificationCode": _verification_code_defaults(),
         "SignInLink": {
             "token_hash": unique_hash,
             "patient": lambda: make("User"),

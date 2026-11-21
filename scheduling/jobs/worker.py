@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from scheduling.domain.job_schedule import is_due
 from scheduling.jobs.runner import Job, run_job
 from scheduling.use_cases.email_delivery import send_pending_emails
+from scheduling.use_cases.hold_expiry import expire_booking_holds
 from scheduling.use_cases.purge import purge_expired
 from scheduling.use_cases.reminders import send_reminders
 from scheduling.use_cases.waitlist_expiry import expire_waitlist
@@ -25,6 +26,7 @@ def _purge() -> dict[str, int]:
     return {
         "session_count": counts.session_count,
         "sign_in_failure_count": counts.sign_in_failure_count,
+        "rate_limit_hit_count": counts.rate_limit_hit_count,
     }
 
 
@@ -36,12 +38,14 @@ SEND_PENDING_EMAILS = Job(
     atomic=False,
 )
 PURGE_EXPIRED = Job("purge_expired", _purge)
+EXPIRE_BOOKING_HOLDS = Job("expire_booking_holds", lambda: {"hold_count": expire_booking_holds()})
 
 JOB_SCHEDULE: tuple[ScheduledJob, ...] = (
     ScheduledJob(SEND_REMINDERS, timedelta(minutes=10)),
     ScheduledJob(EXPIRE_WAITLIST, timedelta(minutes=5)),
     ScheduledJob(SEND_PENDING_EMAILS, timedelta(minutes=1)),
     ScheduledJob(PURGE_EXPIRED, timedelta(hours=1)),
+    ScheduledJob(EXPIRE_BOOKING_HOLDS, timedelta(minutes=1)),
 )
 
 

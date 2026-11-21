@@ -27,8 +27,9 @@ from scheduling.use_cases.notifications import (
     WAITLIST_BOOKED_TITLE,
     notify_waitlist_patient,
 )
-from scheduling.use_cases.placement import PlacementCommand, free_clinician_ids, place_appointment
+from scheduling.use_cases.placement import PlacementCommand, place_appointment
 from scheduling.use_cases.placement_checks import slot_of
+from scheduling.use_cases.placement_choice import free_clinician_ids
 from scheduling.use_cases.record_access import guard_record
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.schedule_loading import active_appointment_type
@@ -122,6 +123,7 @@ def accept_offer(entry_id: UUID, actor: User) -> Result[WaitlistEntry]:
             offered.clinician_id,
             entry.patient_id,
             None,
+            announce=False,
         )
         placed = place_appointment(command, actor)
         if isinstance(placed, Failure):

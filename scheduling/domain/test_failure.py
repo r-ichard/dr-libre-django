@@ -11,10 +11,11 @@ SPECIFICATION_CODES = {
     "invalid_transition",
     "has_dependents",
     "rule_violation",
+    "rate_limited",
 }
 
 
-def returns_exactly_the_ten_specified_codes_when_failure_codes_are_listed() -> None:
+def returns_exactly_the_eleven_specified_codes_when_failure_codes_are_listed() -> None:
     listed = {code.value for code in FailureCode}
 
     assert listed == SPECIFICATION_CODES
@@ -69,3 +70,10 @@ def returns_empty_details_when_code_carries_no_details() -> None:
 
 def returns_wrapped_value_when_success_is_built() -> None:
     assert Success("booked").value == "booked"
+
+
+def returns_rate_limited_with_empty_details_when_rate_limited_constructor_is_called() -> None:
+    failure = Failure.rate_limited()
+
+    assert failure.code.value == "rate_limited"
+    assert failure.details == {}

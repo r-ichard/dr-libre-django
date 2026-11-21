@@ -38,6 +38,7 @@ class User(AbstractBaseUser, Versioned):
     phone = CharField(max_length=30, blank=True, default="")
     date_of_birth = DateField(null=True, blank=True)
     email_verified_at = DateTimeField(null=True, blank=True)
+    terms_accepted_at = DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"

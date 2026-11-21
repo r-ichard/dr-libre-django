@@ -21,8 +21,8 @@ BOOKED_TITLE = "Appointment booked"
 CANCELLED_TITLE = "Appointment cancelled"
 RESCHEDULED_TITLE = "Appointment rescheduled"
 REMINDER_TITLE = "Appointment reminder"
-OFFERED_TITLE = "A slot opened for you"
-WAITLIST_BOOKED_TITLE = "Waitlist appointment booked"
+OFFERED_TITLE = "Waitlist slot offered"
+WAITLIST_BOOKED_TITLE = "Waitlist slot booked"
 
 
 def notify_patient(appointment: Appointment, kind: NotificationKind, title: str) -> None:

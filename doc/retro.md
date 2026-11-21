@@ -417,3 +417,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The calendar week is the first page that passes every test and is not usable: no time
   axis, no rows, clipped blocks. Nothing in the sandbox can see that. Carried to task 17.
 - First two QA issues arrived while this ran: #10 and #11, no P0.
+
+## 2026-11-21 QA round 1 (runs 01M8001VW5XE, 01M8001WCA9V, 01M8001WY83F, 01M8001XEDGY)
+
+- Four runs in parallel, 8 to 18 minutes each, beside the task run. 15 issues filed,
+  #10 to #24: 5 P1, 10 P2, no P0. The issue bodies are good enough to hand to a task run:
+  repeatable steps, observed, expected with the section number, a correlation id.
+- No access-control hole, no leak of personal data and no double booking was found by
+  the access, booking and public runs, which went looking for exactly those.
+- Five of fifteen are one class: an input nobody expected answers 500. Hundreds of unit
+  tests per task did not cover it; a hostile-input test over every route will. Task 17a.
+- The journeys run found in the browser what I had found by hand and more: focus not
+  moving to the first invalid field, a notice that can be forged through the address,
+  cancelled notifications that read as if the appointment were on.
+- Copies of the issue bodies are in `doc/qa/2026-11-21-round-1.md`, because a task run has
+  no GitHub access.

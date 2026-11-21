@@ -66,6 +66,8 @@ tasks.
 | | **M6 Clinician workspace (#6)** | | |
 | 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
 | 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | running `01M80115TVZ7` |
+| 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | todo |
+| 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) | 5, 6, 8, 12.3, 16 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |
@@ -141,6 +143,3 @@ Small findings waiting for the next task that touches the same file.
   re-seed through the use cases.
 - `ClinicalNote` declares itself not exposed through FHIR, but section 15.3 maps clinical
   notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
-- QA issues waiting for a hardening task: #10 (P1, the sign-in page answers 500 for a
-  malformed email address), #11 (P2, 404 instead of 403 on another patient's
-  confirmation page and calendar file).

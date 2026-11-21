@@ -218,3 +218,19 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Host check: no migration from moving the enumerations; planting a Django import in a
   domain module fails the import guard.
 - `make mutate` is now a gate: the proof stage can run it and trust its exit code.
+
+## 2026-11-21 task 07, run 01M7ZA9QJG1D (79 minutes of which 50 asleep, merged 4466b27)
+
+- Clean pass, no bounce. 1125 tests in 10 seconds, mutation gate clean.
+- The laptop slept on battery with the lid closed from 16:19 to 17:09. `caffeinate -i -s`
+  holds on AC power only. The sandbox and the agent survived and the run resumed by
+  itself a few minutes after wake; the events stream simply stops while asleep. Before
+  restarting a silent run, read `pmset -g log` and look at the sandbox with
+  `docker exec <container> ps`.
+- Host check on the running stack: slots in the hospital time zone, booking, the same
+  slot twice (conflict naming clinician and patient), another patient's id (forbidden),
+  an end time in the body (unknown field), a start that is no slot (outside
+  availability), first available. Then the race: six patients for one slot in parallel,
+  three rounds, one 201 and five 409 each time; one patient with two clinicians at the
+  same time, three rounds, one 201 and one 409 each time. No overlap in the database, no
+  500, nothing readable in the logs.

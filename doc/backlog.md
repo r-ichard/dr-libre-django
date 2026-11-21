@@ -33,7 +33,7 @@ as GitHub issues; the issue number is in the heading.
 | 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | merged `f8cb3d8` |
 | 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | merged `45d9150` |
 | | **M2 Sign-in and access (#2)** | | |
-| 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | todo |
+| 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | running `01M7Z3ZD8WKH` |
 | 05a | Design foundation, sign-in screens, role homes, error pages | 12, 16 | todo |
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, conflicts, status changes, booking rules; bind `make mutate` | 5.1 to 5.3, 5.6 | todo |

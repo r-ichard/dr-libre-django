@@ -35,8 +35,9 @@ use case, seed or admin registration.
 8. Tests, written first: for each constraint one test that the database refuses the
    illegal row and one that its nearest legal neighbour is accepted (touching
    appointments, an overlap with a cancelled appointment, the smallest legal value).
-   Name them `returns_X_when_Y` or `rejects_X_when_Y`. Add a check, run by `make test`
-   or `make lint`, that fails when a model change has no migration.
+   Name them `returns_X_when_Y` or `rejects_X_when_Y`; pytest collects only the patterns
+   in `pyproject.toml`. Add a check, run by `make test` or `make lint`, that fails when a
+   model change has no migration.
 9. `doc/data-model.md` for the owner's review: a Mermaid entity-relationship diagram and,
    per model, its fields and every database constraint. Generate it from the models with
    a management command and add a test that fails when the committed file is stale, so

@@ -1,7 +1,8 @@
 Stage: SECOND READER REVIEWS THE DIFF (§12, §13.3). Review the diff, not the chat.
 Do not edit any source file. You write only the review document and the verdict file.
 
-Run `git diff origin/main...HEAD --stat`, then read the changed files. Trust boundaries
+Run `git diff main...HEAD --stat` (the sandbox has the base as local `main`, no
+`origin/main`), then read the changed files. Trust boundaries
 first: views, API endpoints, middleware, forms and serializers, models and migrations;
 then the domain logic; then templates and other UI. CLAUDE.md names the paths. Read at
 chunk and plan level, then line by line where it matters.

@@ -44,3 +44,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   run on PostgreSQL in the sandbox; the container stack is verified on the host.
 - A script-only workflow needs no commit and no subscription call: the graph travels with
   the run and `fabro events <id> --json` carries the script output.
+
+## 2026-11-21 task 01, run 01M7YQ6BV2GV (8 minutes, merged eaf7ef2)
+
+- First full run of the pipeline. Three gates bounced the work once each and it passed
+  on the second visit: the architect rejected the first plan, the lint gate rejected the
+  first refactor, the reviewer found five missing task items (container files, `CLAUDE.md`
+  binding, ADR, environment settings, email wiring). The gates earn their place.
+- Host verification found what the sandbox cannot: `docker compose exec web make test`
+  fails because a settings test asserts development values, and the inbox port 5000 is
+  AirPlay on macOS. Both go to task 01a with the reviewer's "Later" list.
+- pytest collects only `returns_*` and `raises_*`. A test named with another verb would
+  never run and nothing would say so. Task 01a adds a guard.
+- The review prompt diffed against `origin/main`, which does not exist in the sandbox;
+  the reviewer fell back to `main` on its own. Prompt fixed.
+- Host verification recipe: gates in `docker run node:22-bookworm` on a fresh clone of the
+  run branch over https; stack with `docker compose -p drlibre-verify up -d --build --wait`
+  in a second fresh clone, then `down -v --rmi local`.

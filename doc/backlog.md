@@ -23,7 +23,8 @@ as GitHub issues; the issue number is in the heading.
 | # | Task | Specification | Status |
 |---|---|---|---|
 | | **M1 Foundation (#1)** | | |
-| 01 | Scaffold and stack binding | 14, 16 | running `01M7YQ6BV2GV` |
+| 01 | Scaffold and stack binding | 14, 16 | merged `eaf7ef2` |
+| 01a | Scaffold hardening: host defects and reviewer "Later" list of 01 | 16 | todo |
 | 02 | Domain model and migrations | 3 | todo |
 | 03 | Repeatable demo seed | 16 | todo |
 | 04 | Platform baseline: result codes, correlation id, structured logs, audit writer, security headers | 4, 12.3, 16 | todo |

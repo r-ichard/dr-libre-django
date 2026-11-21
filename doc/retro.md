@@ -139,3 +139,9 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   check (`docker compose logs | grep` for a planted email and token) on the host.
 - Split again: 04a fixes the log and error paths first, 04b carries the audit writer and
   the security headers.
+
+## 2026-11-21 task 04a, run 01M7Z0WGGPWF (8 minutes, merged f8cb3d8)
+
+- Clean pass. Host leak check repeated on the running stack: planted email, path segment
+  and token appear in no line; every request line is JSON with the route pattern.
+- What remains plain text is start-up output (`migrate`, development server banner).

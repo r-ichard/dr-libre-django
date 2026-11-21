@@ -30,7 +30,7 @@ as GitHub issues; the issue number is in the heading.
 | 03 | Repeatable demo seed | 16 | merged `8dd846f` |
 | 03a | Fast test suite: measure, fast hasher in tests, parallel workers | 16 | merged `d7ad7aa` |
 | 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | merged `1d3643c` |
-| 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | running `01M7Z0WGGPWF` |
+| 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | merged `f8cb3d8` |
 | 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |
@@ -88,3 +88,7 @@ Small findings waiting for the next task that touches the same file.
   included. Rate limiting needs its own answer (429). Task 12.
 - Test-only probe views live in `scheduling/views/` (`probe_views.py`, `probe_urls.py`).
   Move them out of the product package when a test support location exists.
+- Under `DEBUG`, a failing server-rendered page shows Django's technical error page, raw
+  path included. Decide the error pages with the first screens. Task 05a.
+- Start-up lines of `migrate` and the development server are plain text, not JSON. Settle
+  with the production server choice. Task 26.

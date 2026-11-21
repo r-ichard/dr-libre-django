@@ -191,3 +191,9 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   built. The reviewer noticed the test was never red. Check the code before writing a
   defect into a task.
 - Milestone M2 is complete.
+
+## 2026-11-21 task 06, run 01M7Z6E17G4R (1 minute, failed in toolchain)
+
+- `apt-get install postgresql` could not resolve `deb.debian.org`: a network blip, nothing
+  in the repository. Relaunched unchanged. First such failure in 16 runs; if it repeats,
+  bake PostgreSQL and uv into the sandbox image instead of installing them per run.

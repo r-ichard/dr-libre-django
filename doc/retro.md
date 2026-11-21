@@ -61,3 +61,14 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Host verification recipe: gates in `docker run node:22-bookworm` on a fresh clone of the
   run branch over https; stack with `docker compose -p drlibre-verify up -d --build --wait`
   in a second fresh clone, then `down -v --rmi local`.
+
+## 2026-11-21 task 01a, run 01M7YQVQ7M60 (4 minutes, merged b972eac)
+
+- Clean pass, no gate bounced. Host check confirmed all three host-only items: the suite
+  passes inside the web container, the inbox answers on 8025 under both `localhost` and
+  `127.0.0.1`, the database takes its credentials from `.env.example`.
+- The collection guard works: a probe function named `checks_nothing` in a test file
+  aborts `make test` with its name.
+- `docker compose up --wait` returns before the development server listens, because
+  `web` has no health check; a curl straight after gets no answer. Verify with retries.
+  Carried in `doc/backlog.md`.

@@ -41,7 +41,7 @@ as GitHub issues; the issue number is in the heading.
 | 06a | Domain hardening: domain owns its enumerations, identifier type, property tests, mutation survivors | 5, 4 | merged `59cda46` |
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | merged `4466b27` |
 | 08 | Appointment changes: cancel, reschedule, status actions, notifications, email | 5.6, 7.6, 11, 14 | merged `032461d` |
-| 08a | Booking hardening: reason for the visit, errors after commit, size gate, range checks | 3.1, 8, 14 | todo |
+| 08a | Booking hardening: reason for the visit, errors after commit, size gate, range checks | 3.1, 8, 14 | running `01M7ZGGVDM2F` |
 | 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | todo |
 | | **M4 Public search and passwordless booking (#4)** | | |
 | 10 | Public search | 6.1 to 6.5, 14 | todo |

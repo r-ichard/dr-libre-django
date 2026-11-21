@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Delete time off · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="time_off" %}
+<h1>Delete time off</h1>
+<section class="card" aria-labelledby="time-off-title">
+  <h2 id="time-off-title">{{ row.starts }} to {{ row.ends }}</h2>
+  {% if row.reason %}<p>{{ row.reason }}</p>{% endif %}
+  <p>Patients can book inside this period again.</p>
+</section>
+<form class="form" method="post" action="{{ action }}">
+  {% csrf_token %}
+  <div class="button-row">
+    <button class="button button--danger" type="submit">Delete time off</button>
+    <a class="button button--secondary" href="{{ back_path }}">Keep it</a>
+  </div>
+</form>
+{% endblock %}

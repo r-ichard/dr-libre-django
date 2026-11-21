@@ -82,7 +82,7 @@ def _details(appointment: Appointment) -> dict[str, object]:
 def _history(appointment: Appointment, zone: ZoneInfo) -> list[dict[str, str]]:
     return [
         {
-            "time": f"{entry.created_at.astimezone(zone):%d %b %Y, %H:%M}",
+            "time": f"{entry.created_at.astimezone(zone):%d %b %Y, %H:%M %Z}",
             "label": audit_label(entry.action),
             "actor": entry.actor.full_name if entry.actor else "System",
         }

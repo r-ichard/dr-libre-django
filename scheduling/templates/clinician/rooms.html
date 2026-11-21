@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Rooms · DrLibre{% endblock %}
+{% block head %}{% load static %}<link rel="stylesheet" href="{% static 'css/time-grid.css' %}"><link rel="stylesheet" href="/clinician/type-colours.css">{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="rooms" %}
+<h1>Rooms</h1>
+<p>{{ day_text }}. Times are in the hospital's time zone, {{ time_zone }}. Appointments of other clinicians show as "Occupied".</p>
+<div class="button-row">
+  <a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous day</a>
+  <a class="button button--secondary" href="{{ today_href }}">Today</a>
+  <a class="button button--secondary" href="{{ next_href }}" rel="next">Next day</a>
+</div>
+{% if columns %}
+{% include "components/time_grid.html" with empty_text="Free all day" %}
+{% else %}
+{% include "components/empty_state.html" with title="No active rooms" text="Your department has no active room." %}
+{% endif %}
+{% endblock %}

@@ -183,7 +183,8 @@ def returns_block_naming_type_and_patient_with_colour_class_when_week_has_appoin
 
     html = _clinician_client(clinic).get("/clinician/calendar?week=2030-01-07").content.decode()
 
-    assert f"{clinic.appointment_type.name}, {PLANTED_NAME}" in html
+    assert f">{clinic.appointment_type.name}</span>" in html
+    assert f">{PLANTED_NAME}</span>" in html
     assert f"type-colour--{clinic.appointment_type.pk.hex}" in html
     assert html.count("<ol") >= 8
     assert "style=" not in html

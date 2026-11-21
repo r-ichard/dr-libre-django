@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Availability · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="availability" %}
+<h1>Availability</h1>
+<p class="hint">Your weekly hours, in the hospital's time zone. Patients can book only inside them.</p>
+<div class="button-row">
+  <a class="button button--primary" href="{{ new_href }}">Add availability</a>
+</div>
+{% if rows %}
+<div class="table-wrap">
+  <table class="table">
+    <caption>Weekly availability</caption>
+    <thead><tr><th scope="col">Day</th><th scope="col">Hours</th><th scope="col">Slot step</th><th scope="col">Room</th><th scope="col">Actions</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <th scope="row">{{ row.weekday }}</th>
+        <td>{{ row.times }}</td>
+        <td>{{ row.step }} minutes</td>
+        <td>{{ row.room }}</td>
+        <td><a href="{{ row.edit_href }}">Edit<span class="visually-hidden"> {{ row.weekday }} {{ row.times }}</span></a> · <a href="{{ row.delete_href }}">Delete<span class="visually-hidden"> {{ row.weekday }} {{ row.times }}</span></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{% include "components/empty_state.html" with title="No availability yet" text="Nobody can book you until you add weekly hours." action_href=new_href action_text="Add availability" %}
+{% endif %}
+{% endblock %}

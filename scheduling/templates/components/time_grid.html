@@ -1,0 +1,24 @@
+{% comment %}Parameters: columns (heading, spoken, inside, outside, outside_title; items have lines, href, badge, classes), axis (24 labels, blank on half hours), axis_end, empty_text.
+One grid for the calendar (days) and the rooms timeline (rooms). It is a list of columns of lists of items, so a screen reader and a 375 px screen read it in order, each item naming its time. From 48rem the same lists are drawn on the 07:00 to 19:00 axis.{% endcomment %}
+<div class="time-grid">
+  <ol class="time-grid__axis" aria-hidden="true">
+    {% for label in axis %}<li class="time-grid-row">{{ label }}</li>{% endfor %}
+    <li class="time-grid__end">{{ axis_end }}</li>
+  </ol>
+  <ol class="time-grid__columns">
+    {% for column in columns %}
+    <li class="time-grid__column">
+      <h2 class="time-grid__heading"><span aria-hidden="true">{{ column.heading }}</span><span class="visually-hidden">{{ column.spoken }}</span></h2>
+      <ol class="time-grid__items">
+        {% for item in column.inside %}{% include "components/time_grid_item.html" %}{% empty %}{% if not column.outside %}<li class="time-grid__none">{{ empty_text }}</li>{% endif %}{% endfor %}
+      </ol>
+      {% if column.outside %}
+      <p class="time-grid__outside-title">{{ column.outside_title }}</p>
+      <ol class="time-grid__outside">
+        {% for item in column.outside %}{% include "components/time_grid_item.html" %}{% endfor %}
+      </ol>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</div>

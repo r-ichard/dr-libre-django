@@ -1,3 +1,5 @@
+from django.contrib.postgres.constraints import ExclusionConstraint
+from django.contrib.postgres.fields import DateTimeRangeField, RangeOperators
 from django.db.models import (
     PROTECT,
     CharField,
@@ -5,9 +7,11 @@ from django.db.models import (
     DateTimeField,
     F,
     ForeignKey,
+    Func,
     Q,
     SmallIntegerField,
     TimeField,
+    UniqueConstraint,
 )
 
 from scheduling.models.base import (
@@ -20,10 +24,18 @@ from scheduling.models.base import (
 from scheduling.models.organisation import Room
 from scheduling.models.people import ClinicianProfile
 
-WEEKDAY_MONDAY = 0
-WEEKDAY_SUNDAY = 6
+WEEKDAY_SUNDAY = 0
+WEEKDAY_SATURDAY = 6
 SLOT_STEP_MINIMUM = 5
 SLOT_STEP_MAXIMUM = 240
+
+
+class MinuteRange(Func):
+    """The time of day as a half-open range, so rules that touch do not overlap."""
+
+    template = "TSRANGE(TIMESTAMP '2000-01-01' + %(expressions)s, '[)')"
+    arg_joiner = ", TIMESTAMP '2000-01-01' + "
+    output_field = DateTimeRangeField()
 
 
 class AvailabilityRule(Versioned):
@@ -39,7 +51,7 @@ class AvailabilityRule(Versioned):
 
     class Meta:
         constraints = [
-            between("availabilityrule", "weekday", WEEKDAY_MONDAY, WEEKDAY_SUNDAY),
+            between("availabilityrule", "weekday", WEEKDAY_SUNDAY, WEEKDAY_SATURDAY),
             ends_after_start("availabilityrule", "start_time", "end_time"),
             whole_minutes("availabilityrule", "start_time"),
             whole_minutes("availabilityrule", "end_time"),
@@ -48,6 +60,15 @@ class AvailabilityRule(Versioned):
                 "availabilityrule_valid_to_not_before_valid_from",
                 Q(valid_to__isnull=True) | Q(valid_to__gte=F("valid_from")),
                 "valid_to must not be before valid_from",
+            ),
+            ExclusionConstraint(
+                name="availabilityrule_no_overlap_for_weekday",
+                expressions=[
+                    (MinuteRange("start_time", "end_time"), RangeOperators.OVERLAPS),
+                    ("weekday", RangeOperators.EQUAL),
+                    ("clinician", RangeOperators.EQUAL),
+                ],
+                violation_error_message="a clinician's rules on one weekday must not overlap",
             ),
         ]
 
@@ -61,4 +82,11 @@ class TimeOff(Versioned):
 
     class Meta:
         verbose_name_plural = "time off"
-        constraints = [ends_after_start("timeoff", "starts_at", "ends_at")]
+        constraints = [
+            ends_after_start("timeoff", "starts_at", "ends_at"),
+            UniqueConstraint(
+                fields=["clinician", "starts_at", "ends_at"],
+                name="timeoff_period_unique",
+                violation_error_message="this period is already recorded",
+            ),
+        ]

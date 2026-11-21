@@ -26,13 +26,21 @@ from scheduling.views.pages.clinician_appointment import (
 )
 from scheduling.views.pages.clinician_appointment import CancelPage as ClinicianCancelPage
 from scheduling.views.pages.clinician_appointment import NotesPage
+from scheduling.views.pages.clinician_availability import (
+    AvailabilityPage,
+    RuleDeletePage,
+    RuleFormPage,
+)
 from scheduling.views.pages.clinician_calendar import CalendarPage, ColoursPage
+from scheduling.views.pages.clinician_patients import PatientsPage
 from scheduling.views.pages.clinician_reschedule import (
     ReschedulePage as ClinicianReschedulePage,
 )
 from scheduling.views.pages.clinician_reschedule import (
     RescheduleReviewPage as ClinicianRescheduleReviewPage,
 )
+from scheduling.views.pages.clinician_rooms import RoomsPage
+from scheduling.views.pages.clinician_time_off import TimeOffDeletePage, TimeOffPage
 from scheduling.views.pages.clinician_today import CheckInPage, CompletePage, NoShowPage, TodayPage
 from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
 from scheduling.views.pages.homes import AdminConsole, PatientPortal
@@ -130,6 +138,14 @@ urlpatterns = [
     path("clinician/", TodayPage.as_view()),
     path("clinician/calendar", CalendarPage.as_view()),
     path("clinician/type-colours.css", ColoursPage.as_view()),
+    path("clinician/availability", AvailabilityPage.as_view()),
+    path("clinician/availability/new", RuleFormPage.as_view()),
+    path("clinician/availability/<uuid:rule_id>/edit", RuleFormPage.as_view()),
+    path("clinician/availability/<uuid:rule_id>/delete", RuleDeletePage.as_view()),
+    path("clinician/time-off", TimeOffPage.as_view()),
+    path("clinician/time-off/<uuid:time_off_id>/delete", TimeOffDeletePage.as_view()),
+    path("clinician/patients", PatientsPage.as_view()),
+    path("clinician/rooms", RoomsPage.as_view()),
     path("clinician/appointments/<uuid:appointment_id>", ClinicianAppointmentPage.as_view()),
     path("clinician/appointments/<uuid:appointment_id>/check-in", CheckInPage.as_view()),
     path("clinician/appointments/<uuid:appointment_id>/complete", CompletePage.as_view()),

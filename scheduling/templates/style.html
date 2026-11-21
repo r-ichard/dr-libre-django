@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Style page · DrLibre{% endblock %}
+{% block head %}{% load static %}<link rel="stylesheet" href="{% static 'css/time-grid.css' %}">{% endblock %}
 {% block content %}
 <h1>Style page</h1>
 <p class="hint">Every component in every state. Shown only when DEBUG is on.</p>
@@ -78,7 +79,8 @@
   {% include "components/agenda_row.html" with row=specimen_row %}
 </ul>
 {% include "components/history_list.html" with history=specimen_history %}
-{% include "components/calendar_week.html" with days=specimen_days %}
+<h3>Time grid</h3>
+{% include "components/time_grid.html" with columns=specimen_columns axis=specimen_axis axis_end=specimen_axis_end empty_text="Nothing booked" %}
 
 <h2>Empty state</h2>
 {% include "components/empty_state.html" with title="No appointments yet" text="When you book, your appointments appear here." action_href="#" action_text="Book an appointment" %}

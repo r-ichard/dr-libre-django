@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Patients · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="patients" %}
+<h1>Patients</h1>
+<p class="hint">Patients who have at least one appointment with you.</p>
+<form class="form" method="get" action="{{ action }}" role="search">
+  {% include "components/field.html" with name="q" label="Search by name" %}
+  <button class="button button--secondary" type="submit">Search</button>
+</form>
+{% if rows %}
+<div class="table-wrap">
+  <table class="table">
+    <caption>Your patients</caption>
+    <thead><tr><th scope="col">Name</th><th scope="col">Phone</th><th scope="col">Last visit</th><th scope="col">Next visit</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr><th scope="row">{{ row.name }}</th><td>{{ row.phone }}</td><td>{{ row.last_visit }}</td><td>{{ row.next_visit }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% elif query %}
+{% include "components/empty_state.html" with title="No patient matches" text="Try fewer letters of the name." %}
+{% else %}
+{% include "components/empty_state.html" with title="No patients yet" text="Patients appear here after their first appointment with you." %}
+{% endif %}
+{% endblock %}

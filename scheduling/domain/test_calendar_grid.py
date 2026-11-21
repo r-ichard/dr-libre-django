@@ -84,3 +84,11 @@ def returns_extra_row_when_span_is_one_second_over_a_row() -> None:
     ends_at = _berlin(10, 0) + timedelta(seconds=1)
 
     assert place_in_grid(_berlin(9, 30), ends_at, BERLIN) == GridPlacement(first_row=6, span=2)
+
+
+def returns_labels_every_hour_from_0700_to_1900() -> None:
+    from scheduling.domain.calendar_grid import HOUR_LABELS
+
+    assert HOUR_LABELS[0] == "07:00"
+    assert HOUR_LABELS[-1] == "19:00"
+    assert len(HOUR_LABELS) == 13

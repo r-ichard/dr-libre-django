@@ -1,11 +1,11 @@
-{% comment %}Parameter: current (today, calendar). The clinician's sections; the ones task 17 adds are named but not links yet.{% endcomment %}
+{% comment %}Parameter: current (today, calendar, availability, time_off, patients, rooms). The clinician's sections.{% endcomment %}
 <nav class="portal-nav" aria-label="Clinician workspace">
   <ul>
     <li><a href="/clinician/"{% if current == "today" %} aria-current="page"{% endif %}>Today</a></li>
     <li><a href="/clinician/calendar"{% if current == "calendar" %} aria-current="page"{% endif %}>Calendar</a></li>
-    <li><span class="portal-nav__soon">Availability (soon)</span></li>
-    <li><span class="portal-nav__soon">Time off (soon)</span></li>
-    <li><span class="portal-nav__soon">Patients (soon)</span></li>
-    <li><span class="portal-nav__soon">Rooms (soon)</span></li>
+    <li><a href="/clinician/availability"{% if current == "availability" %} aria-current="page"{% endif %}>Availability</a></li>
+    <li><a href="/clinician/time-off"{% if current == "time_off" %} aria-current="page"{% endif %}>Time off</a></li>
+    <li><a href="/clinician/patients"{% if current == "patients" %} aria-current="page"{% endif %}>Patients</a></li>
+    <li><a href="/clinician/rooms"{% if current == "rooms" %} aria-current="page"{% endif %}>Rooms</a></li>
   </ul>
 </nav>

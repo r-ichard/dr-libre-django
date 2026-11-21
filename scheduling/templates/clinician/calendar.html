@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Calendar · DrLibre{% endblock %}
-{% block head %}<link rel="stylesheet" href="/clinician/type-colours.css">{% endblock %}
+{% block head %}{% load static %}<link rel="stylesheet" href="{% static 'css/time-grid.css' %}"><link rel="stylesheet" href="/clinician/type-colours.css">{% endblock %}
 {% block content %}
 {% include "components/workspace_nav.html" with current="calendar" %}
 <h1>Calendar</h1>
@@ -9,5 +9,5 @@
   <a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous week</a>
   <a class="button button--secondary" href="{{ next_href }}" rel="next">Next week</a>
 </div>
-{% include "components/calendar_week.html" %}
+{% include "components/time_grid.html" with empty_text="Nothing booked" %}
 {% endblock %}

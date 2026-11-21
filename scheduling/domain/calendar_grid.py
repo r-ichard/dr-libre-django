@@ -9,6 +9,9 @@ GRID_START_MINUTE = 7 * 60
 GRID_END_MINUTE = 19 * 60
 ROW_MINUTES = 30
 ROW_COUNT = (GRID_END_MINUTE - GRID_START_MINUTE) // ROW_MINUTES
+HOUR_LABELS = tuple(
+    f"{hour:02d}:00" for hour in range(GRID_START_MINUTE // 60, GRID_END_MINUTE // 60 + 1)
+)
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,9 @@
 
 from django.http import HttpRequest, HttpResponse
 
+from scheduling.domain.calendar_grid import HOUR_LABELS
 from scheduling.views.pages.page_view import PageView
+from scheduling.views.pages.time_grid import axis_rows
 
 SPECIALTIES = [("cardiology", "Cardiology"), ("dermatology", "Dermatology")]
 SAMPLE_ERRORS = [
@@ -23,17 +25,23 @@ SPECIMEN_ROW = {
     "return_date": "2030-01-07",
 }
 SPECIMEN_HISTORY = [{"time": "07 Jan 2030, 09:02", "label": "Checked in", "actor": "Dr Okafor"}]
-SPECIMEN_DAYS = [
+SPECIMEN_COLUMNS = [
     {
         "heading": "Mon 7 Jan",
         "spoken": "Monday 7 January 2030",
         "inside": [
             {
-                "text": "09:00 to 09:30, Check-up, Jane Doe",
+                "lines": ("09:00 to 09:30", "Check-up", "Jane Doe"),
                 "href": "#",
                 "badge": ("information", "Booked"),
-                "classes": "cal-row-5 cal-span-1",
-            }
+                "classes": "time-grid-at-5 time-grid-span-1",
+            },
+            {
+                "lines": ("11:00 to 12:00", "Occupied"),
+                "href": "",
+                "badge": None,
+                "classes": "time-grid-at-9 time-grid-span-2 time-grid-occupied",
+            },
         ],
         "outside": [],
         "outside_title": "Outside 07:00 to 19:00",
@@ -52,6 +60,8 @@ class StylePage(PageView):
                 "summary_errors": SAMPLE_ERRORS,
                 "specimen_row": SPECIMEN_ROW,
                 "specimen_history": SPECIMEN_HISTORY,
-                "specimen_days": SPECIMEN_DAYS,
+                "specimen_columns": SPECIMEN_COLUMNS,
+                "specimen_axis": axis_rows(),
+                "specimen_axis_end": HOUR_LABELS[-1],
             },
         )

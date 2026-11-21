@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Time off · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="time_off" %}
+<h1>Time off</h1>
+<p class="hint">Times are in the hospital's time zone, {{ time_zone }}.</p>
+{% include "components/notice.html" with kind="information" text="Time off does not cancel appointments already booked in it." %}
+{% if rows %}
+<div class="table-wrap">
+  <table class="table">
+    <caption>Recorded time off</caption>
+    <thead><tr><th scope="col">From</th><th scope="col">To</th><th scope="col">Reason</th><th scope="col">Action</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <th scope="row">{{ row.starts }}</th>
+        <td>{{ row.ends }}</td>
+        <td>{{ row.reason|default:"None given" }}</td>
+        <td><a href="{{ row.delete_href }}">Delete<span class="visually-hidden"> time off from {{ row.starts }}</span></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+{% include "components/empty_state.html" with title="No time off recorded" text="Record a period below. Patients cannot book inside it." %}
+{% endif %}
+<section aria-labelledby="check-title">
+  <h2 id="check-title">Check a period first</h2>
+  <p>See which appointments already fall inside a period before you record it.</p>
+  <form class="form" method="get" action="{{ action }}" novalidate>
+    {% include "components/field.html" with name="starts_at" label="From" type="datetime-local" value=values.starts_at %}
+    {% include "components/field.html" with name="ends_at" label="To" type="datetime-local" value=values.ends_at %}
+    <button class="button button--secondary" type="submit">Check appointments</button>
+  </form>
+  {% if preview is not None %}
+  <div class="card" aria-labelledby="preview-title">
+    <h3 id="preview-title">Appointments inside this period</h3>
+    {% if preview %}
+    <p>These stay booked. Cancel or move them yourself if you cannot attend.</p>
+    <ul>{% for visit in preview %}<li>{{ visit.when }}: <a href="{{ visit.href }}">{{ visit.text }}</a></li>{% endfor %}</ul>
+    {% else %}
+    <p>No appointments fall inside this period.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+<section aria-labelledby="record-title">
+  <h2 id="record-title">Record time off</h2>
+  <form class="form" method="post" action="{{ action }}" novalidate>
+    {% csrf_token %}
+    {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
+    {% include "components/field.html" with name="starts_at" label="From" type="datetime-local" value=values.starts_at error=errors.starts_at %}
+    {% include "components/field.html" with name="ends_at" label="To" type="datetime-local" value=values.ends_at error=errors.ends_at %}
+    {% include "components/field.html" with name="reason" label="Reason (optional)" value=values.reason error=errors.reason hint="At most 200 characters." %}
+    <button class="button button--primary" type="submit">Record time off</button>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

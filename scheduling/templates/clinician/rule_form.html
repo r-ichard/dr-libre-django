@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="availability" %}
+<h1>{{ title }}</h1>
+<form class="form" method="post" novalidate>
+  {% csrf_token %}
+  {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
+  {% include "components/select.html" with name="weekday" label="Day" options=weekdays selected=values.weekday error=errors.weekday %}
+  {% include "components/field.html" with name="start_time" label="Start time" type="time" value=values.start_time error=errors.start_time hint="For example 09:00." %}
+  {% include "components/field.html" with name="end_time" label="End time" type="time" value=values.end_time error=errors.end_time hint="For example 17:00." %}
+  {% include "components/field.html" with name="slot_step_minutes" label="Slot step in minutes" type="number" value=values.slot_step_minutes error=errors.slot_step_minutes hint="Slots start every 5 to 240 minutes." %}
+  {% include "components/select.html" with name="room" label="Room" options=rooms selected=values.room error=errors.room %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Save</button>
+    <a class="button button--secondary" href="{{ back_path }}">Back to availability</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

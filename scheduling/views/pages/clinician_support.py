@@ -15,6 +15,10 @@ from scheduling.views.pages.patient_rows import STATUS_BADGES
 TODAY_PATH = "/clinician/"
 CALENDAR_PATH = "/clinician/calendar"
 APPOINTMENT_PATH = "/clinician/appointments"
+AVAILABILITY_PATH = "/clinician/availability"
+TIME_OFF_PATH = "/clinician/time-off"
+PATIENTS_PATH = "/clinician/patients"
+ROOMS_PATH = "/clinician/rooms"
 
 # The clinician's word for a missed visit is the status name; the patient's is "Missed".
 CLINICIAN_BADGES = {**STATUS_BADGES, AppointmentStatus.NO_SHOW: ("warning", "No-show")}

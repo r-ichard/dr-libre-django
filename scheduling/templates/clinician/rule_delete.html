@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Delete availability · DrLibre{% endblock %}
+{% block content %}
+{% include "components/workspace_nav.html" with current="availability" %}
+<h1>Delete availability</h1>
+<section class="card" aria-labelledby="rule-title">
+  <h2 id="rule-title">{{ row.weekday }}, {{ row.times }}</h2>
+  <p>Slot step {{ row.step }} minutes. {{ row.room }}.</p>
+  <p>Patients can no longer book these hours. Appointments already booked stay as they are.</p>
+</section>
+<form class="form" method="post" action="{{ action }}">
+  {% csrf_token %}
+  <div class="button-row">
+    <button class="button button--danger" type="submit">Delete availability</button>
+    <a class="button button--secondary" href="{{ back_path }}">Keep it</a>
+  </div>
+</form>
+{% endblock %}

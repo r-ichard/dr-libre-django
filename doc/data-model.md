@@ -165,6 +165,7 @@ Constraints:
 
 - `availabilityrule_end_time_after_start_time` (check): end_time must be after start_time
 - `availabilityrule_end_time_whole_minutes` (check): end_time must be on a whole minute
+- `availabilityrule_no_overlap_for_weekday` (exclusion): a clinician's rules on one weekday must not overlap
 - `availabilityrule_slot_step_minutes_between_5_and_240` (check): slot_step_minutes must be from 5 to 240
 - `availabilityrule_start_time_whole_minutes` (check): start_time must be on a whole minute
 - `availabilityrule_valid_to_not_before_valid_from` (check): valid_to must not be before valid_from
@@ -497,6 +498,7 @@ FHIR: PractitionerRole
 Constraints:
 
 - `timeoff_ends_at_after_starts_at` (check): ends_at must be after starts_at
+- `timeoff_period_unique` (unique): this period is already recorded
 
 ## User
 

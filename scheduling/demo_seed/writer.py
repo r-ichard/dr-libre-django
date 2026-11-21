@@ -4,17 +4,16 @@ rewritten only when a value differs, so a second run changes nothing but the mov
 from collections import Counter
 from collections.abc import Mapping
 from datetime import UTC, datetime, time, timedelta
-from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from django.db import transaction
 from django.db.models import Model
 
 from scheduling.demo_seed import catalogue, scenarios
+from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.models import (
     Appointment,
     AppointmentType,
-    AuditLogEntry,
     AvailabilityRule,
     ClinicianProfile,
     Department,
@@ -27,6 +26,7 @@ from scheduling.models import (
     WaitlistEntry,
 )
 from scheduling.models.booking import AppointmentStatus
+from scheduling.use_cases.audit import AuditEvent, record_audit
 
 AUDIT_ACTION = "demo_seed.run"
 
@@ -37,13 +37,9 @@ def seed_demo(now: datetime, password: str) -> dict[str, int]:
         seeding = _Seeding(now, password)
         seeding.write_everything()
         counts = dict(seeding.counts)
-        AuditLogEntry.objects.create(
-            action=AUDIT_ACTION,
-            entity_type="DemoSeed",
-            entity_id="demo",
-            correlation_id=str(uuid4()),
-            metadata={"rows": counts},
-        )
+        row_counts = {f"{name.lower()}_count": rows for name, rows in counts.items()}
+        metadata = AuditMetadata(counts=row_counts)
+        record_audit(AuditEvent(AUDIT_ACTION, "DemoSeed", "demo", metadata), None)
     return counts
 
 

@@ -1,10 +1,12 @@
 """Task 03: the seed_demo command, its guards, its accounts and its audit entry."""
 
 import json
+import re
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.base import CommandError
+from django.utils import timezone
 
 from scheduling.demo_seed.seed_support import DEMO_PASSWORD, row_counts, run_seed, seed_environment
 from scheduling.models import AuditLogEntry, Hospital, User
@@ -105,14 +107,16 @@ def returns_audit_entry_with_only_integer_counts_when_seeded(seed_environment: N
 
     assert entry.action == "demo_seed.run"
     assert entry.actor_id is None
-    assert set(entry.metadata) == {"rows"}
-    expected_models = {
-        "Hospital", "Department", "Specialty", "Room", "AppointmentType", "User",
-        "ClinicianProfile", "AvailabilityRule", "TimeOff", "Appointment", "WaitlistEntry",
-        "Notification",
+    assert set(entry.metadata) == {"ids", "counts", "statuses", "changed_fields", "email_domain"}
+    expected_keys = {
+        "hospital_count", "department_count", "specialty_count", "room_count",
+        "appointmenttype_count", "user_count", "clinicianprofile_count",
+        "availabilityrule_count", "timeoff_count", "appointment_count", "waitlistentry_count",
+        "notification_count",
     }  # fmt: skip
-    assert set(entry.metadata["rows"]) == expected_models
-    assert all(type(count) is int and count > 0 for count in entry.metadata["rows"].values())
+    assert set(entry.metadata["counts"]) == expected_keys
+    assert all(type(count) is int and count > 0 for count in entry.metadata["counts"].values())
+    assert entry.metadata["ids"] == {}
 
 
 def returns_no_seeded_name_email_or_phone_when_audit_metadata_is_serialised(
@@ -149,3 +153,16 @@ def returns_unchanged_manual_row_when_seed_runs_again(seed_environment: None) ->
 
     assert Hospital.objects.get(code="manual-hospital").name == "Hand made"
     assert Hospital.objects.get(code="manual-hospital").version == 1
+
+
+def returns_fresh_context_correlation_id_and_instant_when_seed_runs(seed_environment: None) -> None:
+    before = timezone.now()
+
+    run_seed()
+    run_seed()
+
+    first, second = AuditLogEntry.objects.order_by("created_at")
+    assert re.fullmatch(r"[0-9a-f]{32}", first.correlation_id)
+    assert re.fullmatch(r"[0-9a-f]{32}", second.correlation_id)
+    assert first.correlation_id != second.correlation_id
+    assert before <= first.created_at <= second.created_at <= timezone.now()

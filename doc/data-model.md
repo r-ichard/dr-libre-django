@@ -120,10 +120,10 @@ FHIR: AuditEvent
 | Field | Type | Null | Rule |
 | --- | --- | --- | --- |
 | `id` | UUIDField | no | primary key; at most 32 characters |
-| `created_at` | DateTimeField | no |  |
 | `updated_at` | DateTimeField | no |  |
 | `created_by` | ForeignKey | yes | refers to User, protected |
 | `version` | PositiveIntegerField | no |  |
+| `created_at` | DateTimeField | no |  |
 | `actor` | ForeignKey | yes | refers to User, protected |
 | `action` | CharField | no | at most 100 characters |
 | `entity_type` | CharField | no | at most 100 characters |

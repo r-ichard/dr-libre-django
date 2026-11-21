@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from django.utils.csp import CSP
+
 from drlibre.environment import env_flag, require_env, require_env_list
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -8,9 +10,37 @@ DEBUG = env_flag("DEBUG")
 ALLOWED_HOSTS = require_env_list("ALLOWED_HOSTS")
 INSTALLED_APPS = ["django.contrib.postgres", "rest_framework", "scheduling"]
 MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    # Outside the request middleware, which replaces an API 500 with a response of its own.
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "scheduling.views.middleware.RequestContextMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
 ]
+# Section 16: scripts and styles are files the application serves itself, so nothing inline.
+SECURE_CSP = {
+    "default-src": [CSP.NONE],
+    "script-src": [CSP.SELF],
+    "style-src": [CSP.SELF],
+    "img-src": [CSP.SELF],
+    "font-src": [CSP.SELF],
+    "connect-src": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "base-uri": [CSP.NONE],
+    "frame-ancestors": [CSP.NONE],
+    "object-src": [CSP.NONE],
+}
+X_FRAME_OPTIONS = "DENY"
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+HTTPS_ONLY = env_flag("HTTPS_ONLY")
+SECURE_SSL_REDIRECT = HTTPS_ONLY
+SECURE_HSTS_SECONDS = int(require_env("HSTS_SECONDS")) if HTTPS_ONLY else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = HTTPS_ONLY
+SECURE_HSTS_PRELOAD = HTTPS_ONLY
+SESSION_COOKIE_SECURE = HTTPS_ONLY
+CSRF_COOKIE_SECURE = HTTPS_ONLY
 ROOT_URLCONF = "drlibre.urls"
 DATABASES = {
     "default": {

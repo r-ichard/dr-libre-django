@@ -133,7 +133,8 @@ fixes process on repeat patterns.
 **Hand-applied gaps:** (1) fabro checkpoints carry "Generated with Fabro" and
 `Co-Authored-By: Fabro`; never merge run branch as-is, squash with hand-written message,
 disclose tooling in body. (2) "Red for right reason" judged by agent and reviewer; gate
-only proves suite fails. (3) Mutation testing waits for `make mutate`. (4) A reviewer
+only proves suite fails. (3) `make mutate` covers `scheduling/domain` only; use cases and views rely on tests and
+review. (4) A reviewer
 "Later" list on a foundation layer becomes its own hardening task before the next layer.
 
 ## Fabro gotchas (§13.6)

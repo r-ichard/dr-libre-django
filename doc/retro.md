@@ -376,3 +376,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   log line, audit row or email. Lighthouse 100 in all four categories.
 - Measured, not eyeballed: the space between appointment cards is 0 px. Carried into
   task 15.
+
+## 2026-11-21 task 15, run 01M7ZXYSSG2P (21 minutes, merged 9d36ae6)
+
+- One green bounce and one review bounce. 2106 tests.
+- Chrome as the demo patient at 375 px: accepted a seeded waitlist offer and found the
+  appointment in the upcoming list; marked a notification as read; an invalid phone is
+  refused on its field, a valid phone and birth date are saved with an audit entry that
+  names the two fields and holds neither value. Password change, posted as a browser
+  would: wrong current, too short and unchanged are refused; the right one ends the
+  other session (Chrome was sent back to sign-in), the old password answers 401 and the
+  new one 200. A passwordless patient gets 404 on the password page and no link to it.
+- A grep for "password" on the passwordless profile matched the address
+  passwordless@example.test. Second time a word search misled; search for the element.
+- Milestone M5 is complete.

@@ -54,9 +54,9 @@ as GitHub issues; the issue number is in the heading.
 | 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | merged `84412f9` |
 | | **M5 Patient portal (#5)** | | |
 | 14 | Patient portal: home, appointments, booking wizard, reschedule, cancel | 8, 7.4 | merged `abb50a6` |
-| 15 | Waitlist, notifications, profile | 8 | running `01M7ZXYSSG2P` |
+| 15 | Patient portal: waitlist, notifications, profile, password | 8 | merged `9d36ae6` |
 | | **M6 Clinician workspace (#6)** | | |
-| 16 | Today, calendar, appointment, clinical notes | 9 | todo |
+| 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | todo |
 | 17 | Availability, time off, patients, rooms | 9 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
@@ -125,3 +125,9 @@ Small findings waiting for the next task that touches the same file.
   birth is a date picker, awkward for a birth date. Task 25.
 - The code page is addressed by the hold id and shows a masked email to whoever has the
   address (review of 12a): consider binding it to the browser that made the hold. Task 26.
+- Patient portal, from the browser check of task 15: accepting a waitlist offer lands on
+  the appointments without a notice; the notifications page goes from an h1 to h3
+  headings; the profile form does not move focus to its first invalid field; notification
+  times are shown in UTC while the rest of the portal uses the hospital's zone. Task 25.
+- The demo seed writes notification titles that are not those of section 11. With the
+  re-seed through the use cases.

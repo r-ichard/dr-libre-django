@@ -128,3 +128,14 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   test user was hashed with PBKDF2 at production cost. Measure before tuning.
 - Host check: two `make test` at once both pass and leave no database behind; the
   collection guard still fails the run under xdist; a failing test still fails `make`.
+
+## 2026-11-21 task 04, run 01M7YZZNRFAQ (14 minutes, merged 1d3643c)
+
+- One review bounce (the promised ADR was missing), then approved. 496 tests in 3 seconds.
+- Host check on the running stack found a leak the suite cannot see: a logger with no
+  handler and no propagation falls through to Python's last-resort handler, which printed
+  `Not Found: <raw path>` as plain text. The tests checked the formatter, not what the
+  process writes. Lesson: test logging at the process boundary, and always run the leak
+  check (`docker compose logs | grep` for a planted email and token) on the host.
+- Split again: 04a fixes the log and error paths first, 04b carries the audit writer and
+  the security headers.

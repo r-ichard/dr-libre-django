@@ -29,8 +29,9 @@ as GitHub issues; the issue number is in the heading.
 | 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | merged `bc0c746` |
 | 03 | Repeatable demo seed | 16 | merged `8dd846f` |
 | 03a | Fast test suite: measure, fast hasher in tests, parallel workers | 16 | merged `d7ad7aa` |
-| 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | running `01M7YZZNRFAQ` |
-| 04a | Audit writer, security headers, deployment checks | 4, 12.3, 16 | todo |
+| 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | merged `1d3643c` |
+| 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | todo |
+| 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |
 | | **M3 Scheduling and booking (#3)** | | |
@@ -66,7 +67,6 @@ as GitHub issues; the issue number is in the heading.
 
 Small findings waiting for the next task that touches the same file.
 
-- `scripts/ensure_database.py`: a non-numeric `DB_PORT` raises a bare `ValueError`.
 - Start-up should refuse the development `SECRET_KEY` when `DEBUG` is off (task 26).
 - Session needs to record how it was opened: a link or code session is never extended, a
   password session is (section 12.2). Tasks 05 and 13.
@@ -84,3 +84,7 @@ Small findings waiting for the next task that touches the same file.
   grid. Re-seed through the booking use cases on real free slots. After task 08.
 - Seed review: identify seeded appointments by a marker, not by patient, clinician and
   type; notifications through the same upsert. With the re-seed above.
+- The failure mapper answers 500 for exception types it does not list, `Throttled`
+  included. Rate limiting needs its own answer (429). Task 12.
+- Test-only probe views live in `scheduling/views/` (`probe_views.py`, `probe_urls.py`).
+  Move them out of the product package when a test support location exists.

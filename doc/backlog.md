@@ -5,24 +5,55 @@ Run: `fabro run conventions-auto --goal-file doc/backlog/NN-slug.md -d`.
 Status is kept here by the orchestrator: todo, running, merged, failed.
 
 A task file is written just before its run, from the specification sections named here
-and from what the previous runs taught. Only task 01 has a file so far. The slicing below
-is a draft; reorder or split it freely.
+and from what the previous runs taught. The orchestrator writes tasks and process files
+and never product code: a defect found on the host becomes a task. Milestones are mirrored
+as GitHub issues; the issue number is in the heading.
+
+## Owner decisions (2026-11-21)
+
+- Latest stable Django and Django REST Framework. PostgreSQL, tests included.
+- Front end: server-rendered Django templates and hand-written CSS. No CSS framework, no
+  Node build. Specialty icons from healthicons.org, vendored as SVG files.
+- Everything runs locally in containers: application, database, and `rnwood/smtp4dev` to
+  receive email. Nothing leaves the machine.
+- The owner checks the data model after task 02 merges.
+
+## Tasks
 
 | # | Task | Specification | Status |
 |---|---|---|---|
-| 01 | Scaffold and stack binding | 16 | todo |
-| 02 | Architecture decision records and security baseline | 4, 12.3, 16 | todo |
-| 03 | Domain model, migrations, repeatable seed | 3, 16 | todo |
-| 04 | Sign-in with a password, sessions, access rules | 12 | todo |
-| 05 | Scheduling engine: free slots, placing, conflicts, status | 5.1, 5.2, 5.6 | todo |
-| 06 | Scheduling engine: booking rules, round robin, reminders, waitlist | 5.3 to 5.5, 5.7, 5.8 | todo |
-| 07 | Booking use cases, transactions, application API, notifications | 11, 14 | todo |
-| 08 | Public search and public detail pages | 6 | todo |
-| 09 | Passwordless patients: hold, code, sign-in link, email | 7 | todo |
-| 10 | Patient portal | 8 | todo |
-| 11 | Clinician workspace | 9 | todo |
-| 12 | Admin console | 10 | todo |
-| 13 | Reporting, dashboard, audit log views | 13 | todo |
-| 14 | FHIR API | 15 | todo |
-| 15 | UX polish and accessibility pass (impeccable) | 16 | todo |
-| 16 | Smoke test, README, hand-over | all | todo |
+| | **M1 Foundation** | | |
+| 01 | Scaffold and stack binding | 14, 16 | todo |
+| 02 | Domain model and migrations | 3 | todo |
+| 03 | Repeatable demo seed | 16 | todo |
+| 04 | Platform baseline: result codes, correlation id, structured logs, audit writer, security headers | 4, 12.3, 16 | todo |
+| | **M2 Sign-in and access** | | |
+| 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |
+| | **M3 Scheduling and booking** | | |
+| 06 | Scheduling engine: free slots, conflicts, status changes, booking rules; bind `make mutate` | 5.1 to 5.3, 5.6 | todo |
+| 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | todo |
+| 08 | Appointment changes: cancel, reschedule, status actions, notifications, email | 5.6, 7.6, 11, 14 | todo |
+| 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | todo |
+| | **M4 Public search and passwordless booking** | | |
+| 10 | Public search | 6.1 to 6.5, 14 | todo |
+| 11 | Public detail pages | 6.6 | todo |
+| 12 | Booking without signing in: hold, code, patient account | 7.1, 7.2, 7.5 to 7.7 | todo |
+| 13 | Sign-in by email link | 7.3, 7.4, 12.2 | todo |
+| | **M5 Patient portal** | | |
+| 14 | Home, appointments, booking wizard, reschedule, cancel, calendar file | 8 | todo |
+| 15 | Waitlist, notifications, profile | 8 | todo |
+| | **M6 Clinician workspace** | | |
+| 16 | Today, calendar, appointment, clinical notes | 9 | todo |
+| 17 | Availability, time off, patients, rooms | 9 | todo |
+| | **M7 Admin console and reporting** | | |
+| 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
+| 19 | Users and clinicians | 10 | todo |
+| 20 | Appointments, waitlist, audit log, settings | 10 | todo |
+| 21 | Dashboard, reporting, CSV export | 13 | todo |
+| | **M8 FHIR API** | | |
+| 22 | Tokens, metadata, public read resources, search bundles | 15.1 to 15.5 | todo |
+| 23 | Schedule, Slot, Patient, Appointment, booking through FHIR | 15.3 to 15.6 | todo |
+| 24 | AppointmentResponse, Communication, AuditEvent, versions | 15 | todo |
+| | **M9 Hardening and hand-over** | | |
+| 25 | Accessibility and UX pass (impeccable) | 16 | todo |
+| 26 | Security review, smoke test, README, hand-over | all | todo |

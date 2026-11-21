@@ -33,3 +33,14 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   `.claude/settings.json` hook blocked a forbidden write. Default model: Sonnet 5.5.
 - `node [backend="acp", ...]` inside a subgraph applies to every agent node in it, so the
   ACP command is written once per graph.
+
+## 2026-11-21 orchestration starts
+
+- Owner decisions recorded in `CLAUDE.md` and `doc/backlog.md`: latest Django and Django
+  REST Framework, PostgreSQL, Django templates with hand-written CSS, containers with
+  `rnwood/smtp4dev`. Backlog re-sliced into 26 tasks under 9 milestones.
+- Sandbox facts, measured with a script-only run: no Docker daemon, 18 processors,
+  16 GB, `apt-get install postgresql` gives PostgreSQL 15 in 9 seconds. Tests therefore
+  run on PostgreSQL in the sandbox; the container stack is verified on the host.
+- A script-only workflow needs no commit and no subscription call: the graph travels with
+  the run and `fabro events <id> --json` carries the script output.

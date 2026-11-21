@@ -29,6 +29,10 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   review.
 - **Risk classes (§13.1):** `doc/plans/**`, `doc/reviews/**`, `scratch/**` throwaway.
   Rest product code. Unclassified = product.
+- **Owner decisions, fixed:** latest stable Django + Django REST Framework; PostgreSQL,
+  tests too. Front end: server-rendered Django templates, hand-written CSS, no CSS
+  framework, no Node build; specialty icons from healthicons.org vendored as SVG. Local
+  only, in containers: application, database, `rnwood/smtp4dev` for email.
 - **Stack:** Django, Python, uv. Rest unbound until task 01 records it here. `Makefile`:
   `make setup` (uv, then locked sync), `make gate` (comment cap + escape hatches);
   `make test`, `make lint`, `make mutate` print `not configured` until bound.
@@ -104,7 +108,8 @@ BookingHold (slot reserved while an email is verified), VerificationCode, SignIn
 
 Process = `conventions-auto`; task = goal, one run per `doc/backlog/` file: toolchain,
 plan, architect gate, red, red proven, green, green proven, prove tests guard, refactor,
-lint + tests + gate, reviewer gate, address findings. Orchestrator verifies on host,
+lint + tests + gate, reviewer gate, address findings. Orchestrator writes tasks and
+process files, never product code; host defect = new task. Orchestrator verifies on host,
 squash-merges with Conventional Commit, updates `doc/backlog.md`, logs `doc/retro.md`,
 fixes process on repeat patterns.
 

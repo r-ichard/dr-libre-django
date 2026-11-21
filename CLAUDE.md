@@ -33,10 +33,17 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   tests too. Front end: server-rendered Django templates, hand-written CSS, no CSS
   framework, no Node build; specialty icons from healthicons.org vendored as SVG. Local
   only, in containers: application, database, `rnwood/smtp4dev` for email.
-- **Stack:** Django, Python, uv. Rest unbound until task 01 records it here. `Makefile`:
-  `make setup` (uv, then locked sync), `make gate` (comment cap + escape hatches);
-  `make test`, `make lint`, `make mutate` print `not configured` until bound.
-- **Fresh checkout order:** `make setup`, then `make lint`, `make test`, `make gate`.
+- **Stack:** Python 3.13, Django 6.1.3, djangorestframework 3.18.3, psycopg 3.3.9,
+  PostgreSQL 15, uv 0.12.13; dev: pytest 9.2.0, pytest-django 4.14.0, ruff 0.17.6, mypy
+  2.4.1 strict + django-stubs 6.1.2 + djangorestframework-stubs 3.18.2. Project package
+  `drlibre`, domain app `scheduling`. Settings read the environment (`.env.example` holds
+  dev values; real environment wins). `Makefile`: `make setup` (uv, locked sync, local
+  PostgreSQL in the sandbox), `make test` (starts local PostgreSQL if none answers, then
+  pytest), `make lint` (ruff, mypy), `make gate` (comment cap + escape hatches);
+  `make mutate` prints `not configured` until task 06. Decisions: `doc/adr/0001-stack.md`.
+- **Fresh checkout order:** sandbox: `make setup`, then `make lint`, `make test`,
+  `make gate`. Containers: `docker compose up`, then `curl 127.0.0.1:8000/api/v1/health`;
+  inbox at `http://127.0.0.1:5000`; tests: `docker compose exec web make test`.
 - **Docs:** tasks `doc/backlog/NN-slug.md`, plans `doc/plans/YYYY-MM-DD-slug.md`, reviews
   `doc/reviews/YYYY-MM-DD-slug.md`, decisions `doc/adr/NNNN-slug.md`, run log
   `doc/retro.md`.
@@ -83,7 +90,9 @@ BookingHold (slot reserved while an email is verified), VerificationCode, SignIn
 - **Naming (§3):** English, 3+ chars, no acronyms or shortened words, named constants.
   Names state roles (`best_match`, `pending_jobs`), not types. `temp`, `data2`, single
   letters beyond two lines: rename. Tests: `returns_X_when_Y`.
-- **Test placement (§10):** unbound; task 01 records it here.
+- **Test placement (§10):** tests beside the code they cover, `test_*.py`. Layers (§8):
+  domain `scheduling/domain/`, use cases `scheduling/use_cases/`, views and API endpoints
+  `scheduling/views/`; each created when first used.
 - **Comments (§4):** obvious in code first; else why; else delete. Changes with code?
   Narration, delete. Docstrings count toward the cap.
 - **Size (§5):** functions < 50 lines, files < 300, callers above callees, variables

@@ -8,13 +8,17 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 
 setup:
 	command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
-	[ ! -f uv.lock ] || uv sync --locked
+	uv sync --locked
+	uv run --env-file .env.example python scripts/ensure_database.py
 
 test:
-	@echo "make test: not configured" >&2; exit 1
+	uv run --env-file .env.example python scripts/ensure_database.py
+	uv run --env-file .env.example pytest
 
 lint:
-	@echo "make lint: not configured" >&2; exit 1
+	uv run ruff check .
+	uv run ruff format --check .
+	uv run --env-file .env.example mypy .
 
 # Conventions §4.1 comment cap and §7 escape hatches over every tracked file.
 gate:

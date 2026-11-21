@@ -4,3 +4,8 @@ scratch/
 # fabro checkpoints commit every untracked file that is not ignored
 .venv/
 __pycache__/
+.env
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.pyc

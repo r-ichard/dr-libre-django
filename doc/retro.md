@@ -121,3 +121,10 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   the suite six times or more per task, so task 03a makes it fast before task 04.
 - The seed writes rows the booking rules would refuse (outside availability). Fine for a
   schema demo, wrong for a product demo: carried, to redo through the use cases.
+
+## 2026-11-21 task 03a, run 01M7YZ43HXP3 (13 minutes, merged d7ad7aa)
+
+- Clean pass. Suite: 100 seconds to 3 (5 in the container). The cause was one line: every
+  test user was hashed with PBKDF2 at production cost. Measure before tuning.
+- Host check: two `make test` at once both pass and leave no database behind; the
+  collection guard still fails the run under xdist; a failing test still fails `make`.

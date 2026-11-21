@@ -1,0 +1,23 @@
+digraph Qa {
+    graph [
+        goal="Pass the area to test with --goal-file .fabro/workflows/qa/areas/<area>.md.",
+        on_failure="exit"
+    ]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    // The product, its database, a mail sink and a browser, alone in this run's sandbox.
+    stack [label="Stack", script="sh scripts/qa_stack.sh"]
+
+    subgraph agents {
+        node [backend="acp", acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"]
+
+        // Two readers: the one who finds is not the one who files.
+        test  [label="Test the area", prompt="@prompts/test.md", timeout="3600s"]
+        file  [label="Verify and file", prompt="@prompts/file.md", timeout="1800s"]
+    }
+
+    start -> stack -> test -> file -> exit
+}

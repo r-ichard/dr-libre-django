@@ -1,0 +1,24 @@
+_version = 1
+
+[workflow]
+graph = "workflow.fabro"
+
+# A QA run changes nothing: no branch on GitHub, no pull request.
+[run.run_branch]
+push = false
+
+[run.pull_request]
+enabled = false
+
+# The default sandbox image has no Node.js, which the ACP adapter needs.
+[run.environment.image]
+docker = "node:22-bookworm"
+
+[run.environment.env]
+CLAUDE_CODE_OAUTH_TOKEN = "{{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}"
+# The verify stage files issues with gh.
+GH_TOKEN = "{{ secrets.GITHUB_TOKEN }}"
+# uv installs into /root/.local/bin; agent shells need it on PATH, not only make.
+PATH = "/root/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+# Read by scripts/no_background.sh: stages may not leave a process behind.
+DRLIBRE_PIPELINE = "1"

@@ -69,7 +69,8 @@ tasks.
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | merged `e412ecb` |
 | 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | running `01M804C63PMX` |
 | 17c | QA round 2, clinician: time grid alignment, multi-day time off, five smaller (#25 to #31) | 9, 16 | todo |
-| 17d | Demo seed books through the use cases (#32) | 16 | running `01M803CR8PEP` |
+| 17d | Demo seed books through the use cases (#32) | 16 | run `01M803CR8PEP` passed, not merged: branch `task/17d-demo-seed`, continued by 17e |
+| 17e | Demo seed survives a person using the demo; merges 17d with it | 16 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |
@@ -146,3 +147,8 @@ Small findings waiting for the next task that touches the same file.
   notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
 - The demo seed opens the clinics Sunday to Thursday: it numbers weekdays from Monday
   while the product counts 0 as Sunday. Task 17d (#32).
+- Section 5.6 puts no time on a status change: a clinician can mark an appointment two
+  days ahead as completed or as a no-show (seen in the demo seed of task 17d). Owner to
+  confirm whether check in, complete and no-show wait for the day or the start time.
+- Module docstrings name task numbers ("Task 10a: ...", "Task 17a: ..."), which says
+  nothing to a reader of the code. Sweep with task 26.

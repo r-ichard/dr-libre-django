@@ -479,3 +479,22 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   tested for "not found". Also task 17b.
 - My gate command pipes each `make` into `tail`, which hides its exit code. I read the
   output for the error line instead; the command should use `set -o pipefail` or no pipe.
+
+## 2026-11-21 task 17d, run 01M803CR8PEP (22 minutes, not merged)
+
+- Ran beside task 17a without trouble: it touches only `scheduling/demo_seed/`, and the
+  squash onto the moved `main` applied cleanly. Gates pass on the merged tree, 2344 tests.
+- The seeded world is right: clinics open Monday to Friday, all 17 appointments inside
+  their clinician's hours and outside time off, time off on whole local days, the
+  product's own notification titles, no mail sent or pending, a second run adds nothing.
+- Not merged. As the demo patient I accepted the seeded waitlist offer, then ran the
+  seed with a clock two days later: `ProtectedError`, stack trace, no refresh ever again.
+  The reviewer had this as finding 2, "medium, later". It is the first thing a person
+  does with the demo. A review that lists a crash under "later" is a review I repeat by
+  hand: second time today (task 17a, the Content-Length 500).
+- On a Saturday the "today" scenarios land on Monday, finished ones included: visits
+  completed in the future. The task said "today in every status" and did not say what a
+  weekend is. The product allows it too; noted for the owner.
+- Task 17e continues on the branch `task/17d-demo-seed` and merges both.
+- To verify a run that finished behind a moved `main`: squash it locally, clone the local
+  repository into the container (`-v "$PWD":/src:ro`, `git clone /src`), push only after.

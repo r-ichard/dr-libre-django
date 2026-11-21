@@ -181,3 +181,13 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   python manage.py runserver 0.0.0.0:8001`.
 - The Lighthouse tool cannot write reports outside the workspace roots; omit the output
   directory.
+
+## 2026-11-21 task 05b, run 01M7Z5V66AB7 (8 minutes, merged 0fa71b5)
+
+- One plan bounce and one review bounce (two CSS items had been skipped), then approved.
+- Chrome: header, main and footer share one left edge at 1440 px (176) and at 375 px
+  (16); card spacing equal above and below; favicon served; cross-site cookie HttpOnly.
+- My task asked for keyboard access to the scrolling table, which task 05a had already
+  built. The reviewer noticed the test was never red. Check the code before writing a
+  defect into a task.
+- Milestone M2 is complete.

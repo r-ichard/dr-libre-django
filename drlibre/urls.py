@@ -19,6 +19,11 @@ from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, Patie
 from scheduling.views.pages.public_pages import RootPage, StylePage
 from scheduling.views.pages.sign_in import SignInPage
 from scheduling.views.pages.sign_out import SignOutPage
+from scheduling.views.search import (
+    SearchHospitalsView,
+    SearchProvidersView,
+    SearchSpecialtiesView,
+)
 from scheduling.views.slots import SlotsView
 from scheduling.views.waitlist import AcceptView, OfferView, WaitlistView
 
@@ -31,6 +36,9 @@ urlpatterns = [
     path("api/v1/auth/login", LoginView.as_view()),
     path("api/v1/auth/logout", LogoutView.as_view()),
     path("api/v1/slots", SlotsView.as_view()),
+    path("api/v1/search/providers", SearchProvidersView.as_view()),
+    path("api/v1/search/hospitals", SearchHospitalsView.as_view()),
+    path("api/v1/search/specialties", SearchSpecialtiesView.as_view()),
     path("api/v1/appointments", AppointmentsView.as_view()),
     path("api/v1/appointments/<uuid:appointment_id>/cancel", CancelView.as_view()),
     path("api/v1/appointments/<uuid:appointment_id>/reschedule", RescheduleView.as_view()),

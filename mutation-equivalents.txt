@@ -4,3 +4,14 @@ scheduling.domain.first_available.x__rank_key__mutmut_9: the group marker 2 inst
 scheduling.domain.free_slots.x__local_days__mutmut_10: the extra local day starts after the query window and every slot there is dropped by the window check
 scheduling.domain.free_slots.x__rule_starts__mutmut_12: a start equal to the rule end ends after it because a duration is positive, so the real end check drops it
 scheduling.domain.free_slots.x__to_utc_if_it_exists__mutmut_5: fold=0 is the default of datetime.replace
+scheduling.domain.search_query.x_parse_search_query__mutmut_14: a missing sort is None or "" and neither is in SORTS, so both fall back to soonest
+scheduling.domain.search_query.x_parse_search_query__mutmut_16: dropping the default gives None, which is not in SORTS, so it falls back to soonest
+scheduling.domain.search_query.x_parse_search_query__mutmut_19: the default "XXXX" is not in SORTS, so it falls back to soonest like ""
+scheduling.domain.search_query.x__page__mutmut_8: an unparsable default raises ValueError, which returns page 1, the same as the real default
+scheduling.domain.search_query.x__page_size__mutmut_4: an unparsable default raises ValueError, which returns the default size, the same as "" does
+scheduling.domain.search_query.x__location__mutmut_8: an unparsable latitude default raises ValueError and so does "", both return no location
+scheduling.domain.search_query.x__location__mutmut_11: an unparsable longitude default raises ValueError and so does "", both return no location
+scheduling.domain.search_query.x__location__mutmut_22: the range check already rejects nan and infinity, so the sum or difference is always finite
+scheduling.domain.search_matching.x__local_midnight__mutmut_1: astimezone(None) is the same instant in the machine zone, and datetimes compare by instant
+scheduling.domain.search_matching.x__local_midnight__mutmut_10: time(0) is time(0, 0)
+scheduling.domain.search_matching.x__local_midnight__mutmut_11: time(0, ) is time(0, 0)

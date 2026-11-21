@@ -322,3 +322,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   link not valid" with a way to ask for a new one; the link request form answers "Check
   your email" for an unknown address too. A POST with `Origin: null` gets the product's
   403 page. Lighthouse on the sign-in page: accessibility 100, best practices 100.
+
+## 2026-11-21 task 12a, run 01M7ZRJ0D432 (20 minutes, merged 1b00054)
+
+- One green bounce, then clean. 1838 tests.
+- Chrome, as a visitor at 375 px: week of slots, each link named with its day; an empty
+  details form answers with a summary of four errors, each tied to its field, focus on
+  the first; a wrong code says "You have 4 tries left"; the code from smtp4dev books and
+  signs in; the confirmation shows whom, when with zone, where with room. The calendar
+  file is valid, in UTC, without the reason. As the signed-in patient: one review page,
+  then confirmed; the same slot again answers "That time was just taken" with a link to
+  the refreshed times. Lighthouse accessibility 100 on the times page at 1440 px.
+- Compiling with warnings as errors found an invalid escape sequence in the calendar
+  module that ruff's selected rules and the suite both let through. Carried to task 10a
+  with a request to fail the suite on warnings.

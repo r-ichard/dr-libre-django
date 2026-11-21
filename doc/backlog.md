@@ -49,7 +49,7 @@ as GitHub issues; the issue number is in the heading.
 | 10a | Public search pages | 6.1 to 6.5, 16 | todo |
 | 11 | Public detail pages | 6.6 | todo |
 | 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | merged `bc85ddf` |
-| 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | running `01M7ZRJ0D432` |
+| 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | merged `1b00054` |
 | 13 | Sign-in by email link | 7.3, 7.4, 12.2 | merged `b3192e7` |
 | 13a | Fix: the link's Continue button answers 403 in a browser; browser-like form tests | 7.3, 12.3 | merged `84412f9` |
 | | **M5 Patient portal (#5)** | | |
@@ -119,9 +119,10 @@ Small findings waiting for the next task that touches the same file.
   rate limit (review of 10). Task 26, with the rate limits of task 12 as the mechanism.
 - The network address for rate limits is `REMOTE_ADDR`: behind a proxy every visitor
   shares it (review of 12). Settle with `SECURE_PROXY_SSL_HEADER`. Task 26.
-- A hold blocks the clinician, not the room: a room taken meanwhile makes verification
-  answer `conflict` with the hold kept (review of 12). The booking page must say what to
-  do. Task 12a.
 - The sign-in page shows the password form first; most patients have no password. And
   the "link not valid" page does not show the signed-in user in its header. Task 25.
 - `background_mail._send` logs a failure without its trace. Task 26.
+- The terms and the privacy notice a visitor accepts have no page to read. And the date of
+  birth is a date picker, awkward for a birth date. Task 25.
+- The code page is addressed by the hold id and shows a masked email to whoever has the
+  address (review of 12a): consider binding it to the browser that made the hold. Task 26.

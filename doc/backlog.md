@@ -38,7 +38,7 @@ as GitHub issues; the issue number is in the heading.
 | 05b | Screens hardening: sliding session cookie on pages, layout edges, favicon | 12.2, 16 | merged `0fa71b5` |
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, status changes, booking rules, first available; `make mutate` bound | 5.1 to 5.3, 5.5, 5.6 | merged `5d18572` |
-| 06a | Domain hardening: domain owns its enumerations, identifier type, property tests, mutation survivors | 5, 4 | todo |
+| 06a | Domain hardening: domain owns its enumerations, identifier type, property tests, mutation survivors | 5, 4 | running `01M7Z7GTSNN6` |
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | todo |
 | 08 | Appointment changes: cancel, reschedule, status actions, notifications, email | 5.6, 7.6, 11, 14 | todo |
 | 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | todo |

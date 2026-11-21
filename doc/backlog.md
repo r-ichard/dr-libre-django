@@ -35,7 +35,7 @@ as GitHub issues; the issue number is in the heading.
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | merged `796da1f` |
 | 05a | Design foundation, sign-in screens, role homes, error pages | 12, 16 | merged `b35274e` |
-| 05b | Screens hardening: sliding session cookie on pages, layout edges, favicon | 12.2, 16 | todo |
+| 05b | Screens hardening: sliding session cookie on pages, layout edges, favicon | 12.2, 16 | running `01M7Z5V66AB7` |
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, conflicts, status changes, booking rules; bind `make mutate` | 5.1 to 5.3, 5.6 | todo |
 | 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | todo |

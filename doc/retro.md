@@ -72,3 +72,23 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - `docker compose up --wait` returns before the development server listens, because
   `web` has no health check; a curl straight after gets no answer. Verify with retries.
   Carried in `doc/backlog.md`.
+
+## 2026-11-21 task 02, run 01M7YR6HE159 (42 minutes, failed in check)
+
+- Plan, red and green passed first time: 17 models, 291 tests green at `verify_green`.
+- The prove stage wrote a script that removes one constraint at a time from the migration
+  and reruns pytest, and started it with the Bash tool's `run_in_background`. The agent
+  replied, the stage ended, the script ran on. Under refactor and check it kept rewriting
+  `0001_initial.py` and running a second pytest: `database "test_drlibre" already exists`
+  on all 291 tests, three failed checks, run failed. Every late checkpoint holds a
+  different mutation; the tip lacks a constraint.
+- Reading the timeline gave it away: a script stage (`check`) with a file change.
+  `fabro timeline <id>` first, when a gate fails for no visible reason.
+- Fix: `scripts/no_background.sh` as a `PreToolUse` hook on Bash, active when
+  `DRLIBRE_PIPELINE=1`; prove prompt requires foreground work and a clean diff; reviewer
+  checks that only tests changed between `verify_green` and `prove`; probe covers it.
+- The probe's own check matched itself (`pgrep -f 31337` sees the shell running it).
+  Anchor process patterns.
+- Recovery without redoing 40 minutes: branch `task/02-domain-model` holds the squashed
+  `verify_green` checkpoint; task 02a runs on it with `--target-branch` and reviews the
+  whole diff.

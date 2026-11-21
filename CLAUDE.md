@@ -42,8 +42,11 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   pytest), `make lint` (ruff, mypy), `make gate` (comment cap + escape hatches);
   `make mutate` prints `not configured` until task 06. Decisions: `doc/adr/0001-stack.md`.
 - **Fresh checkout order:** sandbox: `make setup`, then `make lint`, `make test`,
-  `make gate`. Containers: `docker compose up`, then `curl 127.0.0.1:8000/api/v1/health`;
-  inbox at `http://127.0.0.1:8025`; tests: `docker compose exec web make test`.
+  `make gate`. Containers: `docker compose up --wait` (migrates, returns when
+  `/api/v1/health` answers), then `docker compose exec web python manage.py seed_demo`
+  (repeatable demo data, needs `DEBUG` on and `DEMO_PASSWORD` from `.env.example`), then
+  `curl 127.0.0.1:8000/api/v1/health`; inbox at `http://127.0.0.1:8025`; tests:
+  `docker compose exec web make test`.
 - **Docs:** tasks `doc/backlog/NN-slug.md`, plans `doc/plans/YYYY-MM-DD-slug.md`, reviews
   `doc/reviews/YYYY-MM-DD-slug.md`, decisions `doc/adr/NNNN-slug.md`, run log
   `doc/retro.md`.

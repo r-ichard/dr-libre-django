@@ -46,7 +46,7 @@ as GitHub issues; the issue number is in the heading.
 | 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | merged `5370249` |
 | | **M4 Public search and passwordless booking (#4)** | | |
 | 10 | Public search, use case and API | 6.1 to 6.5, 14 | merged `2344ec0` |
-| 10a | Public search pages | 6.1 to 6.5, 16 | todo |
+| 10a | Public search pages | 6.1 to 6.5, 16 | running `01M7ZSYPETVJ` |
 | 11 | Public detail pages | 6.6 | todo |
 | 12 | Booking without signing in, use cases and API: hold, code, patient account, rate limits | 7.1, 7.2, 7.5 to 7.7, 14 | merged `bc85ddf` |
 | 12a | Booking pages: details, code, confirmation, calendar file | 7.1, 16 | merged `1b00054` |

@@ -29,7 +29,7 @@ as GitHub issues; the issue number is in the heading.
 | 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | merged `bc0c746` |
 | 03 | Repeatable demo seed | 16 | merged `8dd846f` |
 | 03a | Fast test suite: measure, fast hasher in tests, parallel workers | 16 | merged `d7ad7aa` |
-| 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | todo |
+| 04 | Request plumbing: failure contract, correlation id, structured logs, clock, closed by default | 4 | running `01M7YZZNRFAQ` |
 | 04a | Audit writer, security headers, deployment checks | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
 | 05 | Design foundation, password sign-in, sessions, access rules | 12, 16 | todo |

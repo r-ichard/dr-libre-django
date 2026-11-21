@@ -336,3 +336,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Compiling with warnings as errors found an invalid escape sequence in the calendar
   module that ruff's selected rules and the suite both let through. Carried to task 10a
   with a request to fail the suite on warnings.
+
+## 2026-11-21 task 10a, run 01M7ZSYPETVJ (17 minutes, merged ca68ee5)
+
+- Clean pass. 1885 tests; the suite now fails on warnings.
+- Chrome at 1440 and 375 px: three lists, healthicons icons on the specialties, text
+  search, every link keeps the rest of the address, junk parameters fall back, a slot
+  link opens the details page with the right time and zone. Lighthouse on the search
+  page: accessibility, best practices and SEO all 100.
+- Lighthouse 100 is not the end of an accessibility check: the slot links hide their
+  visible text from assistive technology and announce different words, which fails
+  label in name. The reviewer had flagged it; the browser confirmed it.
+- Found by using the page: the empty state's way out leads back to the same empty
+  search, and on a phone the filters push the results a thousand pixels down. Carried
+  into task 11 with four smaller items.

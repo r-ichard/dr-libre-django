@@ -40,7 +40,8 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   dev values; real environment wins). `Makefile`: `make setup` (uv, locked sync, local
   PostgreSQL in the sandbox), `make test` (starts local PostgreSQL if none answers, then
   pytest), `make lint` (ruff, mypy), `make gate` (comment cap + escape hatches);
-  `make mutate` prints `not configured` until task 06. Decisions: `doc/adr/0001-stack.md`.
+  `make mutate` (mutmut on `scheduling/domain`, fails on a survivor not explained in
+  `mutation-equivalents.txt`). Decisions: `doc/adr/0001-stack.md`.
 - **Fresh checkout order:** sandbox: `make setup`, then `make lint`, `make test`,
   `make gate`. Containers: `docker compose up --wait` (migrates, returns when
   `/api/v1/health` answers), then `docker compose exec web python manage.py seed_demo`

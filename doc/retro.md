@@ -210,3 +210,11 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   `audit_metadata.py`, written before mutation testing existed. Task 06a.
 - "Welcome" in a task means skipped. Property-based tests were welcome; none were written.
   Ask for what is wanted.
+
+## 2026-11-21 task 06a, run 01M7Z7GTSNN6 (12 minutes, merged 59cda46)
+
+- Clean pass. 884 tests in 4.5 seconds, `make mutate` in 26 seconds with 5 survivors, each
+  explained in `mutation-equivalents.txt`.
+- Host check: no migration from moving the enumerations; planting a Django import in a
+  domain module fails the import guard.
+- `make mutate` is now a gate: the proof stage can run it and trust its exit code.

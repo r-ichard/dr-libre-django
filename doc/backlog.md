@@ -25,8 +25,8 @@ as GitHub issues; the issue number is in the heading.
 | | **M1 Foundation (#1)** | | |
 | 01 | Scaffold and stack binding | 14, 16 | merged `eaf7ef2` |
 | 01a | Scaffold hardening: host defects and reviewer "Later" list of 01 | 16 | merged `b972eac` |
-| 02 | Domain model and migrations | 3 | green, run `01M7YR6HE159` failed after it; continued in 02a |
-| 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | running `01M7YV57N924` on `task/02-domain-model` |
+| 02 | Domain model and migrations | 3 | merged `bc0c746` with 02a |
+| 02a | Finish the model, FHIR readiness: versions, one Appointment resource, mapping check | 3, 15 | merged `bc0c746` |
 | 03 | Repeatable demo seed | 16 | todo |
 | 04 | Platform baseline: result codes, correlation id, structured logs, audit writer, security headers | 4, 12.3, 16 | todo |
 | | **M2 Sign-in and access (#2)** | | |
@@ -64,7 +64,16 @@ as GitHub issues; the issue number is in the heading.
 
 Small findings waiting for the next task that touches the same file.
 
-- `compose.yaml`: `web` has no health check, so `docker compose up --wait` returns before
-  the server listens. Add one with the next compose change (task 09, worker container).
 - `scripts/ensure_database.py`: a non-numeric `DB_PORT` raises a bare `ValueError`.
 - Start-up should refuse the development `SECRET_KEY` when `DEBUG` is off (task 26).
+- Session needs to record how it was opened: a link or code session is never extended, a
+  password session is (section 12.2). Tasks 05 and 13.
+- Acceptance of the terms and privacy notice (section 7.1) has no column. Task 12.
+- Waitlist acceptance sets `Appointment.inherited_version` from the locked entry, with a
+  test (review of 02a). Task 09.
+- `If-Match` goes through a filtered `update` and its row count, not `save` (review of
+  02a). Tasks 22 to 24.
+- Rules the model plan left to use cases: `doc/plans/2026-11-21-domain-model.md`, "Waits
+  for its use case". Each feature task reads that table.
+- Encryption at rest for clinical notes and visitor details in a hold: open point for the
+  security review. Task 26.

@@ -96,7 +96,7 @@ BookingHold (slot reserved while an email is verified), VerificationCode, SignIn
 - **Comments (§4):** obvious in code first; else why; else delete. Changes with code?
   Narration, delete. Docstrings count toward the cap.
 - **Size (§5):** functions < 50 lines, files < 300, callers above callees, variables
-  near use, ~3 args max.
+  near use, ~3 args max. Generated migrations exempt; hand-written ones are not.
 - **Types (§7):** fully typed, strictest checker setting, schema-derived boundary types.
   Gate rejects `Any`, `cast`, bare `# type: ignore`, bare `# noqa`; a suppression names
   its code.

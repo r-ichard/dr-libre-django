@@ -92,3 +92,19 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Recovery without redoing 40 minutes: branch `task/02-domain-model` holds the squashed
   `verify_green` checkpoint; task 02a runs on it with `--target-branch` and reviews the
   whole diff.
+
+## 2026-11-21 task 02a, run 01M7YV57N924 (29 minutes, merged bc0c746)
+
+- Ran on `task/02-domain-model` (the green checkpoint of task 02) and passed with one plan
+  bounce. `--target-branch` needs `--target-repo`; checking the branch out locally and
+  running from there is the simple way to run on a branch.
+- The background hook held: the prove stage ran in the foreground in 6 minutes and changed
+  two test files only; no script stage shows a file change in `fabro timeline`.
+- Host check beyond the suite (385 tests): migrations apply to an empty database, no
+  drift; as table owner and as superuser the audit table refuses update, delete and
+  truncate; a version cannot be skipped or kept; a hospital with a department cannot be
+  deleted; the three exclusion constraints use half-open ranges and ignore cancelled and
+  no-show appointments.
+- The owner asked mid-run whether the model should follow FHIR naming. Answer recorded in
+  ADR 0003 and the task: domain names stay, the schema carries what FHIR needs (versions,
+  one Appointment resource for a waitlist entry and its booking, a declared mapping).

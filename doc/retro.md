@@ -234,3 +234,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   three rounds, one 201 and five 409 each time; one patient with two clinicians at the
   same time, three rounds, one 201 and one 409 each time. No overlap in the database, no
   500, nothing readable in the logs.
+
+## 2026-11-21 task 08, run 01M7ZF0DSJDH (23 minutes, merged 032461d)
+
+- Clean pass, no bounce. 1185 tests in 10 seconds.
+- Host check: reschedule, check-in, complete, each refused transition with the current
+  status, a foreign clinician refused, a patient refused inside 24 hours and the clinician
+  allowed. Four emails read in smtp4dev: time with zone, hospital, provider, sign-in
+  link. A planted reason appears in no email, log line or audit row.
+- Mail server stopped: the booking still answers 201 in 26 ms and one email stays
+  pending; server back, the retry sends 1, a second run sends 0.
+- Found by trying: the booking API has no field for the patient's reason for the visit.
+- The reviewer approved a 719 line test file although the review prompt names 500 as a
+  hard rule. A rule a reader must remember gets missed; task 08a moves it into
+  `make gate`.

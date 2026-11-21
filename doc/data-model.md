@@ -306,6 +306,7 @@ FHIR: Communication
 | `appointment` | ForeignKey | yes | refers to Appointment, protected |
 | `waitlist_entry` | ForeignKey | yes | refers to WaitlistEntry, protected |
 | `read_at` | DateTimeField | yes |  |
+| `email_pending` | BooleanField | no |  |
 
 Constraints:
 

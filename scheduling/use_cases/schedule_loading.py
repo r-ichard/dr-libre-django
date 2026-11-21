@@ -28,7 +28,11 @@ from scheduling.models import (
 
 
 def load_schedules(
-    clinician_ids: Collection[UUID], slot_type: SlotType, window: TimeRange, now: datetime
+    clinician_ids: Collection[UUID],
+    slot_type: SlotType,
+    window: TimeRange,
+    now: datetime,
+    ignoring_appointment_id: UUID | None = None,
 ) -> dict[UUID, ClinicianSchedule]:
     rules: dict[UUID, list[AvailabilityWindow]] = {key: [] for key in clinician_ids}
     time_off: dict[UUID, list[BusyInterval]] = {key: [] for key in clinician_ids}
@@ -42,12 +46,15 @@ def load_schedules(
         time_off[off.clinician_id].append(BusyInterval(off.starts_at, off.ends_at))
     # Existing ends are extended by the buffer, so anything ending within it still blocks.
     earliest_end = window.starts_at - slot_type.buffer
-    for booked in Appointment.objects.filter(
+    booked_rows = Appointment.objects.filter(
         status__in=ACTIVE_STATUSES,
         clinician_id__in=clinician_ids,
         starts_at__lt=window.ends_at,
         ends_at__gt=earliest_end,
-    ):
+    )
+    if ignoring_appointment_id is not None:
+        booked_rows = booked_rows.exclude(pk=ignoring_appointment_id)
+    for booked in booked_rows:
         appointments[booked.clinician_id].append(
             ExistingAppointment(booked.starts_at, booked.ends_at, AppointmentStatus(booked.status))
         )

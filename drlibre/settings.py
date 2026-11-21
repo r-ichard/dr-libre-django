@@ -64,7 +64,11 @@ DATABASES = {
 MAILERS = {
     "default": {
         "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
-        "OPTIONS": {"host": require_env("EMAIL_HOST"), "port": int(require_env("EMAIL_PORT"))},
+        "OPTIONS": {
+            "host": require_env("EMAIL_HOST"),
+            "port": int(require_env("EMAIL_PORT")),
+            "timeout": 10,
+        },
     }
 }
 TIME_ZONE = "UTC"
@@ -98,3 +102,5 @@ LOGGING = {
         "django.server": {"handlers": ["discard"], "propagate": False},
     },
 }
+EMAIL_SENDER = require_env("EMAIL_SENDER")
+PUBLIC_BASE_URL = require_env("PUBLIC_BASE_URL")

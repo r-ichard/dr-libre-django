@@ -4,6 +4,13 @@ from django.urls import path, re_path
 from django.views.static import serve
 
 from scheduling.views.api_view import NotFoundView
+from scheduling.views.appointment_actions import (
+    CancelView,
+    CheckInView,
+    CompleteView,
+    NoShowView,
+    RescheduleView,
+)
 from scheduling.views.appointments import AppointmentsView
 from scheduling.views.auth import LoginView, LogoutView
 from scheduling.views.health import HealthView
@@ -23,6 +30,11 @@ urlpatterns = [
     path("api/v1/auth/logout", LogoutView.as_view()),
     path("api/v1/slots", SlotsView.as_view()),
     path("api/v1/appointments", AppointmentsView.as_view()),
+    path("api/v1/appointments/<uuid:appointment_id>/cancel", CancelView.as_view()),
+    path("api/v1/appointments/<uuid:appointment_id>/reschedule", RescheduleView.as_view()),
+    path("api/v1/appointments/<uuid:appointment_id>/check-in", CheckInView.as_view()),
+    path("api/v1/appointments/<uuid:appointment_id>/complete", CompleteView.as_view()),
+    path("api/v1/appointments/<uuid:appointment_id>/no-show", NoShowView.as_view()),
     re_path(r"^api/v1/", NotFoundView.as_view()),
     path("", RootPage.as_view()),
     path("favicon.ico", lambda request: redirect("/static/favicon.svg")),

@@ -51,7 +51,11 @@ def slot_of(appointment_type: AppointmentType, starts_at: datetime, now: datetim
 
 
 def find_conflicts(
-    clinician_id: UUID, patient_id: UUID, room_id: UUID | None, window: TimeRange
+    clinician_id: UUID,
+    patient_id: UUID,
+    room_id: UUID | None,
+    window: TimeRange,
+    ignoring_appointment_id: UUID | None = None,
 ) -> list[str]:
     """Resources with an active appointment overlapping the window, in the order of 5.2."""
     sharing = Q(clinician_id=clinician_id) | Q(patient_id=patient_id)
@@ -62,8 +66,10 @@ def find_conflicts(
         status__in=ACTIVE_STATUSES,
         starts_at__lt=window.ends_at,
         ends_at__gt=window.starts_at,
-    ).values_list("clinician_id", "patient_id", "room_id")
-    rows = list(overlapping)
+    )
+    if ignoring_appointment_id is not None:
+        overlapping = overlapping.exclude(pk=ignoring_appointment_id)
+    rows = list(overlapping.values_list("clinician_id", "patient_id", "room_id"))
     return [
         resource
         for resource, taken in (
@@ -75,25 +81,35 @@ def find_conflicts(
     ]
 
 
-def busy_room_ids(room_ids: Collection[UUID], window: TimeRange) -> set[UUID]:
-    taken = Appointment.objects.filter(
+def busy_room_ids(
+    room_ids: Collection[UUID], window: TimeRange, ignoring_appointment_id: UUID | None = None
+) -> set[UUID]:
+    overlapping = Appointment.objects.filter(
         room_id__in=room_ids,
         status__in=ACTIVE_STATUSES,
         starts_at__lt=window.ends_at,
         ends_at__gt=window.starts_at,
-    ).values_list("room_id", flat=True)
+    )
+    if ignoring_appointment_id is not None:
+        overlapping = overlapping.exclude(pk=ignoring_appointment_id)
+    taken = overlapping.values_list("room_id", flat=True)
     return {room_id for room_id in taken if room_id is not None}
 
 
 def violated_booking_rules(
-    actor_role: Role, patient_id: UUID, slot_is_free: bool, slot: PlacementSlot
+    actor_role: Role,
+    patient_id: UUID,
+    slot_is_free: bool,
+    slot: PlacementSlot,
+    current_start: datetime | None = None,
 ) -> list[str]:
+    """A current start means a reschedule of that appointment; none means a new booking."""
     attempt = BookingAttempt(
-        BookingAction.BOOK,
+        BookingAction.BOOK if current_start is None else BookingAction.RESCHEDULE,
         actor_role,
         slot.now,
         slot.window.starts_at,
-        None,
+        current_start,
         _open_online_bookings(patient_id, slot.now),
         slot.appointment_type.is_bookable_online,
         slot_is_free,

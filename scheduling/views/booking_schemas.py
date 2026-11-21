@@ -16,6 +16,7 @@ from scheduling.views.schemas import StrictSerializer
 
 DEFAULT_PAGE_SIZE = 20
 MAXIMUM_PAGE_SIZE = 100
+CANCELLATION_REASON_MAXIMUM = 1000
 
 
 class OffsetDateTimeField(serializers.DateTimeField):
@@ -143,3 +144,16 @@ def appointment_body(appointment: Appointment) -> dict[str, object]:
         "status": appointment.status,
         "source": appointment.source,
     }
+
+
+class CancelRequest(StrictSerializer):
+    # The limit is ours; the spec names none.
+    reason = serializers.CharField(max_length=CANCELLATION_REASON_MAXIMUM)
+
+
+class RescheduleRequest(StrictSerializer):
+    starts_at = OffsetDateTimeField()
+
+
+class NoFieldsRequest(StrictSerializer):
+    pass

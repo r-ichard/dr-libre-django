@@ -2,10 +2,12 @@ from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DateTimeRangeField, RangeBoundary, RangeOperators
 from django.db.models import (
     PROTECT,
+    BooleanField,
     CharField,
     DateTimeField,
     ForeignKey,
     Func,
+    Index,
     OneToOneField,
     PositiveIntegerField,
     Q,
@@ -155,8 +157,17 @@ class Notification(Versioned):
     appointment = ForeignKey(Appointment, null=True, blank=True, on_delete=PROTECT)
     waitlist_entry = ForeignKey(WaitlistEntry, null=True, blank=True, on_delete=PROTECT)
     read_at = DateTimeField(null=True, blank=True)
+    # Created and not yet mailed; a bool, not a sent-at time, so old rows are never mailed.
+    email_pending = BooleanField(default=False)
 
     class Meta:
+        indexes = [
+            Index(
+                fields=["created_at"],
+                condition=Q(email_pending=True),
+                name="notification_email_pending",
+            )
+        ]
         constraints = [
             one_of("notification", "kind", NotificationKind),
             not_blank("notification", "title"),

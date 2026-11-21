@@ -23,7 +23,11 @@ def returns_environment_values_when_settings_are_loaded(
     importlib.reload(settings)
 
     assert settings.ALLOWED_HOSTS == ["a.example", "b.example"]
-    assert settings.MAILERS["default"]["OPTIONS"] == {"host": "mail-example", "port": 2525}
+    assert settings.MAILERS["default"]["OPTIONS"] == {
+        "host": "mail-example",
+        "port": 2525,
+        "timeout": 10,
+    }
 
 
 def returns_default_pbkdf2_hasher_when_product_settings_are_loaded() -> None:

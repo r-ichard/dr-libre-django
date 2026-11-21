@@ -69,7 +69,7 @@ tasks.
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | running `01M802KYJ8DS` |
 | 17c | QA round 2, clinician: time grid alignment, multi-day time off, five smaller (#25 to #31) | 9, 16 | todo |
 | 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) | 5, 6, 8, 12.3, 16 | todo |
-| 17d | Demo seed books through the use cases (#32) | 16 | todo |
+| 17d | Demo seed books through the use cases (#32) | 16 | running `01M803CR8PEP` |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |

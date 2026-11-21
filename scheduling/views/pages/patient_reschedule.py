@@ -15,9 +15,15 @@ from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.pages.booking_links import clock_label, day_label, instant_from, week_from
 from scheduling.views.pages.booking_times import week_strip
 from scheduling.views.pages.patient_appointments import OwnAppointmentPage
-from scheduling.views.pages.patient_refusal import blocked_page_or_none, change_refused_page
+from scheduling.views.pages.patient_refusal import (
+    LIST_ACTION,
+    blocked_page_or_none,
+    change_refused_page,
+    message_page,
+)
 from scheduling.views.pages.patient_rows import LIST_PATH, appointment_row
 
+TIMES_UNAVAILABLE = "We could not load times for this appointment."
 TIMES_ACTION_TEXT = "See the refreshed times"
 
 
@@ -37,7 +43,7 @@ class ReschedulePage(OwnAppointmentPage):
             found.appointment_type_id, found.clinician_id, week_from(request.GET.get("week", ""))
         )
         if isinstance(loaded, Failure):
-            raise Http404
+            return message_page(request, self.user, TIMES_UNAVAILABLE, LIST_ACTION, 404)
 
         def week_href(week_start: date) -> str:
             return f"{base}?{urlencode({'week': week_start.isoformat()})}"

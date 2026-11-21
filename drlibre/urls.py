@@ -24,7 +24,14 @@ from scheduling.views.pages.booking_times import TimesPage
 from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
 from scheduling.views.pages.homes import AdminConsole, ClinicianWorkspace, PatientPortal
 from scheduling.views.pages.patient_appointments import AppointmentsPage, CancelPage
+from scheduling.views.pages.patient_notifications import (
+    MarkAllReadPage,
+    MarkReadPage,
+    NotificationsPage,
+)
+from scheduling.views.pages.patient_profile import PasswordPage, ProfilePage
 from scheduling.views.pages.patient_reschedule import ReschedulePage, RescheduleReviewPage
+from scheduling.views.pages.patient_waitlist import AcceptOfferPage, WaitlistPage
 from scheduling.views.pages.public_pages import StylePage
 from scheduling.views.pages.search_page import SearchPage
 from scheduling.views.pages.sign_in import SignInPage
@@ -100,6 +107,13 @@ urlpatterns = [
         "patient/appointments/<uuid:appointment_id>/reschedule/review",
         RescheduleReviewPage.as_view(),
     ),
+    path("patient/waitlist", WaitlistPage.as_view()),
+    path("patient/waitlist/<uuid:entry_id>/accept", AcceptOfferPage.as_view()),
+    path("patient/notifications", NotificationsPage.as_view()),
+    path("patient/notifications/read-all", MarkAllReadPage.as_view()),
+    path("patient/notifications/<uuid:notification_id>/read", MarkReadPage.as_view()),
+    path("patient/profile", ProfilePage.as_view()),
+    path("patient/profile/password", PasswordPage.as_view()),
     path("clinician/", ClinicianWorkspace.as_view()),
     path("admin-console/", AdminConsole.as_view()),
     # Local-only product, so Django's development file server is enough and works with DEBUG off.

@@ -15,6 +15,7 @@ from django.db.models import (
     TextField,
     UniqueConstraint,
 )
+from django.utils import timezone
 
 from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, WaitlistStatus
 from scheduling.models.base import (
@@ -143,6 +144,8 @@ class WaitlistEntry(Versioned):
 
 class Notification(Versioned):
     fhir_resources = ("Communication",)
+    # A default, not auto_now_add, so the creation time can be set for imported or test rows.
+    created_at = DateTimeField(default=timezone.now)
     recipient = ForeignKey(User, on_delete=PROTECT)
     kind = CharField(max_length=30, choices=NotificationKind)
     title = CharField(max_length=TITLE_MAXIMUM)

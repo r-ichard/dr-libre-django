@@ -74,6 +74,7 @@
 .notice--warning { border-color: var(--colour-warning); background: var(--colour-warning-wash); }
 
 /* Card */
+.card-list { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
 .card {
   padding: var(--space-5);
   background: var(--colour-surface);
@@ -198,3 +199,8 @@
   .search-form__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* Portal navigation: wraps at 375 px, 44 px targets, current marked by weight and underline */
+.portal-nav ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-5); padding: 0; list-style: none; }
+.portal-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); }
+.portal-nav a[aria-current="page"] { font-weight: 700; text-decoration: underline; text-underline-offset: 0.3em; }

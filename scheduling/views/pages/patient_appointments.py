@@ -40,7 +40,7 @@ class AppointmentsPage(PageView):
     def get(self, request: HttpRequest) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         now = current_request_context().now
-        page = _page_number(request.GET.get("page", ""))
+        page = page_number(request.GET.get("page", ""))
         past = past_appointments(self.user, now, page, PAGE_SIZE)
         page_count = max(1, ceil(past.count / PAGE_SIZE))
         context = {
@@ -127,6 +127,6 @@ def _reason_error(reason: str) -> str:
     return REASON_TOO_LONG if isinstance(checked, Failure) else ""
 
 
-def _page_number(raw: str) -> int:
+def page_number(raw: str) -> int:
     readable = raw.isascii() and raw.isdigit() and len(raw) <= MAXIMUM_PAGE_DIGITS
     return max(1, int(raw)) if readable else 1

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Your profile · DrLibre{% endblock %}
+{% block content %}
+{% include "components/portal_nav.html" with current="profile" %}
+<h1>Your profile</h1>
+{% if notice %}{% include "components/notice.html" with kind="success" text=notice %}{% endif %}
+<section class="card" aria-labelledby="account-title">
+  <h2 id="account-title">Your account</h2>
+  <dl class="facts">
+    <div><dt>Name</dt><dd>{{ signed_in_user.full_name }}</dd></div>
+    <div><dt>Email</dt><dd>{{ signed_in_user.email }}</dd></div>
+  </dl>
+</section>
+<form class="form" method="post" action="/patient/profile" novalidate>
+  {% csrf_token %}
+  {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
+  {% include "components/field.html" with name="phone" label="Phone" type="tel" value=entered.phone hint="7 to 20 characters: digits, spaces and + ( ) -. Leave empty to remove it." error=errors.phone autocomplete="tel" %}
+  {% include "components/field.html" with name="date_of_birth" label="Date of birth" type="date" value=entered.date_of_birth hint="Leave empty to remove it." error=errors.date_of_birth autocomplete="bday" max=today %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Save profile</button>
+  </div>
+</form>
+{% if has_password %}<p><a href="{{ password_path }}">Change your password</a></p>{% endif %}
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

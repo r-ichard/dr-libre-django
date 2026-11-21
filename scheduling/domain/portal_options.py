@@ -57,3 +57,8 @@ def _blocked_reason(status: AppointmentStatus, starts_at: datetime, now: datetim
     if starts_at - now < CANCELLATION_WINDOW:
         return WINDOW_REASON
     return ""
+
+
+def expects_change_hint(status: AppointmentStatus) -> bool:
+    """Only an appointment that can still happen leaves the patient expecting an action."""
+    return status in UPCOMING_STATUSES

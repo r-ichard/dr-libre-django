@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Your notifications · DrLibre{% endblock %}
+{% block content %}
+{% include "components/portal_nav.html" with current="notifications" %}
+<h1>Your notifications</h1>
+{% if rows %}
+<p>{{ unread }} unread notification{{ unread|pluralize }}</p>
+{% if unread %}
+<form method="post" action="/patient/notifications/read-all">
+  {% csrf_token %}
+  <input type="hidden" name="page" value="{{ page }}">
+  <button class="button button--secondary" type="submit">Mark all as read</button>
+</form>
+{% endif %}
+<ul class="card-list">
+  {% for item in rows %}<li>{% include "components/notification_card.html" with return_to_page=page %}</li>{% endfor %}
+</ul>
+{% if page_count > 1 %}{% include "components/pagination.html" %}{% endif %}
+{% else %}{% include "components/empty_state.html" with title="No notifications" text="Reminders and waitlist offers appear here." %}{% endif %}
+{% endblock %}

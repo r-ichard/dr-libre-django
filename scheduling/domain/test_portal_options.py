@@ -3,7 +3,7 @@
 from datetime import UTC, datetime, timedelta
 
 from scheduling.domain.booking_rules import CANCELLATION_WINDOW
-from scheduling.domain.portal_options import appointment_options, is_upcoming
+from scheduling.domain.portal_options import appointment_options, expects_change_hint, is_upcoming
 from scheduling.domain.vocabulary import AppointmentStatus
 
 NOW = datetime(2030, 1, 7, 6, 0, tzinfo=UTC)
@@ -98,3 +98,13 @@ def returns_empty_reasons_when_both_changes_are_allowed() -> None:
     options = appointment_options(AppointmentStatus.CONFIRMED, IN_25_HOURS, NOW)
 
     assert (options.cancel.reason, options.reschedule.reason) == ("", "")
+
+
+def returns_change_hint_only_when_status_is_upcoming() -> None:
+    answers = {status: expects_change_hint(status) for status in AppointmentStatus}
+
+    assert {status for status, hinted in answers.items() if hinted} == {
+        AppointmentStatus.BOOKED,
+        AppointmentStatus.CONFIRMED,
+        AppointmentStatus.CHECKED_IN,
+    }

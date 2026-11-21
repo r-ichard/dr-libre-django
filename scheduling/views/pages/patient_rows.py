@@ -3,7 +3,7 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from scheduling.domain.portal_options import appointment_options
+from scheduling.domain.portal_options import appointment_options, expects_change_hint
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import Appointment
 from scheduling.views.pages.booking_links import address_of, clock_label, day_label
@@ -46,6 +46,8 @@ def appointment_row(appointment: Appointment, now: datetime) -> dict[str, object
         "badge_text": badge_text,
         "reason": appointment.patient_reason,
         "options": options,
+        "expects_hint": expects_change_hint(status),
+        "cancelled_note": options.cancel.reason if status == AppointmentStatus.CANCELLED else "",
         "cancel_href": f"{base}/cancel",
         "reschedule_href": f"{base}/reschedule",
         "calendar_href": (

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Patient portal · DrLibre{% endblock %}
 {% block content %}
+{% include "components/portal_nav.html" with current="home" %}
 <h1>Hello, {{ signed_in_user.full_name }}</h1>
 <section aria-labelledby="next-title">
   <h2 id="next-title">Your next appointment</h2>
@@ -8,6 +9,6 @@
   {% else %}{% include "components/empty_state.html" with title="No upcoming appointments" text="Book a time with a provider." %}{% endif %}
   <p><a href="/patient/appointments">All your appointments</a></p>
 </section>
-<p>{{ unread_count }} unread notification{{ unread_count|pluralize }}</p>
+<p><a href="/patient/notifications">{{ unread_count }} unread notification{{ unread_count|pluralize }}</a></p>
 <p><a class="button button--primary" href="/book">Book an appointment</a></p>
 {% endblock %}

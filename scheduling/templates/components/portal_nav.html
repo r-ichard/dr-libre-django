@@ -1,0 +1,10 @@
+{% comment %}Parameter: current (home, appointments, waitlist, notifications, profile). The patient's sections, the current one marked with aria-current and a heavier underlined link.{% endcomment %}
+<nav class="portal-nav" aria-label="Patient portal">
+  <ul>
+    <li><a href="/patient/"{% if current == "home" %} aria-current="page"{% endif %}>Home</a></li>
+    <li><a href="/patient/appointments"{% if current == "appointments" %} aria-current="page"{% endif %}>Appointments</a></li>
+    <li><a href="/patient/waitlist"{% if current == "waitlist" %} aria-current="page"{% endif %}>Waitlist</a></li>
+    <li><a href="/patient/notifications"{% if current == "notifications" %} aria-current="page"{% endif %}>Notifications</a></li>
+    <li><a href="/patient/profile"{% if current == "profile" %} aria-current="page"{% endif %}>Profile</a></li>
+  </ul>
+</nav>

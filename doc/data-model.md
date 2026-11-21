@@ -298,10 +298,10 @@ FHIR: Communication
 | Field | Type | Null | Rule |
 | --- | --- | --- | --- |
 | `id` | UUIDField | no | primary key; at most 32 characters |
-| `created_at` | DateTimeField | no |  |
 | `updated_at` | DateTimeField | no |  |
 | `created_by` | ForeignKey | yes | refers to User, protected |
 | `version` | PositiveIntegerField | no |  |
+| `created_at` | DateTimeField | no |  |
 | `recipient` | ForeignKey | no | refers to User, protected |
 | `kind` | CharField | no | at most 30 characters; one of APPOINTMENT_REMINDER, APPOINTMENT_CANCELLED, SCHEDULE_CHANGED, WAITLIST_OFFERED, WAITLIST_BOOKED |
 | `title` | CharField | no | at most 200 characters |

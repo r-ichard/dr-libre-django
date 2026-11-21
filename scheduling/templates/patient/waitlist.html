@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Your waitlist · DrLibre{% endblock %}
+{% block content %}
+{% include "components/portal_nav.html" with current="waitlist" %}
+<h1>Your waitlist</h1>
+{% if notice %}{% include "components/notice.html" with kind="success" text=notice %}{% endif %}
+<section aria-labelledby="entries-title">
+  <h2 id="entries-title">Your entries</h2>
+  {% if entries %}
+  <ul class="card-list">
+    {% for row in entries %}<li>{% include "components/waitlist_card.html" %}</li>{% endfor %}
+  </ul>
+  {% else %}{% include "components/empty_state.html" with title="You are not on a waitlist" text="Join one below and we offer you a time when one frees up." %}{% endif %}
+</section>
+<section aria-labelledby="join-title">
+  <h2 id="join-title">Join the waitlist</h2>
+  <form class="form" method="post" action="/patient/waitlist" novalidate>
+    {% csrf_token %}
+    {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
+    {% include "components/select.html" with name="appointment_type" label="Service" options=type_options selected=entered.appointment_type error=errors.appointment_type %}
+    {% include "components/select.html" with name="provider" label="Provider (optional)" options=provider_options selected=entered.provider error=errors.provider %}
+    {% include "components/field.html" with name="earliest_day" label="First day" type="date" value=entered.earliest_day error=errors.earliest_day %}
+    {% include "components/field.html" with name="latest_day" label="Last day" type="date" value=entered.latest_day error=errors.latest_day %}
+    <div class="button-row">
+      <button class="button button--primary" type="submit">Join the waitlist</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

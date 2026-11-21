@@ -70,6 +70,13 @@ def _record_failure(email_key: str, user: User | None, metadata: AuditMetadata) 
     _audit("auth.login_failed", "SignInFailure", str(failure.pk), user, metadata)
 
 
+def record_wrong_password(user: User) -> None:
+    """A wrong current password in change-password counts like a failed sign-in."""
+    _record_failure(
+        hash_email(user.email), user, AuditMetadata(email_domain=email_domain(user.email))
+    )
+
+
 def _audit(
     action: str, entity_type: str, entity_id: str, user: User | None, metadata: AuditMetadata
 ) -> None:

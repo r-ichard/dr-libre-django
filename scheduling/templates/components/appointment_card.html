@@ -7,10 +7,12 @@
     <div><dt>Where</dt><dd>{{ row.hospital }}, {{ row.address }}. {{ row.department }}.{% if row.room %} Room: {{ row.room }}.{% endif %}</dd></div>
     {% if row.reason %}<div><dt>Your reason</dt><dd>{{ row.reason }}</dd></div>{% endif %}
   </dl>
-  {% if not row.options.cancel.allowed %}
+  {% if row.expects_hint and not row.options.cancel.allowed %}
   <p class="hint">{{ row.options.cancel.reason }} Call {{ row.hospital }} on {{ row.phone }}.</p>
-  {% elif not row.options.reschedule.allowed %}
+  {% elif row.expects_hint and not row.options.reschedule.allowed %}
   <p class="hint">{{ row.options.reschedule.reason }} Call {{ row.hospital }} on {{ row.phone }}.</p>
+  {% elif row.cancelled_note %}
+  <p class="hint">{{ row.cancelled_note }}</p>
   {% endif %}
   <div class="button-row">
     {% if row.calendar_href %}<a class="button button--secondary" href="{{ row.calendar_href }}" download>Add to calendar<span class="visually-hidden">: {{ row.type_name }}, {{ row.day }}</span></a>{% endif %}

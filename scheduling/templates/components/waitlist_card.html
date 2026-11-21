@@ -1,0 +1,21 @@
+{% comment %}Parameters: row (from patient_waitlist_rows.waitlist_row). An offered entry shows the offer and the accept form.{% endcomment %}
+<article class="card waitlist-entry">
+  <h3>{{ row.type_name }} {% include "components/badge.html" with kind=row.badge_kind text=row.badge_text %}</h3>
+  <dl class="facts">
+    <div><dt>Where</dt><dd>{{ row.hospital }}</dd></div>
+    <div><dt>Wanted between</dt><dd>{{ row.window }}</dd></div>
+    <div><dt>Provider</dt><dd>{{ row.provider }}</dd></div>
+    {% if row.offer %}
+    <div><dt>Offered time</dt><dd>{{ row.offer.day }}, {{ row.offer.starts }}</dd></div>
+    <div><dt>Offered provider</dt><dd>{{ row.offer.provider }}, {{ row.offer.hospital }}</dd></div>
+    {% endif %}
+  </dl>
+  {% if row.offer %}
+  <form method="post" action="{{ row.accept_href }}">
+    {% csrf_token %}
+    <div class="button-row">
+      <button class="button button--primary" type="submit">Accept offer<span class="visually-hidden">: {{ row.type_name }}, {{ row.offer.day }}</span></button>
+    </div>
+  </form>
+  {% endif %}
+</article>

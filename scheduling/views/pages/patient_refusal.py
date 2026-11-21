@@ -14,6 +14,8 @@ from scheduling.views.pages.patient_rows import LIST_PATH
 HEADING = "This change was not made"
 STATUS_CHANGED = "The status of this appointment no longer allows this change."
 LIST_ACTION = (LIST_PATH, "Back to your appointments")
+OFFER_CLOSED = "This offer is no longer open."
+WAITLIST_ACTION = ("/patient/waitlist", "Back to your waitlist")
 
 
 def change_refused_page(
@@ -27,7 +29,7 @@ def change_refused_page(
     href, text = (
         times_action if refusal.way_forward == "times" and not status_changed else LIST_ACTION
     )
-    return _refused_page(request, user, message, (href, text), http_status)
+    return message_page(request, user, message, (href, text), http_status)
 
 
 def blocked_page_or_none(
@@ -42,10 +44,10 @@ def blocked_page_or_none(
         return None
     hospital = appointment.appointment_type.department.hospital
     message = f"{option.reason} Call {hospital.name} on {hospital.phone}."
-    return _refused_page(request, user, message, LIST_ACTION, 409)
+    return message_page(request, user, message, LIST_ACTION, 409)
 
 
-def _refused_page(
+def message_page(
     request: HttpRequest, user: User, message: str, action: tuple[str, str], status: int
 ) -> HttpResponse:
     context = {
@@ -55,3 +57,12 @@ def _refused_page(
         "action_text": action[1],
     }
     return render_page(request, "booking/refused.html", context, status=status, signed_in_user=user)
+
+
+def waitlist_refused_page(request: HttpRequest, failure: Failure, user: User) -> HttpResponse:
+    """An accept that failed leaves the entry as it was; every way forward is the waitlist."""
+    status_changed = failure.code == FailureCode.INVALID_TRANSITION
+    refusal = refusal_for(failure)
+    message = OFFER_CLOSED if status_changed else refusal.message
+    http_status = 409 if status_changed else refusal.status
+    return message_page(request, user, message, WAITLIST_ACTION, http_status)

@@ -350,3 +350,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Found by using the page: the empty state's way out leads back to the same empty
   search, and on a phone the filters push the results a thousand pixels down. Carried
   into task 11 with four smaller items.
+
+## 2026-11-21 task 11, run 01M7ZV3AMNKP (27 minutes, merged 62d00f2)
+
+- One green bounce, then clean. 1957 tests.
+- Chrome at 375 px: hospital page with first available per type, departments,
+  specialties and providers; provider page with its week of slots; specialty page. An
+  unbookable provider and an unknown id answer 404 on the page and in the API. Booked as
+  a visitor from a hospital's "first available": the appointment has source
+  `ROUND_ROBIN`, a clinician and the round robin stamp. Lighthouse 100 on all four
+  categories on the provider page.
+- The six items carried from the search page are fixed and checked in the browser.
+- Milestone M4 is complete: a visitor can search, book without an account and come back
+  through an emailed link.

@@ -39,7 +39,7 @@ as GitHub issues; the issue number is in the heading.
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, status changes, booking rules, first available; `make mutate` bound | 5.1 to 5.3, 5.5, 5.6 | merged `5d18572` |
 | 06a | Domain hardening: domain owns its enumerations, identifier type, property tests, mutation survivors | 5, 4 | merged `59cda46` |
-| 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | todo |
+| 07 | Booking use cases and API: placing, who books for whom, round robin, slots | 5.2, 5.4, 5.5, 14 | running `01M7ZA9QJG1D` |
 | 08 | Appointment changes: cancel, reschedule, status actions, notifications, email | 5.6, 7.6, 11, 14 | todo |
 | 09 | Waitlist, reminders, expiry, scheduled jobs | 5.7, 5.8, 14 | todo |
 | | **M4 Public search and passwordless booking (#4)** | | |

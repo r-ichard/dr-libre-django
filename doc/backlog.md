@@ -64,8 +64,8 @@ tasks.
 | 14 | Patient portal: home, appointments, booking wizard, reschedule, cancel | 8, 7.4 | merged `abb50a6` |
 | 15 | Patient portal: waitlist, notifications, profile, password | 8 | merged `9d36ae6` |
 | | **M6 Clinician workspace (#6)** | | |
-| 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | running `01M7ZZBVRQ7T` |
-| 17 | Availability, time off, patients, rooms | 9 | todo |
+| 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
+| 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | todo |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |
@@ -139,3 +139,8 @@ Small findings waiting for the next task that touches the same file.
   times are shown in UTC while the rest of the portal uses the hospital's zone. Task 25.
 - The demo seed writes notification titles that are not those of section 11. With the
   re-seed through the use cases.
+- `ClinicalNote` declares itself not exposed through FHIR, but section 15.3 maps clinical
+  notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
+- QA issues waiting for a hardening task: #10 (P1, the sign-in page answers 500 for a
+  malformed email address), #11 (P2, 404 instead of 403 on another patient's
+  confirmation page and calendar file).

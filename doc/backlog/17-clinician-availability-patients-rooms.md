@@ -35,6 +35,18 @@ inline script or style, every step works without JavaScript.
    level AA and 375 px to 1440 px. Test what the server can prove in the rendered HTML.
    Every form is tested as a browser sends it.
 
+Carried from the browser check of task 16, to fix here because the rooms timeline is the
+same kind of grid:
+
+- The calendar week is not readable as a grid. It has no time axis: no hour is written
+  anywhere, and no row is visible, so a block floats in an empty column 1100 px tall. A
+  30 minute block is 44 px high and its text ("12:00 to 12:30, Cardiology consultation,
+  Linus Linkfrei, Heart room, Checked in") is clipped after the first line. Show the hours
+  from 07:00 to 19:00 beside the grid, make the 30 minute rows visible, and make every
+  block readable: at least its time, type and patient, with the rest on its appointment
+  page. Build the time grid once and use it for the calendar and the rooms timeline.
+- The history on the appointment page gives times without naming their zone.
+
 The sandbox has no browser. The orchestrator adds and removes a rule as the demo
 clinician in Chrome and watches the public search follow.
 

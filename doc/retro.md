@@ -405,3 +405,15 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   to a file (`python -u`), and the background hook let `(sleep 30 &)` through.
 - Processes a QA run needs for its whole life (product, worker, mail sink) are started by
   a script node with `setsid nohup`: the property that broke task 02 is used on purpose.
+
+## 2026-11-21 task 16, run 01M7ZZBVRQ7T (25 minutes, merged f72c635)
+
+- Two review bounces, both right: no test proved the note stays out of the logs, and a
+  failed note read was shown as an empty note. 2178 tests.
+- Planted a clinical note in Chrome and looked for it: the appointment's clinician reads
+  it; a clinician of the same department, an admin and a patient get 403 and nothing;
+  it is in no API list, log line, audit row, notification or appointment row, only in
+  its own table; another clinician cannot overwrite it. Check-in and the history work.
+- The calendar week is the first page that passes every test and is not usable: no time
+  axis, no rows, clipped blocks. Nothing in the sandbox can see that. Carried to task 17.
+- First two QA issues arrived while this ran: #10 and #11, no P0.

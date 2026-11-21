@@ -155,3 +155,12 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - A non-API 404 has no content security policy under `DEBUG`: Django leaves its debug
   pages out on purpose. With `DEBUG` off the header is there. Check headers both ways.
 - Milestone M1 is complete: 9 runs, 8 merged, 1 failed and recovered.
+
+## 2026-11-21 task 05, run 01M7Z3ZD8WKH (14 minutes, merged 796da1f)
+
+- Clean pass, no bounce. 657 tests in 3 seconds.
+- Host check against the running stack with the seeded accounts: cookie flags, hashed
+  token in the database, 12 hour admin lifetime, unknown field refused, cross-origin
+  login refused, equal time for a wrong password and an unknown address (0.21 s both),
+  lockout after ten failures holding against the right password, sign-out deleting the
+  session, audit rows with the email domain only, nothing readable in logs.

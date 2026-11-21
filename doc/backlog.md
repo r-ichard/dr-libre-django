@@ -33,7 +33,7 @@ as GitHub issues; the issue number is in the heading.
 | 04a | Log and error path hardening: raw paths in logs, non-JSON lines, errors outside the API | 4, 16 | merged `f8cb3d8` |
 | 04b | Audit writer, security headers, deployment checks | 4, 12.3, 16 | merged `45d9150` |
 | | **M2 Sign-in and access (#2)** | | |
-| 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | running `01M7Z3ZD8WKH` |
+| 05 | Password sign-in, sessions, access rules (API and use cases) | 12, 14 | merged `796da1f` |
 | 05a | Design foundation, sign-in screens, role homes, error pages | 12, 16 | todo |
 | | **M3 Scheduling and booking (#3)** | | |
 | 06 | Scheduling engine: free slots, conflicts, status changes, booking rules; bind `make mutate` | 5.1 to 5.3, 5.6 | todo |
@@ -69,8 +69,6 @@ as GitHub issues; the issue number is in the heading.
 Small findings waiting for the next task that touches the same file.
 
 - Start-up should refuse the development `SECRET_KEY` when `DEBUG` is off (task 26).
-- Session needs to record how it was opened: a link or code session is never extended, a
-  password session is (section 12.2). Tasks 05 and 13.
 - Acceptance of the terms and privacy notice (section 7.1) has no column. Task 12.
 - Waitlist acceptance sets `Appointment.inherited_version` from the locked entry, with a
   test (review of 02a). Task 09.
@@ -95,3 +93,10 @@ Small findings waiting for the next task that touches the same file.
   with the production server choice. Task 26.
 - `SECURE_PROXY_SSL_HEADER` is not set; needed before any deployment behind a proxy that
   ends TLS (review of 04b). Task 26.
+- A locked address writes one `auth.lockout` audit entry per attempt: an attacker can
+  flood the append-only log. Audit the crossing of the threshold, or once per window
+  (review of 05). Task 26, sooner if a task touches sign-in.
+- Expired sessions and sign-in failure rows of addresses that never return are never
+  purged. Task 09, with the scheduled jobs.
+- The lockout has no signal of its own: the API answers `unauthenticated` for a locked
+  address. The sign-in screen needs to tell the user. Task 05a.

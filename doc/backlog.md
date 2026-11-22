@@ -96,7 +96,10 @@ tasks.
 | 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | merged `1e10ea1` |
 | 25c | UX pass: admin lists at 375 px, the conflict page, confirmations | 10, 16 | merged `e128f6f` |
 | 25d | UX pass: page titles are plain text, status words, empty states, refused forms keep input | 16 | merged `9785b36` (titles, status words, empty states) |
-| 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
+| 26a | Security: lockout race and every counter, cache headers, content type, audit flood, search limit, code page, email rule (#46 to #48) | 4, 11, 12 | running |
+| 26b | Security: start-up checks, cookie flags, trusted proxy, logs without personal data, the access table | 11, 12 | todo |
+| 26c | Gates that hold: per-test time gate, mutants without a test, the flaky test, `make audit`, docstrings | process | todo |
+| 26d | Security review written: encryption at rest, the server, the review document, the owner's questions | all | todo |
 | 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |
 
 ## Carried items

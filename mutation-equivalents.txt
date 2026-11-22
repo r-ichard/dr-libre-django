@@ -22,3 +22,4 @@ scheduling.domain.workspace_day.x_local_day_bounds__mutmut_21: astimezone(None) 
 scheduling.domain.request_limits.x_json_depth__mutmut_3: None and False are both falsy for in_string and escaped, so the scan behaves the same
 scheduling.domain.calendar_grid.x_place_in_grid__mutmut_51: the end is already cut to 19:00, so the span never exceeds the rows left and the cap is never the smaller value
 scheduling.domain.calendar_grid.x_place_in_grid__mutmut_52: the end is already cut to 19:00, so the span never exceeds the rows left and the cap is never the smaller value
+scheduling.domain.lane_assignment.x__clusters__mutmut_10: joining two blocks that only touch into one cluster changes nothing, the second reuses lane 1 and the lane count stays the highest lane used

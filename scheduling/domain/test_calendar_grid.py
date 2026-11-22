@@ -135,3 +135,9 @@ def returns_first_row_when_a_zero_length_span_sits_at_grid_start() -> None:
     from scheduling.domain.calendar_grid import GridPlacement, place_in_grid
 
     assert place_in_grid(_berlin(7, 0), _berlin(7, 0), BERLIN) == GridPlacement(1, 1)
+
+
+def returns_lines_that_fit_for_each_row_count_when_frame_is_12_and_line_is_18_pixels() -> None:
+    from scheduling.domain.calendar_grid import lines_that_fit
+
+    assert [lines_that_fit(rows) for rows in (1, 2, 3, 4)] == [3, 6, 10, 14]

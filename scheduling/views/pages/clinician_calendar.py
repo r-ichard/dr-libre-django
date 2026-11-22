@@ -26,6 +26,7 @@ from scheduling.views.pages.booking_links import clock_label, day_label, week_fr
 from scheduling.views.pages.clinician_support import (
     CALENDAR_PATH,
     CLINICIAN_BADGES,
+    TIME_OFF_PATH,
     ClinicianPage,
     appointment_path,
 )
@@ -81,7 +82,9 @@ def _span_text(starts_at: datetime, ends_at: datetime, zone: ZoneInfo) -> str:
 
 
 def _appointment_item(row: Appointment, zone: ZoneInfo) -> GridItem:
-    """Time, type and patient; the room and the rest are on the appointment page."""
+    """Time, type and patient first, then room and status for the lines a tall block has left."""
+    badge = CLINICIAN_BADGES[AppointmentStatus(row.status)]
+    room = (row.room.name,) if row.room else ()
     return GridItem(
         row.starts_at,
         row.ends_at,
@@ -89,10 +92,12 @@ def _appointment_item(row: Appointment, zone: ZoneInfo) -> GridItem:
             _span_text(row.starts_at, row.ends_at, zone),
             row.appointment_type.name,
             row.patient.full_name,
+            *room,
+            badge[1],
         ),
         appointment_path(row.pk),
         f"type-colour--{row.appointment_type_id.hex}",
-        CLINICIAN_BADGES[AppointmentStatus(row.status)],
+        badge,
     )
 
 
@@ -107,7 +112,12 @@ def _time_off_items(rows: list[TimeOff], day: date, time_zone: str) -> list[Grid
             else:
                 when = f"{_dated_clock(row.starts_at, zone)} to {_dated_clock(row.ends_at, zone)}"
             lines = (when, "Time off") + ((row.reason,) if row.reason else ())
-            items.append(GridItem(part.starts_at, part.ends_at, lines, "", "time-grid-off", None))
+            href = f"{TIME_OFF_PATH}#time-off-{row.pk}"
+            items.append(
+                GridItem(
+                    part.starts_at, part.ends_at, lines, href, "time-grid-off", None, behind=True
+                )
+            )
     return items
 
 

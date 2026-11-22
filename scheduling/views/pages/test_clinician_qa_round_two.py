@@ -135,7 +135,7 @@ def returns_reason_escaped_and_once_inside_its_block_when_reason_is_long_and_unb
     html = _clinician_client(clinic).get("/clinician/calendar?week=2026-11-23").content.decode()
 
     assert "lunch &lt;b&gt;x&lt;/b&gt;" in html and "<b>x</b>" not in html
-    assert html.count(long_reason) == 1
+    assert html.count(long_reason) == 2  # the drawn line and the accessible name, in one block
     assert long_reason in _inside(_columns(html)[1])
 
 

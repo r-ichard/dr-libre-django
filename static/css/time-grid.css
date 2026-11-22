@@ -1,6 +1,6 @@
 /* Time grid of the clinician calendar and rooms timeline: stacked lists from 375 px; from 64rem
    columns on a 07:00 to 19:00 axis of 24 visible 30 minute rows. Row classes are static. */
-.time-grid { --row-height: 4.25rem; --heading-height: 3rem; margin-top: var(--space-5); }
+.time-grid { --row-height: 4.25rem; --line-height: 1.125rem; --rail: 1rem; --heading-height: 3rem; margin-top: var(--space-5); }
 .time-grid ol { margin: 0; padding: 0; list-style: none; }
 .time-grid__axis { display: none; }
 .time-grid__columns { display: grid; gap: var(--space-4); }
@@ -10,6 +10,7 @@
 .time-grid-item { padding: var(--space-1) var(--space-2); background: var(--colour-surface); border: 1px solid var(--colour-line); border-left: 6px solid var(--type-colour, var(--colour-ink-muted)); border-radius: var(--radius-small); font-size: var(--text-small); line-height: 1.3; min-width: 0; overflow: hidden; overflow-wrap: anywhere; }
 .time-grid-item a, .time-grid-item__body { display: block; }
 .time-grid-item__line { display: block; }
+.time-grid-item__lines { display: block; }
 .time-grid-item__time { font-weight: 700; }
 .time-grid-off { background: var(--colour-warning-wash); border-left-style: dashed; }
 .time-grid-occupied { border-left-style: dotted; color: var(--colour-ink-muted); }
@@ -20,9 +21,31 @@
   .time-grid__end { padding-right: var(--space-2); border-top: 1px solid var(--colour-line); color: var(--colour-ink-muted); font-size: var(--text-small); text-align: right; }
   .time-grid__columns { grid-auto-flow: column; grid-auto-columns: minmax(9rem, 1fr); gap: var(--space-2); align-items: start; }
   .time-grid__heading { box-sizing: border-box; height: var(--heading-height); margin: 0; overflow-wrap: anywhere; }
-  .time-grid__items { gap: 0; grid-template-rows: repeat(24, var(--row-height)); grid-auto-columns: minmax(8rem, 1fr); background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--row-height) - 1px), var(--colour-line) calc(var(--row-height) - 1px), var(--colour-line) var(--row-height)); }
+  .time-grid__items { gap: 0; grid-template-rows: repeat(24, var(--row-height)); grid-template-columns: minmax(0, 1fr); background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--row-height) - 1px), var(--colour-line) calc(var(--row-height) - 1px), var(--colour-line) var(--row-height)); }
   .time-grid__none { grid-row: 1; grid-column: 1 / -1; overflow-wrap: anywhere; }
-  .time-grid-item { margin: 1px 0; }
+  .time-grid-item { grid-column: 1; margin: 1px 0; box-sizing: border-box; }
+  .time-grid-item__line { height: var(--line-height); line-height: var(--line-height); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .time-grid-item__line--cut { display: none; }
+  .time-grid-behind { z-index: 1; }
+  .time-grid-front { z-index: 2; }
+  .time-grid-front.time-grid-over { --rail-width: var(--rail); }
+  .time-grid-item { --rail-width: 0px; width: calc((100% - var(--rail-width)) / var(--lanes)); margin-left: calc(var(--rail-width) + (100% - var(--rail-width)) * (var(--lane) - 1) / var(--lanes)); }
+  .time-grid-lane-1 { --lane: 1; }
+  .time-grid-lanes-1 { --lanes: 1; }
+  .time-grid-lane-2 { --lane: 2; }
+  .time-grid-lanes-2 { --lanes: 2; }
+  .time-grid-lane-3 { --lane: 3; }
+  .time-grid-lanes-3 { --lanes: 3; }
+  .time-grid-lane-4 { --lane: 4; }
+  .time-grid-lanes-4 { --lanes: 4; }
+  .time-grid-lane-5 { --lane: 5; }
+  .time-grid-lanes-5 { --lanes: 5; }
+  .time-grid-lane-6 { --lane: 6; }
+  .time-grid-lanes-6 { --lanes: 6; }
+  .time-grid-lane-7 { --lane: 7; }
+  .time-grid-lanes-7 { --lanes: 7; }
+  .time-grid-lane-8 { --lane: 8; }
+  .time-grid-lanes-8 { --lanes: 8; }
   .time-grid-at-1 { grid-row-start: 1; }
   .time-grid-at-2 { grid-row-start: 2; }
   .time-grid-at-3 { grid-row-start: 3; }

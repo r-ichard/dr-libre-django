@@ -8,7 +8,8 @@ STYLE_SHEET = Path(__file__).resolve().parents[3] / "static" / "css" / "time-gri
 RULE = re.compile(r"([^{}@]+)\{([^{}]*)\}")
 AXIS_ANCESTORS = {"", ".time-grid"}
 AXIS_LAST_COMPOUNDS = {"ol", ".time-grid__axis"}
-MINIMUM_OVERLAP_WIDTH_REM = 7
+LANE_LIMIT = 8
+PIXELS_PER_REM = 16
 
 
 def _rules() -> list[tuple[str, dict[str, str]]]:
@@ -82,14 +83,6 @@ def returns_a_row_class_for_every_row_once() -> None:
         assert names.count(f".time-grid-span-{number}") == 1
 
 
-def returns_overlaps_side_by_side_with_a_readable_minimum_width() -> None:
-    columns = _declarations_of(".time-grid__items").get("grid-auto-columns", "")
-
-    minimum = re.fullmatch(r"minmax\((\d+(?:\.\d+)?)rem, 1fr\)", columns)
-    assert minimum is not None
-    assert float(minimum.group(1)) >= MINIMUM_OVERLAP_WIDTH_REM
-
-
 def returns_item_that_clips_and_wraps_what_does_not_fit() -> None:
     item = _declarations_of(".time-grid-item")
 
@@ -100,3 +93,86 @@ def returns_item_that_clips_and_wraps_what_does_not_fit() -> None:
 
 def returns_empty_text_spanning_every_column_of_its_day() -> None:
     assert _declarations_of(".time-grid__none").get("grid-column") == "1 / -1"
+
+
+def _pixels(value: str) -> float:
+    rem = re.fullmatch(r"(\d+(?:\.\d+)?)rem", value)
+    assert rem is not None, value
+    return float(rem.group(1)) * PIXELS_PER_REM
+
+
+def returns_one_explicit_column_and_no_implicit_columns_when_items_are_laid_out() -> None:
+    items = _declarations_of(".time-grid__items")
+
+    assert items.get("grid-template-columns") == "minmax(0, 1fr)"
+    assert "grid-auto-columns" not in items
+
+
+def returns_grid_column_one_on_every_item() -> None:
+    assert _declarations_of(".time-grid-item").get("grid-column") == "1"
+
+
+def returns_line_rules_that_never_wrap_and_end_in_an_ellipsis() -> None:
+    line = _declarations_of(".time-grid-item__line")
+
+    assert line.get("white-space") == "nowrap"
+    assert line.get("overflow") == "hidden"
+    assert line.get("text-overflow") == "ellipsis"
+    assert line.get("height") == "var(--line-height)"
+    assert line.get("line-height") == "var(--line-height)"
+
+
+def returns_pixel_constants_equal_to_the_domain_when_tokens_are_parsed() -> None:
+    from scheduling.domain.calendar_grid import (
+        BLOCK_FRAME_PIXELS,
+        LINE_HEIGHT_PIXELS,
+        ROW_HEIGHT_PIXELS,
+    )
+
+    grid = _declarations_of(".time-grid")
+    padding_vertical = _pixels("0.25rem") * 2
+    border_and_margin = 1 * 2 + 1 * 2
+    assert _pixels(grid["--row-height"]) == ROW_HEIGHT_PIXELS
+    assert _pixels(grid["--line-height"]) == LINE_HEIGHT_PIXELS
+    assert _declarations_of(".time-grid-item")["padding"].split()[0] == "var(--space-1)"
+    assert padding_vertical + border_and_margin == BLOCK_FRAME_PIXELS
+
+
+def returns_a_lane_class_for_every_lane_up_to_the_limit() -> None:
+    names = [selector for selector, _ in _rules()]
+    for lane in range(1, LANE_LIMIT + 1):
+        assert names.count(f".time-grid-lane-{lane}") == 1
+        assert names.count(f".time-grid-lanes-{lane}") == 1
+    assert ".time-grid-lane-9" not in names
+
+
+def returns_lane_that_fits_its_column_when_lane_is_at_most_lanes() -> None:
+    for lanes in range(1, LANE_LIMIT + 1):
+        for lane in range(1, lanes + 1):
+            assert (lane - 1) / lanes + 1 / lanes <= 1
+
+
+def returns_band_behind_and_appointment_in_front() -> None:
+    behind = int(_declarations_of(".time-grid-behind")["z-index"])
+    front = int(_declarations_of(".time-grid-front")["z-index"])
+
+    assert behind < front
+
+
+def returns_cut_lines_hidden_only_from_64rem() -> None:
+    sheet = re.sub(r"/\*.*?\*/", "", STYLE_SHEET.read_text(), flags=re.S)
+    marker = "@media (min-width: 64rem)"
+    assert ".time-grid-item__line--cut" in sheet[sheet.index(marker) :]
+    assert ".time-grid-item__line--cut" not in sheet[: sheet.index(marker)]
+
+
+def returns_cut_lines_display_none() -> None:
+    assert _declarations_of(".time-grid-item__line--cut").get("display") == "none"
+
+
+def returns_each_lane_class_setting_its_own_number_and_the_rail_set_on_covering_fronts() -> None:
+    for number in range(1, LANE_LIMIT + 1):
+        assert _declarations_of(f".time-grid-lane-{number}") == {"--lane": str(number)}
+        assert _declarations_of(f".time-grid-lanes-{number}") == {"--lanes": str(number)}
+    assert _declarations_of(".time-grid-front.time-grid-over") == {"--rail-width": "var(--rail)"}
+    assert _declarations_of(".time-grid-item")["--rail-width"] == "0px"

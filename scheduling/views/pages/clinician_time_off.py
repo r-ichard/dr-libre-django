@@ -108,6 +108,7 @@ def _zone_of(profile: ClinicianProfile) -> ZoneInfo:
 
 def _row_of(row: TimeOff, zone: ZoneInfo) -> dict[str, str]:
     return {
+        "id": str(row.pk),
         "starts": _stamp(row.starts_at, zone),
         "ends": _stamp(row.ends_at, zone),
         "reason": row.reason,

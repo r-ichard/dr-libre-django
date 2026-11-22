@@ -133,6 +133,13 @@ sandbox clones from GitHub.
 
 ## Verifying a run (never skip)
 
+Before anything else the orchestrator reads every changed line of product code in the
+run's diff (`git diff main...origin/fabro/run/<id> -- . ':!doc' ':!*test_*'`) and the
+names of its tests. The pipeline's own reviewer is one of the cheap agents that wrote
+the code; it does not replace this reading. Two merges that skipped it (`ac99dd7`,
+`4078bbd`) each held a defect that reading found afterwards: a limit that `HEAD`
+walks around, and a refusal that quotes part of a password.
+
 Gates and review pass and a run is still wrong about one time in three: every hold in
 `doc/retro.md` was found by using the product, not by reading the diff.
 

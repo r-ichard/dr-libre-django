@@ -174,7 +174,7 @@ def returns_404_outcome_when_type_or_id_unknown(path: str) -> None:
 
 
 def returns_405_outcome_when_method_is_not_a_read() -> None:
-    response = fhir_client().post("/fhir/Organization", data="{}", content_type=FHIR_JSON)
+    response = fhir_client().post("/fhir/Practitioner", data="{}", content_type=FHIR_JSON)
 
     assert response.status_code == 405
     assert _is_outcome(response)

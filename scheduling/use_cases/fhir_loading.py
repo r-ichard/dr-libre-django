@@ -45,16 +45,18 @@ EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 
 def hospital_organizations(ids: list[UUID]) -> list[Resource]:
     rows = Hospital.objects.filter(pk__in=ids).values_list(
-        "id", "name", "version", "updated_at", "is_active"
+        "id", "name", "version", "updated_at", "is_active", "code"
     )
-    return [hospital_organization(OrganizationSource(*row, None)) for row in rows]
+    return [hospital_organization(OrganizationSource(*row[:5], None, row[5])) for row in rows]
 
 
 def department_organizations(ids: list[UUID]) -> list[Resource]:
     rows = Department.objects.filter(pk__in=ids).values_list(
-        "id", "name", "version", "updated_at", "hospital_id"
+        "id", "name", "version", "updated_at", "hospital_id", "code"
     )
-    return [department_organization(OrganizationSource(*row[:4], True, row[4])) for row in rows]
+    return [
+        department_organization(OrganizationSource(*row[:4], True, row[4], row[5])) for row in rows
+    ]
 
 
 def site_locations(ids: list[UUID]) -> list[Resource]:
@@ -72,6 +74,7 @@ def site_locations(ids: list[UUID]) -> list[Resource]:
         "time_zone",
         "latitude",
         "longitude",
+        "code",
     )
     return [site_location(SiteSource(*row)) for row in rows]
 
@@ -88,8 +91,9 @@ def room_locations(ids: list[UUID]) -> list[Resource]:
         "floor",
         "capacity",
         "equipment",
+        "code",
     )
-    return [room_location(RoomSource(*row[:9], tuple(row[9]))) for row in rows]
+    return [room_location(RoomSource(*row[:9], tuple(row[9]), row[10])) for row in rows]
 
 
 def healthcare_services(ids: list[UUID]) -> list[Resource]:
@@ -106,6 +110,7 @@ def healthcare_services(ids: list[UUID]) -> list[Resource]:
             "colour",
             "needs_room",
             "is_bookable_online",
+            "code",
         )
     )
     specialties: dict[UUID, set[tuple[str, str]]] = {}
@@ -117,7 +122,9 @@ def healthcare_services(ids: list[UUID]) -> list[Resource]:
     for department_id, code, name in pairs:
         specialties.setdefault(department_id, set()).add((code, name))
     return [
-        healthcare_service(ServiceSource(*row, tuple(sorted(specialties.get(row[5], ())))))
+        healthcare_service(
+            ServiceSource(*row[:11], tuple(sorted(specialties.get(row[5], ()))), row[11])
+        )
         for row in rows
     ]
 

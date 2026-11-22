@@ -7,6 +7,7 @@ from uuid import UUID
 from scheduling.domain.fhir_common import (
     LOCATION_TYPE_SYSTEM,
     Resource,
+    code_identifier,
     coding,
     extension,
     meta,
@@ -29,6 +30,7 @@ class SiteSource:
     time_zone: str
     latitude: float | None
     longitude: float | None
+    code: str = ""
 
 
 @dataclass(frozen=True)
@@ -43,6 +45,7 @@ class RoomSource:
     floor: str
     capacity: int
     equipment: tuple[str, ...]
+    code: str = ""
 
 
 def site_location(source: SiteSource) -> Resource:
@@ -62,6 +65,7 @@ def site_location(source: SiteSource) -> Resource:
         },
         "physicalType": coding(LOCATION_TYPE_SYSTEM, "si", "Site"),
         "managingOrganization": reference("Organization", source.id),
+        **code_identifier(source.code),
     }
     if source.latitude is not None and source.longitude is not None:
         resource["position"] = {"longitude": source.longitude, "latitude": source.latitude}
@@ -84,6 +88,7 @@ def room_location(source: RoomSource) -> Resource:
         "physicalType": coding(LOCATION_TYPE_SYSTEM, "ro", "Room"),
         "managingOrganization": reference("Organization", source.department_id),
         "partOf": reference("Location", source.hospital_id),
+        **code_identifier(source.code),
     }
 
 

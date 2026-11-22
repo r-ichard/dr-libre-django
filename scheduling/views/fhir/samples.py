@@ -15,6 +15,7 @@ from scheduling.domain.fhir_outcome import information_outcome
 from scheduling.models import User
 from scheduling.use_cases.api_tokens import issue_token
 from scheduling.views.api_clients import fhir_client
+from scheduling.views.fhir.samples_records import record_documents
 from scheduling.views.fhir.samples_staff import fetch_document, staff_documents
 
 VIEWS = ("public", "staff")
@@ -93,6 +94,7 @@ def _staff_documents(client: Client) -> dict[str, Resource]:
     }
     documents["Schedule-delete-staff"] = information_outcome("The record was deleted.", "sample")
     documents.update(staff_documents(client))
+    documents.update(record_documents(client))
     return documents
 
 

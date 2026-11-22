@@ -74,6 +74,7 @@ FHIR_RESOURCES = (
             ("address-city", _TEXT),
             ("active", _FLAG),
         ),
+        interactions=(*READ_ONLY, "create", "update", "delete"),
     ),
     ResourceDeclaration(
         "Location",
@@ -85,6 +86,7 @@ FHIR_RESOURCES = (
             ("type", _CODE),
             ("near", ParameterKind.NEAR),
         ),
+        interactions=(*READ_ONLY, "create", "update", "delete"),
     ),
     ResourceDeclaration(
         "HealthcareService",
@@ -94,6 +96,7 @@ FHIR_RESOURCES = (
             ("specialty", _CODE),
             ("active", _FLAG),
         ),
+        interactions=(*READ_ONLY, "create", "update", "delete"),
     ),
     ResourceDeclaration("CodeSystem", (), single_id="specialty"),
     ResourceDeclaration("ValueSet", (), single_id="specialty"),

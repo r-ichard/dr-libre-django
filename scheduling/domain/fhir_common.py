@@ -11,6 +11,8 @@ SPECIALTY_VALUE_SET = f"{CANONICAL_BASE}/ValueSet/{SPECIALTY_ID}"
 ORGANIZATION_TYPE_SYSTEM = "http://terminology.hl7.org/CodeSystem/organization-type"
 LOCATION_TYPE_SYSTEM = "http://terminology.hl7.org/CodeSystem/location-physical-type"
 
+CODE_IDENTIFIER_SYSTEM = f"{CANONICAL_BASE}/identifier/code"
+
 type Resource = dict[str, object]
 
 
@@ -32,6 +34,13 @@ def meta(version: int, updated_at: datetime) -> Resource:
 
 def reference(resource_type: str, identifier: UUID) -> Resource:
     return {"reference": f"{resource_type}/{identifier}"}
+
+
+def code_identifier(code: str) -> Resource:
+    """The record's unique code, which a client reads and sends back; none when not loaded."""
+    if not code:
+        return {}
+    return {"identifier": [{"system": CODE_IDENTIFIER_SYSTEM, "value": code}]}
 
 
 def coding(system: str, code: str, display: str) -> Resource:

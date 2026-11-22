@@ -347,7 +347,24 @@ FHIR_WRITE_BODIES = [
     json.dumps({"resourceType": "Patient", "name": [{"text": "x" * 100_000}], "birthDate": 5}),
     json.dumps({"resourceType": "Patient", "telecom": [{"system": "phone", "value": None}]}),
     json.dumps({"resourceType": "Patient", "active": "yes", "telecom": {"a": "b"}}),
+    json.dumps({"resourceType": "Organization", "name": "x" * 100_000, "partOf": "x"}),
+    json.dumps({"resourceType": "Organization", "type": [1], "identifier": {"a": 1}}),
+    json.dumps({"resourceType": "Location", "address": {"line": [None]}, "position": {"a": 1}}),
+    json.dumps({"resourceType": "Location", "physicalType": {"coding": "si"}, "extension": [1]}),
+    json.dumps({"resourceType": "HealthcareService", "extension": [{"url": 1}], "active": "y"}),
+    json.dumps({"resourceType": "HealthcareService", "providedBy": {"reference": "x" * 9_999}}),
 ]  # fmt: skip
+
+
+def _record_paths(record_id: object) -> list[tuple[str, str]]:
+    paths: list[tuple[str, str]] = []
+    for resource_type in ("Organization", "Location", "HealthcareService"):
+        paths += [
+            ("post", f"/fhir/{resource_type}"),
+            ("put", f"/fhir/{resource_type}/{record_id}"),
+            ("delete", f"/fhir/{resource_type}/{record_id}x"),
+        ]
+    return paths
 
 
 @pytest.mark.parametrize("actor", ACTORS)
@@ -369,6 +386,7 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
         ("put", "/fhir/Slot/abc"),
         ("post", "/fhir/Appointment"),
         ("put", f"/fhir/Appointment/{uuid.uuid4()}"),
+        *_record_paths(clinic.department.pk),
     ]
     client = fhir_client(token)
 
@@ -383,6 +401,9 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
                 "Schedule",
                 "Patient",
                 "Appointment",
+                "Organization",
+                "Location",
+                "HealthcareService",
             ):
                 failures.append((method, path, response.status_code))
     assert failures == []

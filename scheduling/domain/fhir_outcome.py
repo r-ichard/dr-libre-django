@@ -38,11 +38,19 @@ def failure_outcome(failure: Failure, text: str, correlation_id: str) -> Resourc
     return operation_outcome(
         answer.issue_code,
         text,
-        correlation_id,
+        _with_dependents(failure, correlation_id),
         _refused_names(failure),
         answer.product_code,
         details,
     )
+
+
+def _with_dependents(failure: Failure, correlation_id: str) -> str:
+    """What still uses the record, as the console's delete page says it: counts and fixed words."""
+    names = failure.details.get("dependents")
+    if not isinstance(names, list):
+        return correlation_id
+    return f"{correlation_id} Still used by: {', '.join(str(name) for name in names)}."
 
 
 def _detail_extensions(failure: Failure) -> list[Resource]:

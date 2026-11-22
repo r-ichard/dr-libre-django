@@ -15,7 +15,12 @@ from scheduling.domain.fhir_write_shapes import WRITE_SHAPES
 from scheduling.use_cases import fhir_resources
 from scheduling.use_cases.fhir_caller import Caller
 from scheduling.use_cases.request_context import current_request_context
-from scheduling.views.fhir.responses import failure_response, resource_response, weak_etag
+from scheduling.views.fhir.responses import (
+    failure_response,
+    method_not_allowed_response,
+    resource_response,
+    weak_etag,
+)
 
 DELETED_MESSAGE = "The record was deleted."
 BODY_PROBLEM = FieldMessage("body", "The request body is not a JSON object.")
@@ -26,9 +31,18 @@ def write(
 ) -> HttpResponse:
     if caller.user is None:
         return failure_response(Failure.unauthenticated())
+    refusal = fhir_resources.refusal_before_body(resource_type, caller)
+    if refusal is not None:
+        return failure_response(refusal)
     identifier = parse_id(raw_identifier) if raw_identifier is not None else None
     if raw_identifier is not None and identifier is None:
         return failure_response(Failure.not_found())
+    if (
+        identifier is not None
+        and request.method in ("PUT", "DELETE")
+        and fhir_resources.is_read_only_here(resource_type, UUID(identifier))
+    ):
+        return method_not_allowed_response(("GET",))
     version = if_match_version(request.headers.get("If-Match"))
     if isinstance(version, Failure):
         return failure_response(version)

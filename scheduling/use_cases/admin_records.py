@@ -12,6 +12,7 @@ from django.db.models import Model, ProtectedError
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.delete_dependents import delete_refusal
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.record_fields import check_code, check_colour, check_name, check_time_zone
 from scheduling.domain.vocabulary import Role
 from scheduling.models import ClinicianProfile, Room, User
@@ -23,12 +24,13 @@ from scheduling.use_cases.audit import AuditEvent, changed_field_names, record_a
 
 @dataclass(frozen=True)
 class RecordEdit:
-    """What an admin saved: the record, the new values, and the version the form read."""
+    """What an admin saved: the record, the new values, and the version the form read. None is a
+    write without `If-Match`: it applies to the current version."""
 
     kind: str
     record_id: UUID
     values: dict[str, object]
-    version: int
+    version: int | None
 
 
 def create_record(kind: str, values: dict[str, object], actor: User) -> Result[UUID]:
@@ -56,7 +58,7 @@ def update_record(edit: RecordEdit, actor: User) -> Result[UUID]:
         row = _locked(spec, edit.record_id)
         if row is None:
             return Failure.not_found()
-        if row.version != edit.version:
+        if edit.version is not None and row.version != edit.version:
             return Failure.conflict([edit.kind])
         cleaned, messages = _cleaned(spec, edit.values, creating=False)
         changed = {key: value for key, value in cleaned.items() if getattr(row, key) != value}
@@ -75,7 +77,9 @@ def update_record(edit: RecordEdit, actor: User) -> Result[UUID]:
         return Success(row.pk)
 
 
-def delete_record(kind: str, record_id: UUID, actor: User) -> Result[None]:
+def delete_record(
+    kind: str, record_id: UUID, actor: User, expected_version: int | None = None
+) -> Result[None]:
     spec = SPECS[kind]
     if not _is_admin(actor):
         return Failure.forbidden()
@@ -83,6 +87,8 @@ def delete_record(kind: str, record_id: UUID, actor: User) -> Result[None]:
         row = _locked(spec, record_id)
         if row is None:
             return Failure.not_found()
+        if expected_version not in (None, row.version):
+            return stale_version()
         blocked = dependents_of(kind, record_id)
         if blocked:
             return Failure.has_dependents(blocked)

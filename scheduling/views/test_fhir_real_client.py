@@ -41,10 +41,9 @@ def _get(path: str, token: str | None = None) -> "_MonkeyPatchedWSGIResponse":
 @pytest.mark.parametrize("method", WRITE_METHODS)
 def returns_405_with_allow_get_and_outcome_when_write_sent_to_known_type(method: str) -> None:
     clinician, _ = plant_clinic()
-    hospital = clinician.department.hospital
     client = _server_client()
 
-    for path in ("/fhir/Organization", f"/fhir/Organization/{hospital.pk}", "/fhir/metadata"):
+    for path in ("/fhir/Practitioner", f"/fhir/Practitioner/{clinician.user_id}", "/fhir/metadata"):
         response = getattr(client, method)(path, headers={"Authorization": f"Bearer {_token()}"})
 
         assert response.status_code == 405
@@ -77,7 +76,7 @@ def returns_json_405_and_public_view_when_foreign_origin_and_admin_cookie_sent()
             make_user(role="ADMIN"), SessionKind.PASSWORD, ""
         ).token
 
-    write = client.post("/fhir/Organization", headers={"Origin": "https://evil.example"})
+    write = client.post("/fhir/Practitioner", headers={"Origin": "https://evil.example"})
     read = client.get(f"/fhir/Practitioner/{clinician.user_id}")
 
     assert (write.status_code, write["Content-Type"].startswith(FHIR_JSON)) == (405, True)
@@ -93,7 +92,7 @@ def returns_vary_authorization_on_every_answer() -> None:
         _get("/fhir/Organization?nope=1"),
         _get("/fhir/Organization", "bad"),
         _get("/fhir/Nothing"),
-        _server_client().post("/fhir/Organization"),
+        _server_client().post("/fhir/Practitioner"),
         _server_client().get("/fhir/Organization", headers={"Accept": "text/html"}),
     ]
 

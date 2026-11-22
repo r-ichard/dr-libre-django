@@ -4,7 +4,14 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
-from scheduling.domain.fhir_common import SPECIALTY_SYSTEM, Resource, extension, meta, reference
+from scheduling.domain.fhir_common import (
+    SPECIALTY_SYSTEM,
+    Resource,
+    code_identifier,
+    extension,
+    meta,
+    reference,
+)
 
 
 @dataclass(frozen=True)
@@ -21,6 +28,7 @@ class ServiceSource:
     needs_room: bool
     is_bookable_online: bool
     specialties: tuple[tuple[str, str], ...]
+    code: str = ""
 
 
 def healthcare_service(source: ServiceSource) -> Resource:
@@ -43,4 +51,5 @@ def healthcare_service(source: ServiceSource) -> Resource:
             for code, display in source.specialties
         ],
         "name": source.name,
+        **code_identifier(source.code),
     }

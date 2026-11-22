@@ -7,6 +7,7 @@ from uuid import UUID
 from scheduling.domain.fhir_common import (
     ORGANIZATION_TYPE_SYSTEM,
     Resource,
+    code_identifier,
     coding,
     meta,
     reference,
@@ -21,6 +22,7 @@ class OrganizationSource:
     updated_at: datetime
     is_active: bool
     hospital_id: UUID | None
+    code: str = ""
 
 
 def hospital_organization(source: OrganizationSource) -> Resource:
@@ -35,7 +37,7 @@ def department_organization(source: OrganizationSource) -> Resource:
 
 
 def _organization(source: OrganizationSource, code: str, display: str) -> Resource:
-    return {
+    resource: Resource = {
         "resourceType": "Organization",
         "id": str(source.id),
         "meta": meta(source.version, source.updated_at),
@@ -43,3 +45,4 @@ def _organization(source: OrganizationSource, code: str, display: str) -> Resour
         "type": [coding(ORGANIZATION_TYPE_SYSTEM, code, display)],
         "name": source.name,
     }
+    return {**resource, **code_identifier(source.code)}

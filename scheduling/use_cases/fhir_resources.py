@@ -18,6 +18,14 @@ from scheduling.use_cases.fhir_communication_reads import (
 from scheduling.use_cases.fhir_patient_reads import read_patient, search_patients
 from scheduling.use_cases.fhir_patient_writes import update_patient
 from scheduling.use_cases.fhir_reads import SearchPage, read_resource, search_resource
+from scheduling.use_cases.fhir_record_writes import (
+    RECORD_TYPES,
+    create_record_resource,
+    delete_record_resource,
+    is_hospital_organization,
+    update_record_resource,
+    write_refusal,
+)
 from scheduling.use_cases.fhir_response_reads import (
     create_response,
     read_response,
@@ -70,6 +78,8 @@ def create(resource_type: str, body: dict[str, object], caller: Caller) -> Resul
         return create_appointment(body, caller)
     if resource_type == "AppointmentResponse":
         return create_response(body, caller)
+    if resource_type in RECORD_TYPES:
+        return create_record_resource(resource_type, body, caller)
     return Failure.not_found()
 
 
@@ -88,6 +98,8 @@ def update(
         return update_appointment(identifier, body, caller, expected_version)
     if resource_type == "Communication":
         return update_communication(identifier, body, caller, expected_version)
+    if resource_type in RECORD_TYPES:
+        return update_record_resource(resource_type, identifier, body, caller, expected_version)
     return Failure.not_found()
 
 
@@ -96,4 +108,15 @@ def delete(
 ) -> Result[None]:
     if resource_type == "Schedule":
         return delete_schedule(identifier, caller, expected_version)
+    if resource_type in RECORD_TYPES:
+        return delete_record_resource(resource_type, identifier, caller, expected_version)
     return Failure.not_found()
+
+
+def is_read_only_here(resource_type: str, identifier: UUID) -> bool:
+    """The record exists but this type is only its read-only view (a hospital's Organization)."""
+    return is_hospital_organization(resource_type, identifier)
+
+
+def refusal_before_body(resource_type: str, caller: Caller) -> Failure | None:
+    return write_refusal(resource_type, caller)

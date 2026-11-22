@@ -53,6 +53,23 @@ Everywhere:
     Accessibility to WCAG 2.2 level AA and 375 px to 1440 px. Every form is tested as a
     browser sends it.
 
+Carried from the review and the browser check of task 20, to fix here:
+
+14. The record type filter of the audit log (`scheduling/views/pages/admin_audit.py`) is
+    a list kept by hand; `SignInLink` is audited and missing from it. Derive the list
+    from the types the product audits, and add a test that fails when an audited type
+    cannot be filtered.
+15. The manual waitlist offer looks at 100 cancelled times at most
+    (`MAX_SLOTS_CHECKED` in `scheduling/use_cases/waitlist.py`): a usable time behind 100
+    unusable ones is never offered and the admin reads "the clinician is no longer free".
+    Leave the busy times out in the query, so the first row is the first that fits.
+16. `reference_messages` (`scheduling/use_cases/admin_clinicians.py`) takes row locks to
+    validate a form it then does not save. Validate without the lock.
+17. Found in the browser: after "Accept for the patient" on the waitlist the list comes
+    back with no word of what happened. Every admin action that changes something
+    answers with a notice that says what was done and for whom, shown once (the notice
+    of task 17b). List in the plan the admin actions without one, and fix them.
+
 The sandbox has no browser. The orchestrator opens the dashboard as the demo admin in
 Chrome at 375 px and 1440 px, checks two figures against the database by hand, and
 opens the export in a spreadsheet reader.

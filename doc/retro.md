@@ -654,3 +654,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   is closed for the third and, by construction, last time.
 - The sync prompt tells its agent to take `scripts/**` from `main`; this run added a
   product script there. Narrowed the rule to the files the orchestrator wrote.
+
+## 2026-11-22 task 20, run 01M80GDSH94F (34 minutes, merged)
+
+- Clean pass, no bounce, and the squash onto a `main` two FHIR merges ahead applied
+  without a conflict. 3511 tests.
+- As the demo admin in Chrome: booked a cardiology consultation for a patient in four
+  steps (every active service offered, no "first available"), cancelled it with a
+  reason (without one: refused), and the freed time went at once to the oldest waiting
+  entry; accepted that offer for its patient; added another patient to the waitlist; a
+  manual offer with no cancelled time left that fits was refused with the reason. The
+  audit log shows every step with who, what, the record and the correlation id; a POST
+  to it answers 405. Four emails in the inbox, one per step.
+- Not provoked by hand: a manual offer that succeeds. The only cancelled time in the
+  window had just been taken by the automatic offer. The run's tests cover it.
+- After "Accept for the patient" the list returns without a word. Carried into task 21.

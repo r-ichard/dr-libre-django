@@ -75,8 +75,8 @@ tasks.
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | merged `42600a0` |
 | 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | merged `bc0bbac` |
-| 20 | Appointments, waitlist, audit log, settings | 10 | running `01M80GDSH94F` |
-| 21 | Dashboard, reporting, CSV export | 13 | todo |
+| 20 | Appointments, waitlist, audit log, settings | 10 | merged `6f9a986` |
+| 21 | Dashboard, reporting, CSV export; four items carried from task 20 | 13 | running |
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
@@ -122,9 +122,6 @@ Small findings waiting for the next task that touches the same file.
 - The email of a change is sent inside the request after commit and can hold the answer
   for up to the 10 second mail timeout when the server hangs (review of 08). Revisit when
   the worker of task 09 sends pending emails.
-- Review of 09, small: a stale offer is detected by clinician overlap only; the manual
-  offer loads every future cancelled slot of the type. With the admin waitlist screen,
-  task 20.
 - Public search loads the whole catalogue and 90 days of schedules per request and has no
   rate limit (review of 10). Task 26, with the rate limits of task 12 as the mechanism.
 - The network address for rate limits is `REMOTE_ADDR`: behind a proxy every visitor

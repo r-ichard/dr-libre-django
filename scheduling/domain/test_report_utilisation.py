@@ -2,6 +2,10 @@
 
 from datetime import UTC, date, datetime, time, timedelta
 
+from scheduling.domain.report_figures import ReportedVisit
+from scheduling.domain.report_utilisation import OffPeriod, RuleHours
+from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus
+
 BERLIN = "Europe/Berlin"
 
 
@@ -17,9 +21,7 @@ def _rule(
     valid_to: date | None = None,
     clinician_id: str = "c1",
     time_zone: str = "UTC",
-):  # noqa: ANN202 - a test helper, the type is the dataclass under test
-    from scheduling.domain.report_utilisation import RuleHours
-
+) -> RuleHours:
     return RuleHours(
         clinician_id=clinician_id,
         weekday=weekday,
@@ -31,16 +33,11 @@ def _rule(
     )
 
 
-def _off(starts_at: datetime, ends_at: datetime, clinician_id: str = "c1"):  # noqa: ANN202
-    from scheduling.domain.report_utilisation import OffPeriod
-
+def _off(starts_at: datetime, ends_at: datetime, clinician_id: str = "c1") -> OffPeriod:
     return OffPeriod(clinician_id=clinician_id, starts_at=starts_at, ends_at=ends_at)
 
 
-def _visit(starts_at: datetime, minutes: int, status: str = "BOOKED"):  # noqa: ANN202
-    from scheduling.domain.report_figures import ReportedVisit
-    from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus
-
+def _visit(starts_at: datetime, minutes: int, status: str = "BOOKED") -> ReportedVisit:
     return ReportedVisit(
         starts_at=starts_at,
         ends_at=starts_at + timedelta(minutes=minutes),

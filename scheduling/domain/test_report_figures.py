@@ -2,6 +2,7 @@
 
 from datetime import UTC, date, datetime
 
+from scheduling.domain.report_figures import ReportedVisit
 from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus
 
 NOON = datetime(2026, 3, 10, 12, 0, tzinfo=UTC)
@@ -14,9 +15,7 @@ def _visit(
     starts_at: datetime = NOON,
     time_zone: str = "UTC",
     clinician_id: str = "c1",
-):  # noqa: ANN202 - a test helper, the type is the dataclass under test
-    from scheduling.domain.report_figures import ReportedVisit
-
+) -> ReportedVisit:
     return ReportedVisit(
         starts_at=starts_at,
         ends_at=LATER,

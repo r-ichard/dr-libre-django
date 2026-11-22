@@ -669,3 +669,21 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Not provoked by hand: a manual offer that succeeds. The only cancelled time in the
   window had just been taken by the automatic offer. The run's tests cover it.
 - After "Accept for the patient" the list returns without a word. Carried into task 21.
+
+## 2026-11-22 task 23, run 01M80HFKDRHQ (43 minutes, merged)
+
+- Review bounced once, on a 500: `/fhir/Slot?service-type=not-a-uuid`, without a token.
+  The reviewer wrote a throw-away test to prove it. The hostile-input test had not sent
+  that value to that parameter.
+- With a token per role: a clinician creates a Saturday rule through FHIR and both APIs
+  offer 31 Saturday slots, then none after the delete; an admin's token cannot write
+  another's schedule; a patient reads one Patient, a clinician two, an admin six;
+  another patient's id and an absent one answer the same 403 body. 52 samples valid.
+- Following `next` to the end, which I had done for one type in task 22, found that the
+  links carry `_sort=name` for every type and three types refuse it. PractitionerRole
+  has been unpageable since task 22. "Follow the links to the end" is a check for every
+  type, so it is a test over the declaration now, not a thing I do by hand. Task 23a.
+- My first Schedule body repeated `planningHorizon` from an older rule and was refused,
+  correctly. I read the refusal as a defect for a minute. The outcome names the element;
+  the message text says only "The request is not valid".
+- 3640 tests, 69 seconds on my machine beside a sandbox and Chrome.

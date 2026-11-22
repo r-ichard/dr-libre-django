@@ -66,6 +66,24 @@ Booking (15.6):
     the same row in the patient's portal. Assert each for one booking, one reschedule
     and one cancellation.
 
+Carried from tasks 22 and 23, found by the orchestrator with curl and by the reviewer:
+
+13. The `self`, `next` and `previous` links of a search carry `_sort=name` for every
+    type. `Schedule`, `Slot` and `PractitionerRole` have no `name` to sort by and refuse
+    it, so following `next` on those three answers 400: a client cannot get past the
+    first page (299 slots for one week, 100 a page). A link the server writes is a
+    request the server accepts. For every searchable type of the declaration, a test
+    follows `next` from the first page to the last and collects exactly `total` entries,
+    each once, and reads `self` back to the same page. This task's `Appointment` joins it.
+14. Review of 23: the mapping of a stale version lives in the FHIR layer for `Patient`
+    (every conflict becomes 412 when `If-Match` is sent, and `If-Match: W/"0"` counts
+    as absent). `update_user` and `update_profile` take the expected version and answer
+    a stale one themselves, as `availability.py` does.
+15. A refused `Patient.telecom` phone is named `phone` in `issue.expression`; every
+    other refusal names the FHIR path (`Patient.name`). One form: the FHIR path.
+16. The hostile-input test sends no write body whose `resourceType` or `id` differs from
+    the address; add both for every type that accepts a write.
+
 Tasks 20 and 21 (admin console) may run beside this one. Keep out of their files.
 
 The orchestrator books, reschedules and cancels with the demo patient's token and reads

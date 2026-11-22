@@ -22,6 +22,16 @@ def returns_cancel_allowed_when_start_is_exactly_24_hours_away() -> None:
     assert options.cancel.allowed is True
 
 
+def returns_reschedule_refused_with_type_sentence_when_type_not_bookable_online() -> None:
+    options = appointment_options(
+        AppointmentStatus.BOOKED, IN_25_HOURS, NOW, type_bookable_online=False
+    )
+
+    assert options.reschedule.allowed is False
+    assert options.reschedule.reason == "This appointment type cannot be booked online."
+    assert options.cancel.allowed is True
+
+
 def returns_less_than_24_hours_reason_when_start_is_one_minute_inside_window() -> None:
     start = NOW + CANCELLATION_WINDOW - timedelta(minutes=1)
 

@@ -6,11 +6,12 @@ from datetime import timedelta
 
 import pytest
 
-from scheduling.models import Appointment
+from scheduling.models import Appointment, AuditLogEntry
 from scheduling.models.builders import STARTS_AT, Clinic, make, make_clinic
 from scheduling.views import clock
 from scheduling.views.pages.booking_pages_support import NOW, no_inline_code, signed_in_patient
 from scheduling.views.pages.browser_support import OTHER_SITE_ORIGIN, browser_post
+from scheduling.views.pages.search_pages_support import update_row
 
 pytestmark = pytest.mark.django_db
 
@@ -308,3 +309,67 @@ def returns_home_empty_state_when_patient_has_no_upcoming_appointment() -> None:
     assert "No upcoming appointments" in html
     assert "0 unread notifications" in html
     assert 'href="/book"' in html
+
+
+TYPE_SENTENCE = "This appointment type cannot be booked online."
+FREE_START = "2030-01-21T10:00:00Z"
+
+
+def returns_409_refusal_with_hospital_phone_when_reschedule_type_not_bookable_online() -> None:
+    clinic = make_clinic()
+    update_row(clinic.appointment_type, is_bookable_online=False)
+    appointment = _later(clinic)
+
+    response = signed_in_patient(clinic.patient).get(f"{LIST_PATH}/{appointment.pk}/reschedule")
+
+    html = response.content.decode()
+    assert response.status_code == 409
+    assert TYPE_SENTENCE in html
+    assert "+49 30 1234" in html
+    assert f"{LIST_PATH}/{appointment.pk}/reschedule?week=" not in html
+
+
+def returns_409_refusal_when_review_asked_for_type_not_bookable_online() -> None:
+    clinic = make_clinic()
+    update_row(clinic.appointment_type, is_bookable_online=False)
+    appointment = _later(clinic)
+
+    response = signed_in_patient(clinic.patient).get(
+        f"{LIST_PATH}/{appointment.pk}/reschedule/review?starts_at={FREE_START}"
+    )
+
+    html = response.content.decode()
+    assert response.status_code == 409
+    assert TYPE_SENTENCE in html
+    assert "+49 30 1234" in html
+
+
+def returns_no_reschedule_link_and_call_hint_when_type_not_bookable_online() -> None:
+    clinic = make_clinic()
+    update_row(clinic.appointment_type, is_bookable_online=False)
+    appointment = _later(clinic)
+
+    html = signed_in_patient(clinic.patient).get(LIST_PATH).content.decode()
+
+    assert TYPE_SENTENCE in html
+    assert "+49 30 1234" in html
+    assert f"{LIST_PATH}/{appointment.pk}/reschedule" not in html
+    assert f"{LIST_PATH}/{appointment.pk}/cancel" in html
+
+
+def returns_422_and_keeps_time_when_patient_posts_reschedule_for_type_not_bookable_online() -> None:
+    clinic = make_clinic()
+    update_row(clinic.appointment_type, is_bookable_online=False)
+    appointment = _later(clinic)
+    original_times = (appointment.starts_at, appointment.ends_at)
+
+    response = browser_post(
+        signed_in_patient(clinic.patient),
+        f"{LIST_PATH}/{appointment.pk}/reschedule/review?starts_at={FREE_START}",
+        {},
+    )
+
+    appointment.refresh_from_db()
+    assert response.status_code == 422
+    assert (appointment.starts_at, appointment.ends_at) == original_times
+    assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 0

@@ -18,6 +18,7 @@ FINISHED_REASONS: dict[AppointmentStatus, str] = {
 STARTED_REASON = "This appointment has already started."
 WINDOW_REASON = "This appointment starts in less than 24 hours."
 CHECKED_IN_REASON = "You are already checked in, so the time can no longer be changed."
+TYPE_NOT_ONLINE_REASON = "This appointment type cannot be booked online."
 
 
 @dataclass(frozen=True)
@@ -37,16 +38,26 @@ def is_upcoming(status: AppointmentStatus, starts_at: datetime, now: datetime) -
 
 
 def appointment_options(
-    status: AppointmentStatus, starts_at: datetime, now: datetime
+    status: AppointmentStatus,
+    starts_at: datetime,
+    now: datetime,
+    type_bookable_online: bool = True,
 ) -> AppointmentOptions:
     blocked = _blocked_reason(status, starts_at, now)
     if blocked:
         return AppointmentOptions(ChangeOption(False, blocked), ChangeOption(False, blocked))
-    can_move = status in RESCHEDULABLE_STATUSES
     return AppointmentOptions(
         ChangeOption(True, ""),
-        ChangeOption(can_move, "" if can_move else CHECKED_IN_REASON),
+        _reschedule_option(status, type_bookable_online),
     )
+
+
+def _reschedule_option(status: AppointmentStatus, type_bookable_online: bool) -> ChangeOption:
+    if not type_bookable_online:
+        return ChangeOption(False, TYPE_NOT_ONLINE_REASON)
+    if status not in RESCHEDULABLE_STATUSES:
+        return ChangeOption(False, CHECKED_IN_REASON)
+    return ChangeOption(True, "")
 
 
 def _blocked_reason(status: AppointmentStatus, starts_at: datetime, now: datetime) -> str:

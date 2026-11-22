@@ -17,7 +17,9 @@ def appointment_row(appointment: Appointment, now: datetime) -> dict[str, object
     time_zone = ZoneInfo(hospital.time_zone)
     clinician = appointment.clinician
     status = AppointmentStatus(appointment.status)
-    options = appointment_options(status, appointment.starts_at, now)
+    options = appointment_options(
+        status, appointment.starts_at, now, appointment.appointment_type.is_bookable_online
+    )
     badge_kind, badge_text = APPOINTMENT_BADGES[status]
     base = f"{LIST_PATH}/{appointment.pk}"
     return {

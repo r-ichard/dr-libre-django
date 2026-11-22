@@ -41,7 +41,10 @@ def blocked_page_or_none(
 ) -> HttpResponse | None:
     """The rules say no before a form is shown: give the reason and the hospital's phone."""
     options = appointment_options(
-        AppointmentStatus(appointment.status), appointment.starts_at, current_request_context().now
+        AppointmentStatus(appointment.status),
+        appointment.starts_at,
+        current_request_context().now,
+        appointment.appointment_type.is_bookable_online,
     )
     option = options.cancel if action == "cancel" else options.reschedule
     if option.allowed:

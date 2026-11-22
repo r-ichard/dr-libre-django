@@ -16,6 +16,8 @@ docker = "node:22-bookworm"
 
 [run.environment.env]
 CLAUDE_CODE_OAUTH_TOKEN = "{{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}"
+# Owner decision (2026-11-22): every agent stage runs on Haiku; tasks are cut small to fit.
+ANTHROPIC_MODEL = "claude-haiku-5-5"
 # The verify stage files issues with gh.
 GH_TOKEN = "{{ secrets.GITHUB_TOKEN }}"
 # uv installs into /root/.local/bin; agent shells need it on PATH, not only make.

@@ -15,7 +15,7 @@
   {% csrf_token %}
   {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
   {% include "components/field.html" with name="phone" label="Phone" type="tel" value=entered.phone hint="7 to 20 characters: digits, spaces and + ( ) -. Leave empty to remove it." error=errors.phone autocomplete="tel" %}
-  {% include "components/field.html" with name="date_of_birth" label="Date of birth" type="date" value=entered.date_of_birth hint="Leave empty to remove it." error=errors.date_of_birth autocomplete="bday" max=today %}
+  {% include "components/date_group.html" with name="date_of_birth" legend="Date of birth" hint="For example 14 3 1985. Leave empty to remove it." day=entered.date_of_birth_day month=entered.date_of_birth_month year=entered.date_of_birth_year error=errors.date_of_birth %}
   <div class="button-row">
     <button class="button button--primary" type="submit">Save profile</button>
   </div>

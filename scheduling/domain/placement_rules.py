@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.vocabulary import AppointmentSource, Role
+from scheduling.domain.written_moment import written_moment
 
 
 @dataclass(frozen=True)
@@ -91,18 +92,12 @@ def choose_room(
 
 
 def booked_notification_text(starts_at: datetime, time_zone: ZoneInfo) -> str:
-    local = starts_at.astimezone(time_zone)
-    return f"Your appointment is on {local:%Y-%m-%d} at {local:%H:%M} ({time_zone.key})."
-
-
-def _written_time(starts_at: datetime, time_zone: ZoneInfo) -> str:
-    local = starts_at.astimezone(time_zone)
-    return f"{local:%A} {local.day} {local:%B %Y}, {local:%H:%M} ({time_zone.key})"
+    return f"Your appointment is on {written_moment(starts_at, time_zone)}."
 
 
 def cancelled_notification_text(starts_at: datetime, time_zone: ZoneInfo) -> str:
-    return f"Your appointment on {_written_time(starts_at, time_zone)} is cancelled."
+    return f"Your appointment on {written_moment(starts_at, time_zone)} is cancelled."
 
 
 def rescheduled_notification_text(starts_at: datetime, time_zone: ZoneInfo) -> str:
-    return f"Your appointment has moved to {_written_time(starts_at, time_zone)}."
+    return f"Your appointment has moved to {written_moment(starts_at, time_zone)}."

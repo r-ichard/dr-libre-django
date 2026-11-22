@@ -38,7 +38,7 @@ def returns_form_with_six_labelled_fields_and_chosen_appointment_when_visitor_op
 
     html = browser_client().get(details_path(clinic)).content.decode()
 
-    for name in ["full_name", "date_of_birth", "email", "phone", "reason", "terms_accepted"]:
+    for name in ["full_name", "date_of_birth_day", "email", "phone", "reason", "terms_accepted"]:
         assert re.search(rf'<label[^>]*for="id_{name}"', html), name
         assert re.search(rf'id="id_{name}"', html), name
     assert clinic.appointment_type.name in html

@@ -9,10 +9,11 @@
   {% csrf_token %}
   {% if form.summary %}{% include "components/error_summary.html" with errors=form.summary %}{% endif %}
   {% include "components/field.html" with name="full_name" label="Full name" value=form.values.full_name autocomplete="name" error=form.field_errors.full_name autofocus=form.focus.full_name %}
-  {% include "components/field.html" with name="date_of_birth" label="Date of birth" type="date" value=form.values.date_of_birth autocomplete="bday" error=form.field_errors.date_of_birth autofocus=form.focus.date_of_birth %}
+  {% include "components/date_group.html" with name="date_of_birth" legend="Date of birth" hint="For example 14 3 1985." day=form.values.date_of_birth_day month=form.values.date_of_birth_month year=form.values.date_of_birth_year error=form.field_errors.date_of_birth autofocus=form.focus.date_of_birth %}
   {% include "components/field.html" with name="email" label="Email address" type="email" value=form.values.email autocomplete="email" hint="We send a code to this address to confirm it is yours." error=form.field_errors.email autofocus=form.focus.email %}
   {% include "components/field.html" with name="phone" label="Phone (optional)" type="tel" value=form.values.phone autocomplete="tel" error=form.field_errors.phone autofocus=form.focus.phone %}
   {% include "components/field.html" with name="reason" label="Reason for the visit (optional)" value=form.values.reason error=form.field_errors.reason autofocus=form.focus.reason %}
+  <p class="field__hint">Read the <a href="/terms" target="_blank" rel="noopener">terms (opens in a new tab)</a> and the <a href="/privacy" target="_blank" rel="noopener">privacy notice (opens in a new tab)</a> first. What you typed here stays in this tab.</p>
   {% include "components/checkbox.html" with name="terms_accepted" label="I accept the terms and the privacy notice" checked=form.terms_accepted error=form.field_errors.terms_accepted autofocus=form.focus.terms_accepted %}
   <button class="button button--primary" type="submit">Send me a code</button>
 </form>

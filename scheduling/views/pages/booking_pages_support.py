@@ -17,7 +17,9 @@ PHRASE = "correct horse battery staple"
 VISITOR_EMAIL = "vera.page@example.test"
 FORM = {
     "full_name": "Vera Visitor",
-    "date_of_birth": "1985-03-14",
+    "date_of_birth_day": "14",
+    "date_of_birth_month": "3",
+    "date_of_birth_year": "1985",
     "email": VISITOR_EMAIL,
     "phone": "",
     "reason": "Sore knee",

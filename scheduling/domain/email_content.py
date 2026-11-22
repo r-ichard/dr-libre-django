@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from scheduling.domain.written_moment import written_moment
+
 
 @dataclass(frozen=True)
 class EmailSubject:
@@ -25,8 +27,7 @@ class EmailText:
 def patient_email(content: EmailSubject) -> EmailText:
     details = []
     if content.starts_at is not None:
-        local = content.starts_at.astimezone(content.time_zone)
-        details.append(f"When: {local:%Y-%m-%d} at {local:%H:%M} ({content.time_zone.key})")
+        details.append(f"When: {written_moment(content.starts_at, content.time_zone)}")
     if content.hospital_name is not None:
         details.append(f"Where: {content.hospital_name}")
     if content.provider_name is not None:

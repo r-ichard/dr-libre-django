@@ -1,0 +1,20 @@
+{% comment %}Parameters: name, legend, hint, day, month, year, error, autofocus. One group, one error. Posts name_day, name_month, name_year.{% endcomment %}
+<fieldset class="field date-group{% if error %} field--invalid{% endif %}"{% if hint or error %} aria-describedby="{% if hint %}id_{{ name }}_hint {% endif %}{% if error %}id_{{ name }}_error{% endif %}"{% endif %}>
+  <legend class="field__label">{{ legend }}</legend>
+  {% if hint %}<p class="field__hint" id="id_{{ name }}_hint">{{ hint }}</p>{% endif %}
+  {% if error %}<p class="field__error" id="id_{{ name }}_error">{% include "components/icon.html" with kind="error" %}<span><span class="visually-hidden">Error: </span>{{ error }}</span></p>{% endif %}
+  <div class="date-group__parts">
+    <div class="date-group__part">
+      <label class="field__label" for="id_{{ name }}_day">Day</label>
+      <input class="input date-group__input" id="id_{{ name }}_day" name="{{ name }}_day" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="bday-day"{% if day %} value="{{ day }}"{% endif %}{% if error %} aria-invalid="true"{% endif %}{% if autofocus %} data-autofocus{% endif %}>
+    </div>
+    <div class="date-group__part">
+      <label class="field__label" for="id_{{ name }}_month">Month</label>
+      <input class="input date-group__input" id="id_{{ name }}_month" name="{{ name }}_month" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="bday-month"{% if month %} value="{{ month }}"{% endif %}{% if error %} aria-invalid="true"{% endif %}>
+    </div>
+    <div class="date-group__part">
+      <label class="field__label" for="id_{{ name }}_year">Year</label>
+      <input class="input date-group__input date-group__input--year" id="id_{{ name }}_year" name="{{ name }}_year" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="bday-year"{% if year %} value="{{ year }}"{% endif %}{% if error %} aria-invalid="true"{% endif %}>
+    </div>
+  </div>
+</fieldset>

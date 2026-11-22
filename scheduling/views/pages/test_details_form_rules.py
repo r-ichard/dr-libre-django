@@ -66,22 +66,22 @@ def returns_form_with_typed_values_when_the_slot_was_taken_meanwhile() -> None:
     assert response.status_code >= 400
     assert 'id="id_full_name"' in html
     assert 'value="Vera Visitor"' in html
-    assert 'value="1985-03-14"' in html
+    assert re.search(r'id="id_date_of_birth_year"[^>]*value="1985"', html)
     assert "just taken" in html
     assert BookingHold.objects.count() == 0
 
 
 def returns_every_error_when_details_has_future_birth_date_bad_email_and_no_terms() -> None:
     clinic = make_clinic()
-    form = {**FORM, "date_of_birth": "2030-01-08", "email": "notanemail", "phone": "abc"}
+    form = {**FORM, "date_of_birth_year": "2030", "email": "notanemail", "phone": "abc"}
     form.pop("terms_accepted")
 
     response = browser_post(browser_client(), details_path(clinic), form)
 
     html = response.content.decode()
     assert response.status_code == 422
-    for name in ["date_of_birth", "email", "phone", "terms_accepted"]:
-        assert f'href="#id_{name}"' in html, name
+    for target in ["date_of_birth_day", "email", "phone", "terms_accepted"]:
+        assert f'href="#id_{target}"' in html, target
 
 
 @pytest.mark.parametrize("phone", ["abc", "12345", "1" * 21])

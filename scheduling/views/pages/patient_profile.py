@@ -3,6 +3,7 @@ session's user; a passwordless patient gets 404 for the password page."""
 
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 
+from scheduling.domain.date_parts import BIRTH_PARTS, read_birth_date
 from scheduling.domain.failure import Failure
 from scheduling.domain.vocabulary import Role
 from scheduling.models import User
@@ -10,7 +11,6 @@ from scheduling.use_cases.profile import ProfileCommand, change_password, update
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.pages.page_view import PageView
 from scheduling.views.pages.portal_forms import (
-    day_or_none,
     failure_messages,
     forget_notice,
     redirect_with_notice,
@@ -24,7 +24,15 @@ NOTICES = {
     "saved": "Your profile is saved.",
     "password-changed": "Your password is changed. Other devices are signed out.",
 }
-REAL_DATE = "Enter a real date, for example 1990-03-27."
+
+
+def _summary(errors: dict[str, str]) -> list[dict[str, str]]:
+    """The group's error points at its first input; no element has the bare field's id."""
+    items = summary_items(errors)
+    for item in items:
+        if item["target"] == "id_date_of_birth":
+            item["target"] = "id_date_of_birth_day"
+    return items
 
 
 class ProfilePage(PageView):
@@ -34,16 +42,19 @@ class ProfilePage(PageView):
     def get(self, request: HttpRequest) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         born = self.user.date_of_birth
-        entered = {"phone": self.user.phone, "date_of_birth": born.isoformat() if born else ""}
+        parts = (str(born.day), str(born.month), str(born.year)) if born else ("", "", "")
+        entered = {"phone": self.user.phone, **dict(zip(BIRTH_PARTS, parts, strict=True))}
         return self._render(request, entered, {})
 
     def post(self, request: HttpRequest) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
-        entered = {name: request.POST.get(name, "").strip() for name in ("phone", "date_of_birth")}
-        born = day_or_none(entered["date_of_birth"])
-        if entered["date_of_birth"] and born is None:
-            return self._render(request, entered, {"date_of_birth": REAL_DATE}, 422)
-        saved = update_profile(ProfileCommand(entered["phone"], born), self.user)
+        entered = {name: request.POST.get(name, "").strip() for name in ("phone", *BIRTH_PARTS)}
+        today = current_request_context().now.date()
+        day, month, year = (entered[part] for part in BIRTH_PARTS)
+        born = read_birth_date(day, month, year, today, required=False)
+        if isinstance(born, Failure):
+            return self._render(request, entered, failure_messages(born), 422)
+        saved = update_profile(ProfileCommand(entered["phone"], born.value), self.user)
         if isinstance(saved, Failure):
             return self._render(request, entered, failure_messages(saved), 422)
         return redirect_with_notice(PROFILE_PATH, "saved")
@@ -60,10 +71,9 @@ class ProfilePage(PageView):
             "notice": take_notice(request, NOTICES),
             "entered": entered,
             "errors": errors,
-            "summary": summary_items(errors),
+            "summary": _summary(errors),
             "has_password": self.user.has_usable_password(),
             "password_path": PASSWORD_PATH,
-            "today": current_request_context().now.date().isoformat(),
         }
         return forget_notice(request, self.page(request, context, status))
 

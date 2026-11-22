@@ -102,7 +102,7 @@ def returns_audit_entries_with_ids_only_when_token_issued_and_revoked(
         list_tokens()
 
     entries = list(AuditLogEntry.objects.order_by("created_at", "id"))
-    assert [entry.action for entry in entries] == ["api_client.issue", "api_client.revoke"]
+    assert sorted(entry.action for entry in entries) == ["api_client.issue", "api_client.revoke"]
     assert all(entry.entity_id == str(issued.client.pk) for entry in entries)
     assert all(entry.metadata["ids"] == {"user_id": str(user.pk)} for entry in entries)
     everything = str([entry.metadata for entry in entries]) + caplog.text

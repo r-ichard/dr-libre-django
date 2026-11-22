@@ -81,7 +81,7 @@ def returns_one_email_with_local_time_and_names_after_commit_when_cancelling(
     message = mail.outbox[0]
     assert message.from_email == SENDER
     assert message.to == [clinic.patient.email]
-    assert "2030-01-07 at 11:00 (Europe/Berlin)" in message.body
+    assert "Monday 7 January 2030, 11:00 (Europe/Berlin)" in message.body
     assert "Riverside Hospital" in message.body
     assert str(clinic.clinician.user.full_name) in message.body
     assert "/sign-in" in message.body

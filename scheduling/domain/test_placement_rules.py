@@ -148,7 +148,7 @@ def returns_text_with_hospital_local_time_only_when_booked() -> None:
 
     text = booked_notification_text(starts_at, ZoneInfo("Europe/Berlin"))
 
-    assert text == "Your appointment is on 2030-01-07 at 11:00 (Europe/Berlin)."
+    assert text == "Your appointment is on Monday 7 January 2030, 11:00 (Europe/Berlin)."
 
 
 def returns_own_calendar_when_clinician_names_themself() -> None:

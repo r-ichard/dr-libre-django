@@ -2,13 +2,14 @@
 
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from datetime import date
 
 from django.http import QueryDict
 from rest_framework import serializers
 
-from scheduling.domain.failure import Failure
+from scheduling.domain.date_parts import BIRTH_PARTS, read_birth_date
+from scheduling.domain.failure import Failure, Success
 from scheduling.domain.profile_rules import phone_failure
-from scheduling.domain.visitor_rules import valid_birth_date
 from scheduling.use_cases.booking_holds import HoldCommand
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.booking_schemas import VISIT_REASON_MAXIMUM
@@ -19,18 +20,16 @@ from scheduling.views.hold_schemas import (
     hold_command_of,
 )
 from scheduling.views.pages.booking_links import SlotRequest
-from scheduling.views.pages.portal_forms import day_or_none
 from scheduling.views.schemas import StrictSerializer, validate_body
 
 TERMS_MESSAGE = "Accept the terms and the privacy notice."
 REASON_TOO_LONG = f"Keep the reason under {VISIT_REASON_MAXIMUM} characters."
 REQUIRED_MESSAGES = {
     "full_name": "Enter your full name.",
-    "date_of_birth": "Enter your date of birth.",
     "email": "Enter your email address.",
 }
-TEXT_FIELDS = ("full_name", "date_of_birth", "email", "phone", "reason")
-FIELD_ORDER = (*TEXT_FIELDS, "terms_accepted")
+TEXT_FIELDS = ("full_name", "email", "phone", "reason")
+FIELD_ORDER = ("full_name", "date_of_birth", "email", "phone", "reason", "terms_accepted")
 
 
 class DetailsSchema(StrictSerializer):
@@ -72,10 +71,16 @@ class DetailsForm:
     @property
     def summary(self) -> list[dict[str, str]]:
         return [
-            {"target": f"id_{name}", "message": self.field_errors[name]}
+            {"target": self._target(name), "message": self.field_errors[name]}
             for name in FIELD_ORDER
             if name in self.field_errors
         ]
+
+    def _target(self, name: str) -> str:
+        if name != "date_of_birth":
+            return f"id_{name}"
+        first_bad = next((part for part in BIRTH_PARTS if not _is_number(self.values[part])), None)
+        return f"id_{first_bad or BIRTH_PARTS[0]}"
 
     def add_failure(self, failure: Failure) -> None:
         for name, message in field_messages_of(failure):
@@ -90,9 +95,16 @@ def field_messages_of(failure: Failure) -> list[tuple[str, str]]:
 
 
 def read_details(post: QueryDict) -> DetailsForm:
-    values = {name: post.get(name, "").strip() for name in TEXT_FIELDS}
+    values = {name: post.get(name, "").strip() for name in (*TEXT_FIELDS, *BIRTH_PARTS)}
     form = DetailsForm(values, terms_accepted=post.get("terms_accepted") is not None)
-    checked = validate_body(DetailsSchema, values)
+    day, month, year = (values[part] for part in BIRTH_PARTS)
+    born = read_birth_date(day, month, year, _today(), required=True)
+    if isinstance(born, Failure):
+        form.add_failure(born)
+    schema_input = {name: values[name] for name in TEXT_FIELDS}
+    if isinstance(born, Success):
+        schema_input["date_of_birth"] = str(born.value)
+    checked = validate_body(DetailsSchema, schema_input)
     if isinstance(checked, Failure):
         form.add_failure(checked)
     else:
@@ -109,13 +121,17 @@ def read_details(post: QueryDict) -> DetailsForm:
 def _add_rule_failures(form: DetailsForm) -> None:
     """The rules the hold use case applies too, so one answer lists every error, not one round
     of them after the next."""
-    born = day_or_none(form.values["date_of_birth"])
-    today = current_request_context().now.date()
-    if born is not None and not valid_birth_date(born, today):
-        form.field_errors.setdefault("date_of_birth", "Enter a valid date of birth.")
     phone_problem = phone_failure(form.values["phone"])
     if phone_problem is not None:
         form.field_errors.setdefault("phone", phone_problem.message)
+
+
+def _today() -> date:
+    return current_request_context().now.date()
+
+
+def _is_number(text: str) -> bool:
+    return text.isascii() and text.isdigit()
 
 
 def hold_command_from(form: DetailsForm, slot: SlotRequest) -> HoldCommand:

@@ -55,6 +55,7 @@ from scheduling.views.pages.clinician_time_off import TimeOffDeletePage, TimeOff
 from scheduling.views.pages.clinician_today import CheckInPage, CompletePage, NoShowPage, TodayPage
 from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
 from scheduling.views.pages.homes import PatientPortal
+from scheduling.views.pages.legal_pages import PrivacyPage, TermsPage
 from scheduling.views.pages.patient_appointments import AppointmentsPage, CancelPage
 from scheduling.views.pages.patient_notifications import (
     MarkAllReadPage,
@@ -121,6 +122,8 @@ urlpatterns = [
     path("providers/<uuid:provider_id>", ProviderPage.as_view()),
     path("hospitals/<uuid:hospital_id>", HospitalPage.as_view()),
     path("specialties/<uuid:specialty_id>", SpecialtyPage.as_view()),
+    path("terms", TermsPage.as_view()),
+    path("privacy", PrivacyPage.as_view()),
     path("sign-in", SignInPage.as_view()),
     path("sign-in/email-link", LinkRequestPage.as_view()),
     path("sign-in/check-email", CheckEmailPage.as_view()),

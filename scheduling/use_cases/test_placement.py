@@ -335,6 +335,9 @@ def returns_audit_entry_without_free_text_when_booked() -> None:
     assert entry.metadata["statuses"] == {"appointment_status": "BOOKED", "source_status": "ONLINE"}
 
 
+WRITTEN = "Monday 7 January 2030, 11:00 (Europe/Berlin)"
+
+
 def returns_notification_with_title_and_time_only_when_booked() -> None:
     clinic = make_clinic()
 
@@ -344,7 +347,9 @@ def returns_notification_with_title_and_time_only_when_booked() -> None:
     assert notification.recipient_id == clinic.patient.pk
     assert notification.kind == "SCHEDULE_CHANGED"
     assert notification.title == "Appointment booked"
-    assert notification.body == "Your appointment is on 2030-01-07 at 11:00 (Europe/Berlin)."
+    assert (
+        notification.body == "Your appointment is on Monday 7 January 2030, 11:00 (Europe/Berlin)."
+    )
     assert notification.appointment_id == appointment.pk
 
 

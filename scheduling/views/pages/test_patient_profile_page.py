@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date
 
 import pytest
@@ -23,6 +24,10 @@ pytestmark = pytest.mark.django_db
 PROFILE = "/patient/profile"
 PASSWORD = "/patient/profile/password"  # noqa: S105 - a page path, not a secret
 NEW_PHRASE = "a different long phrase"
+
+
+def _parts(day: str, month: str, year: str) -> dict[str, str]:
+    return {"date_of_birth_day": day, "date_of_birth_month": month, "date_of_birth_year": year}
 
 
 @pytest.fixture(autouse=True)
@@ -47,13 +52,13 @@ def returns_name_and_email_as_text_and_phone_and_birth_date_as_inputs() -> None:
     assert 'name="email"' not in html
     assert 'name="full_name"' not in html
     assert 'value="+33 1 23 45 67"' in html
-    assert 'value="1990-02-03"' in html
+    assert re.search(r'id="id_date_of_birth_year"[^>]*value="1990"', html)
     assert no_inline_code(html)
 
 
 def returns_303_and_saved_values_when_profile_is_posted_as_a_browser_sends_it() -> None:
     patient = _patient()
-    form = {"phone": "+33 1 23 45 67", "date_of_birth": "1990-02-03"}
+    form = {"phone": "+33 1 23 45 67", **_parts("3", "2", "1990")}
 
     response = browser_post(signed_in_patient(patient), PROFILE, form)
 
@@ -66,7 +71,7 @@ def returns_303_and_saved_values_when_profile_is_posted_as_a_browser_sends_it() 
 def returns_cleared_values_when_profile_is_posted_empty() -> None:
     patient = _patient(phone="+33 1 23 45 67", date_of_birth=date(1990, 2, 3))
 
-    browser_post(signed_in_patient(patient), PROFILE, {"phone": "", "date_of_birth": ""})
+    browser_post(signed_in_patient(patient), PROFILE, {"phone": "", **_parts("", "", "")})
 
     patient.refresh_from_db()
     assert patient.phone == ""
@@ -76,9 +81,9 @@ def returns_cleared_values_when_profile_is_posted_empty() -> None:
 @pytest.mark.parametrize(
     ("form", "field"),
     [
-        ({"phone": "12ab", "date_of_birth": ""}, "phone"),
-        ({"phone": "", "date_of_birth": "2999-01-01"}, "date_of_birth"),
-        ({"phone": "", "date_of_birth": "2031-02-30"}, "date_of_birth"),
+        ({"phone": "12ab", **_parts("", "", "")}, "phone"),
+        ({"phone": "", **_parts("1", "1", "2999")}, "date_of_birth"),
+        ({"phone": "", **_parts("30", "2", "2031")}, "date_of_birth"),
     ],
 )
 def returns_422_with_summary_and_kept_values_when_profile_input_is_bad(

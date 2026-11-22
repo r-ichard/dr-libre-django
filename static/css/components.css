@@ -51,6 +51,11 @@
   caret-color: var(--colour-primary);
 }
 .field--invalid .input { border-color: var(--colour-error); border-width: 3px; }
+.date-group { border: 0; margin: 0; padding: 0; min-width: 0; }
+.date-group__parts { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.date-group__part { display: grid; gap: var(--space-2); }
+.date-group__input { width: 4.5rem; }
+.date-group__input--year { width: 6rem; }
 .select { appearance: auto; }
 
 .checkbox { display: grid; grid-template-columns: var(--tap-target) 1fr; align-items: center; }

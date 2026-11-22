@@ -75,12 +75,12 @@ def returns_online_share_counting_online_and_round_robin_only() -> None:
     visits = [
         _visit(source=AppointmentSource.ONLINE),
         _visit(source=AppointmentSource.ROUND_ROBIN),
-        _visit(source=AppointmentSource.STAFF),
+        _visit(source=AppointmentSource.ONLINE),
         _visit(source=AppointmentSource.STAFF),
         _visit(AppointmentStatus.CANCELLED, AppointmentSource.ONLINE),
     ]
 
-    assert online_share(visits) == "50 %"
+    assert online_share(visits) == "75 %"
 
 
 def returns_na_when_no_appointment_is_not_cancelled_for_online_share() -> None:
@@ -191,6 +191,12 @@ def returns_zero_bar_widths_when_no_day_has_an_appointment() -> None:
     counts = appointments_per_day([], [date(2026, 3, 10)])
 
     assert [(entry.count, entry.bar_width) for entry in counts] == [(0, 0)]
+
+
+def returns_no_day_counts_when_there_are_no_days() -> None:
+    from scheduling.domain.report_figures import appointments_per_day
+
+    assert appointments_per_day([], []) == []
 
 
 def returns_top_five_busiest_by_count_then_id() -> None:

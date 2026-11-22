@@ -182,3 +182,20 @@ def returns_adds_the_rule_hours_of_every_clinician() -> None:
     rules = [_rule(2), _rule(2, clinician_id="c2", start=time(9, 0), end=time(12, 0))]
 
     assert available_minutes(rules, [], [TUESDAY]) == TUESDAY_RULE_DAY + 180
+
+
+def returns_n_a_only_for_zero_available_minutes_not_for_one() -> None:
+    from scheduling.domain.report_utilisation import utilisation
+
+    visits = [_visit(datetime(2026, 3, 10, 8, 0, tzinfo=UTC), 1)]
+    rules = [_rule(2, start=time(8, 0), end=time(8, 1))]
+
+    assert utilisation(visits, rules, [], [TUESDAY]) == "100 %"
+
+
+def returns_whole_minutes_rounded_down_when_rule_hours_have_seconds() -> None:
+    from scheduling.domain.report_utilisation import available_minutes
+
+    rules = [_rule(2, start=time(8, 0, 0), end=time(8, 0, 59))]
+
+    assert available_minutes(rules, [], [TUESDAY]) == 0

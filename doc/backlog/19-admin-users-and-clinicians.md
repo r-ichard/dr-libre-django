@@ -78,6 +78,27 @@ Carried from task 18, to fix here because this task reuses the same list flow:
 20. Found at 375 px: under the search form the count ("6 appointment types") touches the
     Search button. Use the spacing token.
 
+Carried from task 17f, to fix here because item 10 reuses the time grid. Both measured in
+Chrome on `/clinician/calendar?week=2026-11-23` as the demo clinician:
+
+21. The first line of an appointment block holds the status icon and the time. The line
+    is 18 px high and hides what does not fit; the icon is 20 px, so the line's content
+    is 26 px high (`scrollHeight` 26, `clientHeight` 18) and the lower 7 px of "13:00 to
+    13:15" are cut. Icon and time need 128 px and the line has 105 px (with the rail)
+    or 121 px (alone), so the end time is replaced by an ellipsis. Rule: the time line
+    of every block shows the start and the end in full, and no line holds anything
+    taller than itself. The status stays visible without colour, in a place that fits.
+    The orchestrator measures, for the first line of every block at 1440 px:
+    `scrollHeight <= clientHeight` and `scrollWidth <= clientWidth`.
+22. At 1024 px the grid scrolls sideways inside its frame, as intended, and the page
+    scrolls sideways too, by 65 px. The hidden text a screen reader gets for each block
+    (a `span` positioned out of flow) is not held by the grid's scroll frame, so the
+    spans of the columns beyond the edge widen the page. Rule: at every width from 375 px
+    to 1440 px the page itself never scrolls sideways
+    (`document.documentElement.scrollWidth <= window.innerWidth`), on the calendar, the
+    rooms timeline and the new read-only calendar. Say in the plan which element holds
+    the out-of-flow text and assert it in the style sheet test.
+
 The sandbox has no browser. The orchestrator creates a clinician user, attaches a
 profile, signs in as that clinician, deactivates the account from the admin console and
 watches the clinician's session end.

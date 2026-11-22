@@ -591,3 +591,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   specialty has shown its icon, and I checked that task in the browser. I saw an icon and
   did not ask which one. Carried into task 19.
 - Suite: 2831 tests, 41 seconds on my machine with a sandbox running beside it.
+
+## 2026-11-22 task 17f, run 01M80CQ06WM7 (23 minutes, merged f3340e6)
+
+- Asking for the numbers in the plan worked. The plan derived column 144 px, row 68 px,
+  line 18 px, three lines in 30 minutes, and chose time off as a band behind the
+  appointments. My three measurements pass for every block at 1440 px and 1024 px: inside
+  its column, no clipped height, lines of one height.
+- Two faults I had not asked about, so nobody looked: the status icon is 20 px in an
+  18 px line and pushes the time out of it; and the hidden text for screen readers is
+  positioned out of flow, escapes the grid's scroll frame and makes the page scroll
+  sideways by 65 px at 1024 px. Both found by measuring one level deeper (`scrollHeight`
+  of a line, `scrollWidth` of the document). Carried into task 19, which reuses the grid.
+- The rule for layout tasks, after four passes on this grid: state the invariant and the
+  measurement, for the page, the block and the line. What is not measured is not built.
+- Task 22 (FHIR) started on the second track while this was verified.

@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from django.http import Http404
 from django.views import View
 
+from scheduling.domain.date_words import day_label as day_label
 from scheduling.domain.request_limits import day_in_range, instant_in_range
 from scheduling.models import Hospital
 
@@ -86,10 +87,6 @@ def week_from(raw: str) -> date | None:
     except ValueError:
         return None
     return day if day_in_range(day) else None
-
-
-def day_label(day: date) -> str:
-    return f"{day:%A} {day.day} {day:%B %Y}"
 
 
 def clock_label(instant: datetime, time_zone: ZoneInfo) -> str:

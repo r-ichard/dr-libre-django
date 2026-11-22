@@ -4,7 +4,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 
-from scheduling.domain.failure import FieldMessage
+from scheduling.domain.failure import Failure, FieldMessage
+from scheduling.domain.text_rules import check_storable_text
 from scheduling.domain.vocabulary import AppointmentStatus
 
 REASON_MAXIMUM = 200
@@ -28,7 +29,10 @@ def time_off_failures(
     failures: list[FieldMessage] = []
     if ends_at <= starts_at:
         failures.append(FieldMessage("ends_at", "The end must be after the start."))
-    if len(reason.strip()) > REASON_MAXIMUM:
+    unstorable = check_storable_text("reason", reason, single_line=False)
+    if isinstance(unstorable, Failure):
+        failures += unstorable.field_messages
+    elif len(reason.strip()) > REASON_MAXIMUM:
         failures.append(
             FieldMessage("reason", f"The reason is at most {REASON_MAXIMUM} characters.")
         )

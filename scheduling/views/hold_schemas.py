@@ -17,7 +17,13 @@ from scheduling.views.booking_schemas import (
     required_uuid,
     uuid_of,
 )
-from scheduling.views.schemas import StrictSerializer
+from scheduling.views.schemas import (
+    StrictCode,
+    StrictEmail,
+    StrictLine,
+    StrictSerializer,
+    StrictText,
+)
 
 NAME_MAXIMUM = 200
 PHONE_MAXIMUM = 30
@@ -28,13 +34,11 @@ class HoldRequest(StrictSerializer):
     appointment_type_id = serializers.UUIDField()
     clinician_id = serializers.UUIDField(required=False)
     starts_at = OffsetDateTimeField()
-    full_name = serializers.CharField(max_length=NAME_MAXIMUM)
+    full_name = StrictLine(max_length=NAME_MAXIMUM)
     date_of_birth = serializers.DateField()
-    email = serializers.EmailField(max_length=EMAIL_MAXIMUM)
-    phone = serializers.CharField(max_length=PHONE_MAXIMUM, allow_blank=True, required=False)
-    reason = serializers.CharField(
-        max_length=VISIT_REASON_MAXIMUM, allow_blank=True, required=False
-    )
+    email = StrictEmail(max_length=EMAIL_MAXIMUM)
+    phone = StrictLine(max_length=PHONE_MAXIMUM, allow_blank=True, required=False)
+    reason = StrictText(max_length=VISIT_REASON_MAXIMUM, allow_blank=True, required=False)
     terms_accepted = serializers.BooleanField()
 
 
@@ -43,7 +47,7 @@ class ResendRequest(StrictSerializer):
 
 
 class VerifyRequest(StrictSerializer):
-    code = serializers.RegexField(
+    code = StrictCode(
         rf"^\d{{{CODE_LENGTH}}}$", error_messages={"invalid": "Enter the 6 digit code."}
     )
 

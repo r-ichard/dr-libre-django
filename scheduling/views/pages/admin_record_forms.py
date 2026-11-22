@@ -15,8 +15,10 @@ from scheduling.domain.vocabulary import Role
 from scheduling.use_cases import admin_record_reads
 from scheduling.views.pages.admin_record_kinds import (
     CHECKBOX,
+    KIND_VIEWS,
     PASSWORD,
     SELECT,
+    TEXTAREA,
     FormField,
 )
 from scheduling.views.pages.local_time import errors_by_field
@@ -24,10 +26,20 @@ from scheduling.views.pages.local_time import errors_by_field
 DESCRIPTION_LENGTH = 2000
 BOOLEAN_FIELDS = ("is_active", "is_bookable_online", "needs_room")
 Parser = Callable[[str], Result[object]]
+FREE_TEXT_NAMES = frozenset(
+    field.name for view in KIND_VIEWS.values() for field in view.fields if field.widget == TEXTAREA
+)
+
+
+def _is_one_line(field: str) -> bool:
+    """The widget on the form declares it: a textarea is free text, every other input a line."""
+    return field not in FREE_TEXT_NAMES
 
 
 def _text(field: str, label: str, maximum: int) -> Parser:
-    return lambda raw: record_fields.check_text(field, raw, maximum, f"Enter {label}.")
+    return lambda raw: record_fields.check_text(
+        field, raw, maximum, f"Enter {label}.", single_line=_is_one_line(field)
+    )
 
 
 def _time_zone(raw: str) -> Result[object]:
@@ -38,7 +50,7 @@ PARSERS: dict[str, Parser] = {
     "name": record_fields.check_name,
     "code": record_fields.check_code,
     "description": lambda raw: record_fields.check_text(
-        "description", raw, DESCRIPTION_LENGTH, None
+        "description", raw, DESCRIPTION_LENGTH, None, single_line=_is_one_line("description")
     ),
     "street_address": _text("street_address", "a street address", 200),
     "postal_code": _text("postal_code", "a postal code", 20),
@@ -56,7 +68,9 @@ PARSERS: dict[str, Parser] = {
     "email": user_rules.check_email,
     "password": user_rules.check_password,
     "title": clinician_rules.check_title,
-    "bio": lambda raw: record_fields.check_text("bio", raw, 2000, None),
+    "bio": lambda raw: record_fields.check_text(
+        "bio", raw, 2000, None, single_line=_is_one_line("bio")
+    ),
     "round_robin_weight": clinician_rules.check_weight,
     "role": lambda raw: _role(raw),
 }

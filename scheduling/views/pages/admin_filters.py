@@ -9,6 +9,7 @@ from uuid import UUID
 
 from django.http import HttpRequest
 
+from scheduling.domain.text_rules import storable_search
 from scheduling.models import User
 from scheduling.views.pages.booking_links import week_from
 
@@ -67,8 +68,8 @@ def page_links(
 
 
 def search_text(request: HttpRequest) -> str:
-    """The patient search text: trimmed, no null bytes, capped."""
-    return request.GET.get("q", "").replace("\x00", "").strip()[:MAXIMUM_SEARCH_LENGTH]
+    """The patient search text: trimmed, capped; empty when the text cannot be stored."""
+    return storable_search(request.GET.get("q", ""))[:MAXIMUM_SEARCH_LENGTH]
 
 
 def patient_links(patients: list[User], next_path: str) -> list[dict[str, str]]:

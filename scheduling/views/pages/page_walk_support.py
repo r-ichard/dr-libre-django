@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from uuid import UUID
 
 from django.test import Client
 from django.urls import URLPattern, URLResolver, get_resolver
@@ -24,6 +25,7 @@ class World:
     clinic: Clinic
     appointment: Appointment
     admin: User
+    room_id: UUID | None = None
 
 
 def _routes(patterns: list[URLPattern | URLResolver], prefix: str = "") -> list[str]:
@@ -62,7 +64,8 @@ def make_world() -> World:
         appointment=appointment,
     )
     assert isinstance(appointment, Appointment) and isinstance(admin, User)  # noqa: S101 - broken setup
-    return World(clinic, appointment, admin)
+    room = make("Room", department=clinic.department)
+    return World(clinic, appointment, admin, room.pk)
 
 
 def client_for_role(role: str, world: World) -> Client:
@@ -94,6 +97,21 @@ def path_of(route: str, world: World) -> str:
         "provider_id": world.clinic.clinician.pk,
         "hospital_id": world.clinic.department.hospital_id,
     }
+    kind = route.split("/")[1] if "/" in route else ""
+    if kind in _record_ids(world):
+        ids["record_id"] = _record_ids(world)[kind]
     return re.sub(
         r"<uuid:(\w+)>", lambda found: str(ids.get(found.group(1), ZERO_UUID)), "/" + route
     )
+
+
+def _record_ids(world: World) -> dict[str, UUID]:
+    """The admin record pages share one parameter name; each kind needs its own row."""
+    found = {
+        "hospitals": world.clinic.department.hospital_id,
+        "departments": world.clinic.department.pk,
+        "clinicians": world.clinic.clinician.pk,
+    }
+    if world.room_id is not None:
+        found["rooms"] = world.room_id
+    return found

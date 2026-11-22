@@ -261,7 +261,8 @@ def _collected(entries: list[Entry]) -> Values | str:
 
 
 def _text_entry(field: str, raw: str, maximum: int, label: str, element: str) -> Entry:
-    return field, record_fields.check_text(field, raw, maximum, f"Enter {label}."), element
+    checked = record_fields.check_text(field, raw, maximum, f"Enter {label}.", single_line=True)
+    return field, checked, element
 
 
 def _status(body: Resource) -> str:

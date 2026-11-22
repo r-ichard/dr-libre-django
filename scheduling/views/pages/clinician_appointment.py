@@ -28,7 +28,6 @@ from scheduling.views.pages.patient_appointments import reason_error
 from scheduling.views.pages.patient_refusal import change_refused_page
 
 NOTICES = {"note-saved": "The note is saved."}
-NOTE_TOO_LONG = f"Use at most {CLINICAL_NOTE_MAXIMUM} characters."
 
 
 def age_in_years(born: date | None, now: datetime) -> int | None:
@@ -141,7 +140,7 @@ class NotesPage(AppointmentPage):
             if saved.code != FailureCode.INVALID_INPUT:
                 return self.refusal_of(request, saved)
             return self.render_details(
-                request, found, note=text, note_error=NOTE_TOO_LONG, status=422
+                request, found, note=text, note_error=saved.field_messages[0].message, status=422
             )
         return HttpResponseRedirect(f"{appointment_path(found.pk)}?notice=note-saved", status=303)
 

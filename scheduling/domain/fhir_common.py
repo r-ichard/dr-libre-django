@@ -45,8 +45,3 @@ def code_identifier(code: str) -> Resource:
 
 def coding(system: str, code: str, display: str) -> Resource:
     return {"coding": [{"system": system, "code": code, "display": display}]}
-
-
-def carries_only_storable_text(value: str) -> bool:
-    """PostgreSQL text cannot hold a NUL character; such a value never reaches a query."""
-    return "\x00" not in value

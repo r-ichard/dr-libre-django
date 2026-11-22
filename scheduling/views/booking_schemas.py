@@ -14,7 +14,7 @@ from scheduling.models import Appointment
 from scheduling.use_cases.appointment_list import AppointmentFilters
 from scheduling.use_cases.free_slots_query import FoundSlots
 from scheduling.use_cases.placement import PlacementCommand
-from scheduling.views.schemas import StrictSerializer
+from scheduling.views.schemas import StrictSerializer, StrictText
 
 DEFAULT_PAGE_SIZE = 20
 MAXIMUM_PAGE_SIZE = 100
@@ -66,9 +66,7 @@ class BookRequest(StrictSerializer):
     clinician_id = serializers.UUIDField(required=False)
     patient_id = serializers.UUIDField(required=False)
     room_id = serializers.UUIDField(required=False)
-    reason = serializers.CharField(
-        max_length=VISIT_REASON_MAXIMUM, allow_blank=True, required=False
-    )
+    reason = StrictText(max_length=VISIT_REASON_MAXIMUM, allow_blank=True, required=False)
 
 
 def uuid_of(values: Mapping[str, object], key: str) -> UUID | None:
@@ -171,7 +169,7 @@ def appointment_body(appointment: Appointment) -> dict[str, object]:
 
 class CancelRequest(StrictSerializer):
     # The limit is ours; the spec names none.
-    reason = serializers.CharField(max_length=CANCELLATION_REASON_MAXIMUM)
+    reason = StrictText(max_length=CANCELLATION_REASON_MAXIMUM)
 
 
 class RescheduleRequest(StrictSerializer):

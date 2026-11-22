@@ -13,6 +13,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from scheduling.domain.failure import Failure, FailureCode, Result
 from scheduling.domain.record_conflict import ReadKnown, conflicting_fields
 from scheduling.domain.specialty_icons import FALLBACK_ICON, icon_file_for
+from scheduling.domain.text_rules import storable_search
 from scheduling.domain.vocabulary import Role
 from scheduling.models.base import Versioned
 from scheduling.use_cases import admin_record_reads
@@ -102,7 +103,7 @@ class RecordListPage(RecordPage):
     template_name = "admin/list.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
-        query = request.GET.get("q", "").replace("\x00", "").strip()[:100]
+        query = storable_search(request.GET.get("q", ""))[:100]
         found = admin_record_reads.list_records(
             self.kind, query, _page_number(request.GET.get("page", ""))
         )

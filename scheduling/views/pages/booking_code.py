@@ -50,7 +50,8 @@ class CodePage(PageView):
             return self._expired(request)
         body = validate_body(VerifyRequest, {"code": request.POST.get("code", "").strip()})
         if isinstance(body, Failure):
-            return self._code_form(request, hold_id, summary, CODE_FORMAT_MESSAGE, False, 422)
+            message = body.field_messages[0].message if body.field_messages else CODE_FORMAT_MESSAGE
+            return self._code_form(request, hold_id, summary, message, False, 422)
         user_agent = request.headers.get("User-Agent", "")
         verified = verify_hold(hold_id, str(body.value["code"]), user_agent)
         if isinstance(verified, Failure):

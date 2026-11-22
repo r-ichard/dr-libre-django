@@ -109,13 +109,28 @@ def returns_email_taken_when_the_email_differs_only_by_letter_case() -> None:
     assert User.objects.filter(email__iexact="planted.email@example.org").count() == 1
 
 
-@pytest.mark.parametrize("password", ["x" * 9, "x" * 73, "a\x00" + "x" * 12])
+@pytest.mark.parametrize("password", ["x" * 9, "x" * 73, "a\x00" + "x" * 12, "a\x07" + "x" * 12])
 def returns_a_password_message_when_the_password_is_outside_10_to_72_characters(
     password: str,
 ) -> None:
     result = _in_context(lambda: create_user(_values(password=password), _an_admin()))
 
     assert [m.field for m in _field_messages(result)] == ["password"]
+
+
+@pytest.mark.parametrize("name", ["Plan\x00ted", "Plan\x07ted", "Plan\nted"])
+def returns_a_full_name_message_when_the_name_holds_a_control_character_or_line_break(
+    name: str,
+) -> None:
+    result = _in_context(lambda: create_user(_values(full_name=name), _an_admin()))
+
+    assert [m.field for m in _field_messages(result)] == ["full_name"]
+
+
+def returns_the_rules_message_on_full_name_when_the_name_has_a_form_feed() -> None:
+    result = _in_context(lambda: create_user(_values(full_name="Ada\x0cLovelace"), _an_admin()))
+
+    assert [m.message for m in _field_messages(result)] == ['Remove the character after "Ada".']
 
 
 @pytest.mark.parametrize("role", ["PATIENT", "CLINICIAN"])

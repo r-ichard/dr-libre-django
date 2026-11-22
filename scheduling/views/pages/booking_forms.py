@@ -20,7 +20,13 @@ from scheduling.views.hold_schemas import (
     hold_command_of,
 )
 from scheduling.views.pages.booking_links import SlotRequest
-from scheduling.views.schemas import StrictSerializer, validate_body
+from scheduling.views.schemas import (
+    StrictEmail,
+    StrictLine,
+    StrictSerializer,
+    StrictText,
+    validate_body,
+)
 
 TERMS_MESSAGE = "Accept the terms and the privacy notice."
 REASON_TOO_LONG = f"Keep the reason under {VISIT_REASON_MAXIMUM} characters."
@@ -33,15 +39,15 @@ FIELD_ORDER = ("full_name", "date_of_birth", "email", "phone", "reason", "terms_
 
 
 class DetailsSchema(StrictSerializer):
-    full_name = serializers.CharField(max_length=NAME_MAXIMUM)
+    full_name = StrictLine(max_length=NAME_MAXIMUM)
     date_of_birth = serializers.DateField(
         error_messages={"invalid": "Enter a valid date of birth."}
     )
-    email = serializers.EmailField(
+    email = StrictEmail(
         max_length=EMAIL_MAXIMUM, error_messages={"invalid": "Enter a valid email address."}
     )
-    phone = serializers.CharField(max_length=PHONE_MAXIMUM, allow_blank=True)
-    reason = serializers.CharField(
+    phone = StrictLine(max_length=PHONE_MAXIMUM, allow_blank=True)
+    reason = StrictText(
         max_length=VISIT_REASON_MAXIMUM,
         allow_blank=True,
         error_messages={"max_length": REASON_TOO_LONG},
@@ -49,7 +55,7 @@ class DetailsSchema(StrictSerializer):
 
 
 class ReasonSchema(StrictSerializer):
-    reason = serializers.CharField(
+    reason = StrictText(
         max_length=VISIT_REASON_MAXIMUM,
         allow_blank=True,
         error_messages={"max_length": REASON_TOO_LONG},

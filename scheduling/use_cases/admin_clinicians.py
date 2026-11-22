@@ -134,7 +134,9 @@ def _cleaned(
         messages += _failure_messages(checked_title)
         cleaned["title"] = getattr(checked_title, "value", "")
     if "bio" in cleaned:
-        checked_bio = record_fields.check_text("bio", str(cleaned["bio"]), BIO_LENGTH, None)
+        checked_bio = record_fields.check_text(
+            "bio", str(cleaned["bio"]), BIO_LENGTH, None, single_line=False
+        )
         messages += _failure_messages(checked_bio)
         cleaned["bio"] = getattr(checked_bio, "value", "")
     weight = values.get("round_robin_weight", 1 if creating else None)

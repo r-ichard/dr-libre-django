@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
-from scheduling.domain.fhir_common import carries_only_storable_text
 from scheduling.domain.fhir_dates import normalised_date
 from scheduling.domain.fhir_declaration import (
     COMMON_PARAMETERS,
@@ -16,6 +15,7 @@ from scheduling.domain.fhir_declaration import (
 )
 from scheduling.domain.fhir_near import parse_near
 from scheduling.domain.request_limits import MAXIMUM_FIELDS, MAXIMUM_PAGE
+from scheduling.domain.text_rules import check_storable_text
 
 DEFAULT_COUNT = 20
 MAXIMUM_COUNT = 100
@@ -46,7 +46,10 @@ def parse_search(
         if not values or len(values) > _repeats_allowed(declaration, name):
             return _refuse(name, "A parameter may be given once.")
         value = values[0]
-        if not all(carries_only_storable_text(item) for item in (name, *values)):
+        if any(
+            isinstance(check_storable_text(name, item, single_line=False), Failure)
+            for item in (name, *values)
+        ):
             return _refuse(name, "The value cannot be read.")
         if name == "_count":
             count = _number(value, 0, MAXIMUM_COUNT)

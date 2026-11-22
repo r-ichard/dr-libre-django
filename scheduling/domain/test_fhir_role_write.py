@@ -238,3 +238,24 @@ def returns_no_room_when_the_location_is_an_empty_list_or_not_a_list() -> None:
 
         assert isinstance(values, dict)
         assert values["default_room_id"] is None
+
+
+def returns_weight_when_the_weight_is_an_integer() -> None:
+    values = role_values(_body())
+
+    assert isinstance(values, dict)
+    assert values["round_robin_weight"] == 3
+
+
+def returns_extension_name_when_the_weight_is_a_string() -> None:
+    body = _body()
+    body["extension"] = [_extension("role-round-robin-weight", valueString="3")]
+
+    assert role_values(body) == "PractitionerRole.extension"
+
+
+def returns_bio_when_the_bio_is_a_string() -> None:
+    values = role_values(_body())
+
+    assert isinstance(values, dict)
+    assert values["bio"] == "Heart rhythm."

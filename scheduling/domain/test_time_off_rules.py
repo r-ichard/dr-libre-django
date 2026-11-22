@@ -70,3 +70,11 @@ def returns_skips_appointment_touching_end() -> None:
 
 def returns_skips_appointment_ending_at_start() -> None:
     assert _inside(("a", START - timedelta(minutes=30), START, "BOOKED")) == []
+
+
+def returns_no_failure_when_the_reason_holds_a_line_break() -> None:
+    assert _failures(reason="Back\nsoon") == []
+
+
+def returns_end_and_reason_failures_when_both_are_wrong() -> None:
+    assert [item.field for item in _failures(ends=START, reason="a\x00b")] == ["ends_at", "reason"]

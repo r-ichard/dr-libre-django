@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import time
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.text_rules import check_storable_text
+from scheduling.domain.whole_numbers import SMALLINT_MAXIMUM, check_whole_number
 
 TITLE_MAXIMUM = 50
 NO_AVAILABILITY = "No weekly availability"
@@ -22,6 +24,9 @@ class WeeklyHours:
 
 def check_title(raw: str) -> Result[str]:
     title = raw.strip()
+    unstorable = check_storable_text("title", title, single_line=True)
+    if isinstance(unstorable, Failure):
+        return unstorable
     if not title:
         return Failure.invalid_input([FieldMessage("title", "Enter a title.")])
     if len(title) > TITLE_MAXIMUM:
@@ -31,11 +36,7 @@ def check_title(raw: str) -> Result[str]:
 
 
 def check_weight(raw: str) -> Result[int]:
-    text = raw.strip()
-    if text.isascii() and text.isdigit() and int(text) >= 1:
-        return Success(int(text))
-    message = "Use a whole number of 1 or more."
-    return Failure.invalid_input([FieldMessage("round_robin_weight", message)])
+    return check_whole_number("round_robin_weight", raw, 1, SMALLINT_MAXIMUM)
 
 
 def department_move_refusals(*, moves: bool, counts: Mapping[str, int]) -> list[str]:

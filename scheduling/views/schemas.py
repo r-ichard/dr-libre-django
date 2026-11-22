@@ -4,10 +4,42 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.text_rules import check_storable_text
 
 NON_FIELD_NAME = "non_field_errors"
 
 type ErrorTree = dict[str, ErrorTree] | list[str]
+
+
+class StrictTextRules(serializers.CharField):
+    """Task 27a: DRF turns a number into text; a text field of the API refuses it, and applies the
+    one text rule of the domain. Mixed into every text field type a request schema uses."""
+
+    single_line = False
+
+    def to_internal_value(self, data: object) -> str:
+        if not isinstance(data, str):
+            self.fail("invalid")
+        checked = check_storable_text(self.field_name or "", data, single_line=self.single_line)
+        if isinstance(checked, Failure):
+            raise ValidationError(checked.field_messages[0].message)
+        return super().to_internal_value(data)
+
+
+class StrictText(StrictTextRules):
+    pass
+
+
+class StrictLine(StrictTextRules):
+    single_line = True
+
+
+class StrictEmail(StrictTextRules, serializers.EmailField):
+    single_line = True
+
+
+class StrictCode(StrictTextRules, serializers.RegexField):
+    single_line = True
 
 
 class StrictSerializer(serializers.Serializer[Mapping[str, object]]):

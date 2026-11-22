@@ -9,6 +9,7 @@ from django.db.models import Q
 
 from scheduling.domain import record_fields, user_rules
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.text_rules import check_storable_text
 from scheduling.domain.vocabulary import Role
 from scheduling.models import Session, SignInLink, User
 from scheduling.use_cases.request_context import current_request_context
@@ -16,7 +17,6 @@ from scheduling.use_cases.request_context import current_request_context
 EMAIL_TAKEN = "Email is taken."
 CHOOSE_ROLE = "Choose a role."
 USE_DEACTIVATE_STEP = "Use the Deactivate step to deactivate an account."
-NUL_MESSAGE = record_fields.NULL_MESSAGE
 FORM_FIELDS = ("full_name", "email", "role", "password", "is_active")
 
 
@@ -56,13 +56,7 @@ def cleaned_values(
     for key, value in wanted.items():
         checked = _clean_field(key, value)
         if isinstance(checked, Failure):
-            fields = checked.details["fields"]
-            if isinstance(fields, list):
-                messages += [
-                    FieldMessage(str(i["field"]), str(i["message"]))
-                    for i in fields
-                    if isinstance(i, dict)
-                ]
+            messages += checked.field_messages
         else:
             cleaned[key] = checked.value
     return cleaned, messages
@@ -70,11 +64,14 @@ def cleaned_values(
 
 def _clean_field(key: str, value: object) -> Result[object]:
     text = value if isinstance(value, str) else ""
-    if "\x00" in text:
-        return Failure.invalid_input([FieldMessage(key, NUL_MESSAGE)])
+    unstorable = check_storable_text(key, text, single_line=True)
+    if isinstance(unstorable, Failure):
+        return unstorable
     match key:
         case "full_name":
-            return record_fields.check_text("full_name", text, 200, "Enter a name.")
+            return record_fields.check_text(
+                "full_name", text, 200, "Enter a name.", single_line=True
+            )
         case "email":
             return user_rules.check_email(text)
         case "password":

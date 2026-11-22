@@ -5,14 +5,14 @@ import math
 from collections.abc import Collection
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.text_rules import check_storable_text
+from scheduling.domain.whole_numbers import SMALLINT_MAXIMUM, check_whole_number
 
 NAME_LENGTH = 200
 CODE_LENGTH = 50
-LARGEST_STORED_NUMBER = 32767
 COLOUR_DIGITS = frozenset("0123456789abcdef")
 COLOUR_LENGTH = 7
 EQUIPMENT_LENGTH = 100
-NULL_MESSAGE = "Remove the character that cannot be saved."
 
 
 def _refused(field: str, message: str) -> Failure:
@@ -23,11 +23,20 @@ def clean_code(raw: str) -> str:
     return raw.strip().lower()
 
 
-def check_text(field: str, raw: str, maximum: int, blank_message: str | None) -> Result[str]:
-    """`blank_message` None means the field may be empty."""
+def check_text(
+    field: str,
+    raw: str,
+    maximum: int,
+    blank_message: str | None,
+    *,
+    single_line: bool,
+) -> Result[str]:
+    """`blank_message` None means the field may be empty. The caller says whether the field
+    is one line: the page reads it from the field's widget, the API from its schema."""
     text = raw.strip()
-    if "\x00" in text:
-        return _refused(field, NULL_MESSAGE)
+    unstorable = check_storable_text(field, text, single_line=single_line)
+    if isinstance(unstorable, Failure):
+        return unstorable
     if not text and blank_message is not None:
         return _refused(field, blank_message)
     if len(text) > maximum:
@@ -36,11 +45,11 @@ def check_text(field: str, raw: str, maximum: int, blank_message: str | None) ->
 
 
 def check_name(raw: str) -> Result[str]:
-    return check_text("name", raw, NAME_LENGTH, "Enter a name.")
+    return check_text("name", raw, NAME_LENGTH, "Enter a name.", single_line=True)
 
 
 def check_code(raw: str) -> Result[str]:
-    return check_text("code", clean_code(raw), CODE_LENGTH, "Enter a code.")
+    return check_text("code", clean_code(raw), CODE_LENGTH, "Enter a code.", single_line=True)
 
 
 def check_colour(raw: str) -> Result[str]:
@@ -87,35 +96,23 @@ def check_time_zone(raw: str, known_zones: Collection[str]) -> Result[str]:
     return Success(zone)
 
 
-def _whole_number(field: str, raw: str, minimum: int) -> Result[int]:
-    message = f"Use a whole number of {minimum} or more."
-    try:
-        number = int(raw.strip())
-    except ValueError:
-        return _refused(field, message)
-    if number < minimum:
-        return _refused(field, message)
-    if number > LARGEST_STORED_NUMBER:
-        return _refused(field, f"Use a whole number of at most {LARGEST_STORED_NUMBER}.")
-    return Success(number)
-
-
 def check_capacity(raw: str) -> Result[int]:
-    return _whole_number("capacity", raw, 1)
+    return check_whole_number("capacity", raw, 1, SMALLINT_MAXIMUM)
 
 
 def check_duration_minutes(raw: str) -> Result[int]:
-    return _whole_number("duration_minutes", raw, 1)
+    return check_whole_number("duration_minutes", raw, 1, SMALLINT_MAXIMUM)
 
 
 def check_buffer_minutes(raw: str) -> Result[int]:
-    return _whole_number("buffer_minutes", raw, 0)
+    return check_whole_number("buffer_minutes", raw, 0, SMALLINT_MAXIMUM)
 
 
 def check_equipment(raw: str) -> Result[list[str]]:
     """One item per line; blank lines are dropped."""
-    if "\x00" in raw:
-        return _refused("equipment", NULL_MESSAGE)
+    unstorable = check_storable_text("equipment", raw, single_line=False)
+    if isinstance(unstorable, Failure):
+        return unstorable
     items = [line.strip() for line in raw.splitlines() if line.strip()]
     if any(len(item) > EQUIPMENT_LENGTH for item in items):
         return _refused("equipment", f"Use at most {EQUIPMENT_LENGTH} characters on a line.")

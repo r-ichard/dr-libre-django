@@ -3,16 +3,16 @@
 from rest_framework import serializers
 
 from scheduling.domain.visitor_rules import EMAIL_MAXIMUM, is_valid_email
-from scheduling.views.schemas import StrictSerializer
+from scheduling.views.schemas import StrictEmail, StrictLine, StrictSerializer, StrictText
 
 PASSWORD_MAX_LENGTH = 1000
 TOKEN_MAX_LENGTH = 200
 
 
 class LoginRequest(StrictSerializer):
-    email = serializers.EmailField(max_length=EMAIL_MAXIMUM)
+    email = StrictEmail(max_length=EMAIL_MAXIMUM)
     # Not trimmed, and bounded so a huge body cannot make the hasher expensive.
-    password = serializers.CharField(
+    password = StrictText(
         min_length=1, max_length=PASSWORD_MAX_LENGTH, trim_whitespace=False, write_only=True
     )
 
@@ -28,10 +28,10 @@ class LogoutRequest(StrictSerializer):
 
 
 class LinkRequest(StrictSerializer):
-    email = serializers.EmailField(max_length=EMAIL_MAXIMUM)
+    email = StrictEmail(max_length=EMAIL_MAXIMUM)
 
     validate_email = LoginRequest.validate_email
 
 
 class LinkVerifyRequest(StrictSerializer):
-    token = serializers.CharField(min_length=1, max_length=TOKEN_MAX_LENGTH, write_only=True)
+    token = StrictLine(min_length=1, max_length=TOKEN_MAX_LENGTH, write_only=True)

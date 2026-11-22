@@ -39,9 +39,7 @@ def returns_error_when_code_has_51_characters() -> None:
 
 
 def returns_error_when_code_holds_a_null_character() -> None:
-    assert _call("check_code", "ab\x00c") == _failed(
-        "code", "Remove the character that cannot be saved."
-    )
+    assert _call("check_code", "ab\x00c") == _failed("code", 'Remove the character after "ab".')
 
 
 def returns_trimmed_name_when_name_has_outer_spaces() -> None:
@@ -161,14 +159,12 @@ def returns_invalid_input_code_when_any_check_fails() -> None:
 
 
 def returns_error_when_text_holds_a_null_character() -> None:
-    assert _call("check_name", "a\x00b") == _failed(
-        "name", "Remove the character that cannot be saved."
-    )
+    assert _call("check_name", "a\x00b") == _failed("name", 'Remove the character after "a".')
 
 
 def returns_error_on_equipment_when_it_holds_a_null_character() -> None:
     assert _call("check_equipment", "scanner\x00") == _failed(
-        "equipment", "Remove the character that cannot be saved."
+        "equipment", 'Remove the character after "scanner".'
     )
 
 
@@ -220,3 +216,15 @@ def returns_error_when_colour_has_a_hash_inside() -> None:
 
 def returns_error_when_the_first_colour_digit_is_not_hex() -> None:
     assert _call("check_colour", "#g12345") == _failed("colour", "Use a colour like #1a2b3c.")
+
+
+def returns_message_on_field_when_a_single_line_text_holds_a_line_break() -> None:
+    assert _call("check_name", "Main\nWing") == _failed(
+        "name", 'This field takes one line. Remove the line break after "Main".'
+    )
+
+
+def returns_message_on_code_when_a_code_holds_a_line_break() -> None:
+    assert _call("check_code", "ab\ncd") == _failed(
+        "code", 'This field takes one line. Remove the line break after "ab".'
+    )

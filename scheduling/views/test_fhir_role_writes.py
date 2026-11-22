@@ -275,3 +275,14 @@ def returns_400_naming_specialty_when_the_specialty_code_is_unknown() -> None:
     assert response.status_code == 400
     assert element_names(response.json()) == ["PractitionerRole.specialty"]
     assert not ClinicianProfile.objects.filter(user=user).exists()
+
+
+def returns_400_naming_the_extension_when_round_robin_weight_is_a_value_string() -> None:
+    user, department, specialty = new_profile_inputs()
+    body = new_role_body(user, department, specialty, None)
+    body["extension"] = [extension("role-round-robin-weight", valueString="5")]
+
+    response = _post(body, token_of(role="ADMIN"))
+
+    assert response.status_code == 400
+    assert element_names(response.json()) == ["PractitionerRole.extension"]

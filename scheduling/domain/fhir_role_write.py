@@ -91,6 +91,8 @@ def role_values(body: Resource) -> Values | str:
         "bio": bio if isinstance(bio, str) else "",
     }
     weight = extension_value(body, "role-round-robin-weight", "valueInteger")
+    if extension_value(body, "role-round-robin-weight", "valueString") is not None:
+        return "PractitionerRole.extension"
     if weight is not None:
         values["round_robin_weight"] = weight
     return values

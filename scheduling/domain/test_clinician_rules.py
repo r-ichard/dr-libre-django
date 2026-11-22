@@ -128,3 +128,11 @@ def returns_singular_appointment_sentence_when_one_upcoming_appointment_blocks_t
     refusals = department_move_refusals(moves=True, counts=counts)
 
     assert refusals == ["1 upcoming appointment is booked with this clinician."]
+
+
+def returns_message_on_title_field_when_title_holds_a_line_break() -> None:
+    from scheduling.domain.clinician_rules import check_title
+
+    assert check_title("Dr\nX") == Failure.invalid_input(
+        [FieldMessage("title", 'This field takes one line. Remove the line break after "Dr".')]
+    )

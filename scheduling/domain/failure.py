@@ -35,6 +35,17 @@ class Failure:
     # Seconds until a limited caller's next request would pass; not part of a failure's identity.
     retry_after_seconds: int | None = field(default=None, compare=False)
 
+    @property
+    def field_messages(self) -> list[FieldMessage]:
+        items = self.details.get("fields")
+        if not isinstance(items, list):
+            return []
+        return [
+            FieldMessage(str(item["field"]), str(item["message"]))
+            for item in items
+            if isinstance(item, dict)
+        ]
+
     @classmethod
     def invalid_input(cls, fields: Sequence[FieldMessage]) -> Failure:
         return cls(FailureCode.INVALID_INPUT, {"fields": [asdict(item) for item in fields]})

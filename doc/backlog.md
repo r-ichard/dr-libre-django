@@ -74,7 +74,7 @@ tasks.
 | 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | merged `42600a0` |
-| 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | running |
+| 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | running `01M80E7BVMNV` |
 | 20 | Appointments, waitlist, audit log, settings | 10 | todo |
 | 21 | Dashboard, reporting, CSV export | 13 | todo |
 | | **M8 FHIR API (#8)** | | |

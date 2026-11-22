@@ -814,3 +814,12 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   group; the notification and the email write "Monday 23 November 2026, 09:00
   (Australia/Sydney)".
 - 4001 tests.
+
+## 2026-11-22 task 25c, run 01M81ANP7P02 (5 minutes, stopped in planning)
+
+- Three plans, three refusals, each for new material reasons, and the stage ran out of
+  visits. Cheap: five minutes, no code. The architect's last three reasons were right
+  (a scroll frame the keyboard cannot reach between 640 and 800 px; a test that
+  contradicted itself; an undefined "unknown" value), so they went into the task and the
+  task was launched again. A plan gate that fails is the cheapest failure the pipeline
+  has; a review gate that fails after 25 minutes is the dearest.

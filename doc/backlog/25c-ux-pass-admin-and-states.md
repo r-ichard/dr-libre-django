@@ -32,6 +32,21 @@ its measurement (`CLAUDE.md`, "Layout").
    names what will happen; a test fails when a route that destroys has none.
 6. Every changed page passes the page quality test of task 25.
 
+A first run of this task stopped in planning: three plans, three refusals by the
+architect. Its last reasons are requirements, so the next plan starts from them:
+
+- A table wrapper stays reachable by keyboard at every width: `tabindex="0"`,
+  `role="region"` and a label from the caption on every wrapper. Under 40rem nothing
+  scrolls, but between 40rem and about 800 px the table is back and still wider than
+  its frame.
+- The test of item 5 says two things only: a GET of a destructive route changes nothing
+  (row count and status equal), and a POST without a valid cross-site token or `Origin`
+  answers 403 and changes nothing. The POST with both is the confirmation.
+- Item 2 has three values per field, and "what the admin read" may be unknown, because
+  the form posts only the version. State the type of that value in the plan (a
+  dedicated value, not an empty string) and where it comes from, before the domain
+  test is written; "unknown" is a row of the truth table.
+
 The orchestrator opens every admin list and the dashboard in Chrome at 375 px and
 1440 px, saves one record from two tabs, and empties a list.
 

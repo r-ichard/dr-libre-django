@@ -86,7 +86,7 @@ tasks.
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | merged with 25a `4f6dbec` (8 of 17 items; rest in 25b, 25c) |
 | 25a | UX pass: the week fits at 1440 px again; small leftovers | 16 | merged `4f6dbec` |
-| 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | running |
+| 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | running `01M819523S2W` |
 | 25c | UX pass: admin lists at 375 px, the conflict page, status words, empty states, confirmations | 10, 16 | todo |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
 | 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |

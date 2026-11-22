@@ -23,8 +23,6 @@ scheduling.domain.request_limits.x_json_depth__mutmut_3: None and False are both
 scheduling.domain.calendar_grid.x_place_in_grid__mutmut_51: the end is already cut to 19:00, so the span never exceeds the rows left and the cap is never the smaller value
 scheduling.domain.calendar_grid.x_place_in_grid__mutmut_52: the end is already cut to 19:00, so the span never exceeds the rows left and the cap is never the smaller value
 scheduling.domain.fhir_search.x__number__mutmut_8: every negative result only sets the problem flag, which is the same for -1 and -2
-scheduling.domain.fhir_search.x__read_value__mutmut_14: rsplit with no limit and with a limit of one have the same last piece
-scheduling.domain.fhir_search.x__read_value__mutmut_17: rsplit with a limit of two has the same last piece as with a limit of one
 scheduling.domain.fhir_outcome.x__refused_names__mutmut_3: a missing fields key gives None, which is not a list, and an empty list gives no names either, so both return an empty tuple
 scheduling.domain.fhir_outcome.x__refused_names__mutmut_5: dict.get with no default returns None, which is not a list, so the result is the same empty tuple
 scheduling.domain.fhir_declaration.x__parameters__mutmut_1: the function only runs while the module is imported, before mutmut switches a mutant on, so no test can see the change
@@ -44,8 +42,6 @@ scheduling.domain.fhir_slot_id.x__encode__mutmut_8: the last base32 letter of 16
 scheduling.domain.fhir_dates.x_day_bounds__mutmut_9: the high bound is a midnight or a whole second, so one or two microseconds earlier is the same day
 scheduling.domain.fhir_patient.x_telecom_by_system__mutmut_3: a missing telecom gives None, which is not a list, and the isinstance check treats it like []
 scheduling.domain.fhir_patient.x_telecom_by_system__mutmut_5: a trailing comma in a call changes nothing
-scheduling.domain.fhir_search.x__read_value__mutmut_34: rsplit with no limit splits at every bar, and the last part is the same
-scheduling.domain.fhir_search.x__read_value__mutmut_37: a limit of 2 instead of 1 leaves the last part the same
 scheduling.domain.fhir_patient.x_patient_values__mutmut_5: a missing telecom gives None, which is not a list, and the isinstance check treats it like []
 scheduling.domain.fhir_patient.x_patient_values__mutmut_7: a trailing comma in a call changes nothing
 scheduling.domain.fhir_patient.x_patient_values__mutmut_25: a missing name gives None, which is not a list, and the isinstance check treats it like []
@@ -69,7 +65,15 @@ scheduling.domain.fhir_appointment_write.x__slot__mutmut_8: a missing reference 
 scheduling.domain.fhir_appointment_write.x__slot__mutmut_11: XXXX is not a slot id, parse_slot_id rejects it like ""
 scheduling.domain.fhir_appointment_write.x__slot__mutmut_12: XXXX is not a slot id, parse_slot_id rejects it like ""
 scheduling.domain.fhir_appointment_write.x__slot__mutmut_16: partition and rpartition differ only on a reference that fails the Slot/ prefix check or parse_slot_id anyway
-scheduling.domain.fhir_search.x_parse_search__mutmut_126: any sort default that does not start with "-" is ascending, like ""
 scheduling.domain.fhir_role_write.x__without_empty__mutmut_4: without_empty of a dict always returns a dict, so the fallback branch is unreachable
 scheduling.domain.fhir_role_write.x_time_off_changes__mutmut_23: stored ids are text keys, so looking one up with a non-text id finds nothing either way
 scheduling.domain.visitor_rules.x_is_valid_email__mutmut_3: rpartition and partition split alike on an address with one @, and with two the local part or the host part still holds an @ that its pattern refuses
+scheduling.domain.fhir_outcome.x__with_messages__mutmut_3: a missing `fields` as None or as an empty list both read as no messages
+scheduling.domain.fhir_outcome.x__with_messages__mutmut_5: a missing `fields` as None or as an empty list both read as no messages
+scheduling.domain.fhir_outcome.x__with_messages__mutmut_14: `fields` is always a list when the code is invalid_input, and any other shape yields no dict items
+scheduling.domain.fhir_search.x_parse_search__mutmut_98: `problem` False or None are both falsy, the loop returns a failure itself
+scheduling.domain.fhir_search.x_parse_search__mutmut_134: a missing `_sort` as "" or as a text without a leading dash both mean ascending
+scheduling.domain.fhir_search.x__read_piece__mutmut_14: `rsplit` with no limit gives the same last part as a limit of 1
+scheduling.domain.fhir_search.x__read_piece__mutmut_17: a limit of 2 gives the same last part as a limit of 1
+scheduling.domain.fhir_search.x__read_piece__mutmut_34: `rsplit` with no limit gives the same last part as a limit of 1
+scheduling.domain.fhir_search.x__read_piece__mutmut_37: a limit of 2 gives the same last part as a limit of 1

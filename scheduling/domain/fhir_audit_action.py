@@ -1,6 +1,8 @@
 """Task 24a: R4 requires `AuditEvent.action` to be one code of the value set AuditEventAction. The
 product's own action name stays in `AuditEvent.type`; this maps it to the code."""
 
+from dataclasses import dataclass
+
 CREATE = "C"
 READ = "R"
 UPDATE = "U"
@@ -50,3 +52,22 @@ def audit_action_code(action: str) -> str:
         if action.endswith(suffix):
             return code
     return EXECUTE
+
+
+@dataclass(frozen=True)
+class ActionsShowing:
+    """The product actions an `AuditEvent.action` code shows: the named ones, the ones that end in
+    a suffix, minus the named ones another code claims. `execute` is what no rule claims."""
+
+    named: tuple[str, ...]
+    suffixes: tuple[str, ...]
+    claimed_elsewhere: tuple[str, ...]
+    is_remainder: bool
+
+
+def product_actions_of(code: str) -> ActionsShowing:
+    """The inverse of `audit_action_code`, for a search that must find what the resource shows."""
+    named = tuple(action for action, shown in EXPLICIT_CODES.items() if shown == code)
+    elsewhere = tuple(action for action, shown in EXPLICIT_CODES.items() if shown != code)
+    suffixes = tuple(suffix for suffix, shown in SUFFIX_CODES.items() if shown == code)
+    return ActionsShowing(named, suffixes, elsewhere, code == EXECUTE)

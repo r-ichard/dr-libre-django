@@ -1,7 +1,7 @@
 """Task 23, spec 15.1 and 4: the product code of a failure rides in the OperationOutcome so a
 client can act on it."""
 
-from scheduling.domain.failure import Failure, FailureCode
+from scheduling.domain.failure import Failure, FailureCode, FieldMessage
 from scheduling.domain.fhir_common import extension_url
 from scheduling.domain.fhir_outcome import failure_outcome, operation_outcome
 from scheduling.domain.fhir_write_failures import stale_version
@@ -48,3 +48,29 @@ def returns_no_conflict_extension_when_the_conflict_is_a_stale_version() -> None
     issue = failure_outcome(stale_version(), "t", "c")["issue"][0]  # type: ignore[index]
 
     assert len(issue["extension"]) == 1
+
+
+def returns_each_refused_field_with_its_message_when_input_is_invalid() -> None:
+    failure = Failure.invalid_input(
+        [FieldMessage("name", "Too long."), FieldMessage("date", "Not a date.")]
+    )
+
+    issue = failure_outcome(failure, "t", "c")["issue"][0]  # type: ignore[index]
+
+    assert issue["diagnostics"].endswith(" name: Too long. date: Not a date.")
+
+
+def returns_plain_diagnostics_when_a_failure_has_no_field_messages() -> None:
+    issue = failure_outcome(Failure.not_found(), "t", "c")["issue"][0]  # type: ignore[index]
+
+    assert issue["diagnostics"] == "c"
+
+
+def returns_only_wellformed_messages_when_the_fields_are_mixed() -> None:
+    failure = Failure(
+        FailureCode.INVALID_INPUT, {"fields": ["x", {"field": "a"}, {"message": "m"}]}
+    )
+
+    issue = failure_outcome(failure, "t", "c")["issue"][0]  # type: ignore[index]
+
+    assert issue["diagnostics"] == "c"

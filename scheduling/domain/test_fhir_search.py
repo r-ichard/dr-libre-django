@@ -48,7 +48,7 @@ def returns_each_read_value_when_parameters_are_valid() -> None:
     assert result == Success(
         _query(
             count=100, offset=40, sort="active", descending=True,
-            filters=(("active", "true"), ("name", "Riv")),
+            filters=(("active", ("true",)), ("name", ("Riv",))),
         )
     )  # fmt: skip
 
@@ -115,21 +115,21 @@ def returns_failure_when_sort_is_not_a_parameter_of_resource() -> None:
 def returns_lowercase_canonical_id_when_reference_has_resource_prefix() -> None:
     result = _parse(ROLE, practitioner=f"Practitioner/{SOME_ID.upper()}")
 
-    assert result == Success(_query(sort="", filters=(("practitioner", SOME_ID),)))
+    assert result == Success(_query(sort="", filters=(("practitioner", (SOME_ID,)),)))
 
 
 def returns_last_part_when_code_has_system_prefix() -> None:
     result = _parse(ROLE, specialty="http://x|cardio")
 
     assert isinstance(result, Success)
-    assert result.value.filters == (("specialty", "cardio"),)
+    assert result.value.filters == (("specialty", ("cardio",)),)
 
 
 def returns_near_value_unchanged_when_readable() -> None:
     result = _parse(LOCATION, near="52.5|13.4|5|km")
 
     assert isinstance(result, Success)
-    assert result.value.filters == (("near", "52.5|13.4|5|km"),)
+    assert result.value.filters == (("near", ("52.5|13.4|5|km",)),)
 
 
 def returns_canonical_id_or_none_when_id_parsed() -> None:
@@ -226,7 +226,7 @@ def returns_previous_link_one_page_back_but_never_below_zero() -> None:
 
 def returns_filters_include_and_descending_sort_in_every_link() -> None:
     query = _query(
-        filters=(("name", "A B"),), sort="active", descending=True,
+        filters=(("name", ("A B",)),), sort="active", descending=True,
         include=("PractitionerRole:organization",),
     )  # fmt: skip
 
@@ -368,7 +368,9 @@ def returns_offset_zero_when_offset_is_given_as_zero() -> None:
 
 
 def returns_false_filter_when_flag_is_false() -> None:
-    assert _parse(ORGANIZATION, active="false") == Success(_query(filters=(("active", "false"),)))
+    assert _parse(ORGANIZATION, active="false") == Success(
+        _query(filters=(("active", ("false",)),))
+    )
 
 
 def returns_refusal_when_near_value_is_unreadable() -> None:
@@ -378,26 +380,26 @@ def returns_refusal_when_near_value_is_unreadable() -> None:
 def returns_last_segment_when_reference_is_a_full_address() -> None:
     result = _parse(ROLE, practitioner=f"http://h/fhir/Practitioner/{SOME_ID}")
 
-    assert result == Success(_query(sort="", filters=(("practitioner", SOME_ID),)))
+    assert result == Success(_query(sort="", filters=(("practitioner", (SOME_ID,)),)))
 
 
 def returns_whole_text_when_text_parameter_holds_a_bar() -> None:
-    assert _parse(ORGANIZATION, name="a|b|c") == Success(_query(filters=(("name", "a|b|c"),)))
+    assert _parse(ORGANIZATION, name="a|b|c") == Success(_query(filters=(("name", ("a|b|c",)),)))
 
 
 def returns_last_part_of_code_whatever_the_system_prefix() -> None:
     assert _parse(ROLE, specialty="x|y|cardio") == Success(
-        _query(sort="", filters=(("specialty", "cardio"),))
+        _query(sort="", filters=(("specialty", ("cardio",)),))
     )
     assert _parse(ROLE, specialty="cardio") == Success(
-        _query(sort="", filters=(("specialty", "cardio"),))
+        _query(sort="", filters=(("specialty", ("cardio",)),))
     )
 
 
 def returns_value_when_text_is_one_or_one_hundred_characters() -> None:
-    assert _parse(ORGANIZATION, name="a") == Success(_query(filters=(("name", "a"),)))
+    assert _parse(ORGANIZATION, name="a") == Success(_query(filters=(("name", ("a",)),)))
     hundred = "x" * 100
-    assert _parse(ORGANIZATION, name=hundred) == Success(_query(filters=(("name", hundred),)))
+    assert _parse(ORGANIZATION, name=hundred) == Success(_query(filters=(("name", (hundred,)),)))
 
 
 def returns_within_when_distance_is_exactly_zero() -> None:

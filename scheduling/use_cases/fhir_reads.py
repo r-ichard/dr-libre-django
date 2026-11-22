@@ -301,9 +301,8 @@ def _candidates(
     selections: list[QuerySet[Model, tuple[str, UUID, int]]] = []
     for index, part in enumerate(parts):
         rows = part.rows(viewer)
-        for name, value in query.filters:
-            refine = part.filters.get(name)
-            rows = refine(rows, value) if refine else rows.none()
+        for name, alternatives in query.filters:
+            rows = _either(rows, part.filters.get(name), alternatives)
         column = part.sort_columns.get(query.sort or DEFAULT_SORT, part.newest_column or "pk")
         selections.append(
             rows.annotate(
@@ -318,6 +317,18 @@ def _candidates(
     ordering = (f"{prefix}sort_key", f"{prefix}identifier")
     united = selections[0].union(*selections[1:])
     return united.order_by(*ordering)
+
+
+def _either(
+    rows: QuerySet[Model], refine: Filter | None, alternatives: tuple[str, ...]
+) -> QuerySet[Model]:
+    """Rows any alternative of one parameter finds; the rows given stay the outer limit."""
+    if refine is None:
+        return rows.none()
+    if len(alternatives) == 1:
+        return refine(rows, alternatives[0])
+    found = [refine(rows, item).values("pk") for item in alternatives]
+    return rows.filter(pk__in=found[0].union(*found[1:]))
 
 
 def _build_page(parts: tuple[Part, ...], page: list[Candidate], viewer: Viewer) -> list[Resource]:

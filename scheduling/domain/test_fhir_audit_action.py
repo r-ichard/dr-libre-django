@@ -3,7 +3,7 @@
 import pytest
 
 from scheduling.domain.audit_labels import AUDIT_LABELS
-from scheduling.domain.fhir_audit_action import audit_action_code
+from scheduling.domain.fhir_audit_action import audit_action_code, product_actions_of
 
 AUDIT_EVENT_ACTION_CODES = {"C", "R", "U", "D", "E"}
 
@@ -41,3 +41,20 @@ def returns_a_code_for_every_action_the_product_writes() -> None:
 
 def returns_execute_when_action_is_unknown() -> None:
     assert audit_action_code("something.new") == "E"
+
+
+def returns_named_actions_and_suffixes_of_the_code_when_inverted() -> None:
+    showing = product_actions_of("U")
+
+    assert "appointment.cancel" in showing.named
+    assert "appointment.book" not in showing.named
+    assert showing.suffixes == (".update",)
+    assert "appointment.book" in showing.claimed_elsewhere
+    assert "appointment.cancel" not in showing.claimed_elsewhere
+    assert not showing.is_remainder
+
+
+def returns_the_remainder_marker_only_for_execute_when_inverted() -> None:
+    assert product_actions_of("E").is_remainder
+    assert not product_actions_of("C").is_remainder
+    assert product_actions_of("E").named == ()

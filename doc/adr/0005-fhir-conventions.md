@@ -75,6 +75,13 @@ Status: accepted, 2026-11-22. Builds on ADR 0003 (ids, versions) and ADR 0004 (f
 - **Rights (15.4).** A clinician's or an admin's token: every record, inactive ones too, and a
   clinician's email and phone as `Practitioner.telecom`. Birth date is never served. No token or
   a patient's token: active records, name and title of a clinician only.
+- **Search values (task 27d).** Date prefixes served by their R4 definition: `eq`, `ge`, `gt`, `le`,
+  `lt`; refused with 400: `ne`, `sa`, `eb`, `ap`, and OR between dates (a comma). A value of day
+  precision is that whole day in UTC, not a hospital zone: a search crosses hospitals whose zones
+  differ, and an instant is one second. A datetime column is read as the half-open range
+  `[low, high)` of `combined_bounds`; `day_bounds` serves date columns only (`birthdate`, horizons).
+  A comma between other values is "either"; a parameter with a closed code list answers 400 listing
+  the list, never an empty set; a NUL byte in any name or value is 400 naming the parameter.
 - **No admin page for tokens.** The specification has none; the command is the whole interface.
 
 ## Open points for the owner

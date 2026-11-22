@@ -54,3 +54,6 @@ the `PractitionerRole` half; task 24c3 the `Practitioner` half below.
   integrations the owner never asked to lose; revoking is its own explicit action.
 - **Collection `Allow`.** A refused `POST /fhir/Practitioner` is 405 and its `Allow` also names
   `PUT` and `DELETE`, so a client learns that Practitioners are written one by one.
+- **`AuditEvent.action` is the code it shows (task 27d).** `action=C` finds the events whose resource
+  shows `C` (`product_actions_of` inverts `audit_action_code`); a value outside `C R U D E` is 400. The
+  product's own action name stays searchable as `AuditEvent?type=<action>` and in `/api/v1`.

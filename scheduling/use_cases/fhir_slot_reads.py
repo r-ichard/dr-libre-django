@@ -105,7 +105,10 @@ def _parse_type_id(given: list[str]) -> UUID | Failure:
 
 
 def search_slots(query: SearchQuery, caller: Caller) -> Result[SearchPage]:
-    values = {name: [value for key, value in query.filters if key == name] for name in SEARCH_NAMES}
+    values = {
+        name: [value for key, found in query.filters if key == name for value in found]
+        for name in SEARCH_NAMES
+    }
     window = bounded_window(values["start"], timedelta(days=MAXIMUM_QUERY_DAYS))
     if window is None:
         return Failure.invalid_input([START_PROBLEM])

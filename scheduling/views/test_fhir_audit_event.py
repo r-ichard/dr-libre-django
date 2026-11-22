@@ -83,7 +83,7 @@ def returns_only_matching_events_when_admin_searches_by_action_and_entity_type()
     _entry(None)
     _entry(None, action="notification.read", entity_type="notification")
 
-    by_action = get("/fhir/AuditEvent?action=notification.read", token_of(role="ADMIN"))
+    by_action = get("/fhir/AuditEvent?type=notification.read", token_of(role="ADMIN"))
     by_type = get("/fhir/AuditEvent?entity-type=waitlistentry", token_of(role="ADMIN"))
 
     assert by_action.json()["total"] == 1
@@ -161,7 +161,7 @@ def returns_newest_entries_first_when_no_sort_is_given() -> None:
     newest = _entry(None, created_at=NOW.replace(hour=10))
     middle = _entry(None, created_at=NOW.replace(hour=9))
 
-    search = get("/fhir/AuditEvent?action=waitlist.accept", token_of(role="ADMIN")).json()
+    search = get("/fhir/AuditEvent?type=waitlist.accept", token_of(role="ADMIN")).json()
 
     assert [found["resource"]["id"] for found in search["entry"]] == [
         str(newest.pk),

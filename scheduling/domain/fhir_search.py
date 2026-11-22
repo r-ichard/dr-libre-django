@@ -6,11 +6,13 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_common import carries_only_storable_text
 from scheduling.domain.fhir_dates import normalised_date
 from scheduling.domain.fhir_declaration import (
     COMMON_PARAMETERS,
     ParameterKind,
     ResourceDeclaration,
+    SearchParameter,
 )
 from scheduling.domain.fhir_near import parse_near
 from scheduling.domain.request_limits import MAXIMUM_FIELDS, MAXIMUM_PAGE
@@ -19,12 +21,13 @@ DEFAULT_COUNT = 20
 MAXIMUM_COUNT = 100
 MAXIMUM_TEXT = 100
 DEFAULT_SORT = "name"
+_WHOLE_VALUE_KINDS = (ParameterKind.DATE, ParameterKind.NEAR)
 SERVED_FORMATS = ("json", "application/fhir+json")
 
 
 @dataclass(frozen=True)
 class SearchQuery:
-    filters: tuple[tuple[str, str], ...]
+    filters: tuple[tuple[str, tuple[str, ...]], ...]
     count: int
     offset: int
     sort: str
@@ -35,7 +38,7 @@ class SearchQuery:
 def parse_search(
     declaration: ResourceDeclaration, params: Mapping[str, Sequence[str]]
 ) -> Result[SearchQuery]:
-    filters: list[tuple[str, str]] = []
+    filters: list[tuple[str, tuple[str, ...]]] = []
     count, offset = DEFAULT_COUNT, 0
     sort = DEFAULT_SORT if DEFAULT_SORT in declaration.sortable else ""
     include: list[str] = []
@@ -43,6 +46,8 @@ def parse_search(
         if not values or len(values) > _repeats_allowed(declaration, name):
             return _refuse(name, "A parameter may be given once.")
         value = values[0]
+        if not all(carries_only_storable_text(item) for item in (name, *values)):
+            return _refuse(name, "The value cannot be read.")
         if name == "_count":
             count = _number(value, 0, MAXIMUM_COUNT)
             problem = count < 0
@@ -61,9 +66,12 @@ def parse_search(
             parameter = declaration.parameter(name)
             if parameter is None or name in COMMON_PARAMETERS:
                 return _refuse(name, "This search parameter is not supported.")
-            normalised = [_read_value(parameter.kind, item) for item in values]
-            problem = None in normalised
-            filters += [(name, item) for item in normalised if item is not None]
+            problem = False
+            for item in values:
+                alternatives = _read_value(parameter, item)
+                if isinstance(alternatives, Failure):
+                    return alternatives
+                filters.append((name, alternatives))
         if problem:
             return _refuse(name, "The value cannot be read.")
     missing = _missing_required(declaration, filters)
@@ -82,7 +90,7 @@ def _repeats_allowed(declaration: ResourceDeclaration, name: str) -> int:
 
 
 def _missing_required(
-    declaration: ResourceDeclaration, filters: list[tuple[str, str]]
+    declaration: ResourceDeclaration, filters: list[tuple[str, tuple[str, ...]]]
 ) -> str | None:
     given = {name for name, _ in filters}
     return next(
@@ -105,7 +113,21 @@ def _number(text: str, low: int, high: int) -> int:
     return -1
 
 
-def _read_value(kind: ParameterKind, value: str) -> str | None:
+def _read_value(parameter: SearchParameter, value: str) -> tuple[str, ...] | Failure:
+    """The alternatives a value names ("either", comma-separated), or the refusal naming it."""
+    kind = parameter.kind
+    pieces = [value] if kind in _WHOLE_VALUE_KINDS else value.split(",")
+    read = [_read_piece(kind, piece) for piece in pieces]
+    if None in read:
+        return _refuse(parameter.name, "The value cannot be read.")
+    alternatives = tuple(item for item in read if item is not None)
+    unknown = [item for item in alternatives if parameter.codes and item not in parameter.codes]
+    if unknown:
+        return _refuse(parameter.name, f"Use one of: {', '.join(parameter.codes)}.")
+    return alternatives
+
+
+def _read_piece(kind: ParameterKind, value: str) -> str | None:
     if kind is ParameterKind.FLAG:
         return value if value in ("true", "false") else None
     if kind is ParameterKind.REFERENCE:

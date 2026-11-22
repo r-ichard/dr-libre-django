@@ -764,7 +764,14 @@ that user's rights.
 | `Patient` | `name`, `email`, `phone`, `birthdate` |
 | `Appointment` | `patient`, `practitioner`, `location`, `status`, `date`, `service-type` |
 | `Communication` | `recipient`, `category`, `sent` |
-| `AuditEvent` | `agent`, `entity`, `entity-type`, `action`, `date` |
+| `AuditEvent` | `agent`, `entity`, `entity-type`, `action`, `type`, `date` |
+
+Search values (task 27d): a date prefix is `eq`, `ge`, `gt`, `le` or `lt`; `ne`, `sa`, `eb`, `ap` and a
+comma between dates are 400. A date of day precision is that whole UTC day; an instant is one second.
+A comma between other values means "either". A parameter with a closed list of codes (`status`,
+`action`) answers 400 listing the codes for any other value; `action` is the FHIR code an event shows
+(`C`, `R`, `U`, `D`, `E`), the product's own action name is searched with `type`. A NUL byte in any
+parameter is 400 naming it.
 
 `_include` is supported for the references a client needs to draw a result:
 `PractitionerRole:practitioner`, `PractitionerRole:organization`, `Slot:schedule`,

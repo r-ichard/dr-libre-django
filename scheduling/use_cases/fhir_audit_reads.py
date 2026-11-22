@@ -1,11 +1,14 @@
 """Task 24, spec 4, 15.4: read and search `AuditEvent`, for an admin only. The log only grows, so
 a search is one counted, ordered page of keys and the rows are loaded after."""
 
+from functools import reduce
+from operator import or_
 from uuid import UUID
 
-from django.db.models import Model, QuerySet
+from django.db.models import Model, Q, QuerySet
 
 from scheduling.domain.failure import Failure, Result, Success
+from scheduling.domain.fhir_audit_action import EXPLICIT_CODES, SUFFIX_CODES, product_actions_of
 from scheduling.domain.fhir_audit_event import AuditFacts, audit_event_resource
 from scheduling.domain.fhir_common import Resource
 from scheduling.domain.fhir_search import SearchQuery
@@ -52,6 +55,19 @@ def _entity_type(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
 
 
 def _action(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
+    """`action=C` finds the events whose resource shows `C`, whatever the product action is."""
+    shown = product_actions_of(value)
+    by_suffix = reduce(or_, (Q(action__endswith=item) for item in SUFFIX_CODES), Q(pk__in=[]))
+    if shown.is_remainder:
+        return rows.exclude(Q(action__in=EXPLICIT_CODES) | by_suffix)
+    own_suffix = reduce(or_, (Q(action__endswith=item) for item in shown.suffixes), Q(pk__in=[]))
+    return rows.filter(
+        Q(action__in=shown.named) | (own_suffix & ~Q(action__in=shown.claimed_elsewhere))
+    )
+
+
+def _product_action(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
+    """`type` is where the resource shows the product's own action name."""
     return rows.filter(action=value)
 
 
@@ -92,6 +108,7 @@ AUDIT_EVENTS = Part(
         "entity": _entity,
         "entity-type": _entity_type,
         "action": _action,
+        "type": _product_action,
         "date": starts_within("created_at"),
     },
     build=_events,

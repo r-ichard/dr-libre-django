@@ -38,7 +38,7 @@ def failure_outcome(failure: Failure, text: str, correlation_id: str) -> Resourc
     return operation_outcome(
         answer.issue_code,
         text,
-        _with_dependents(failure, correlation_id),
+        _with_messages(failure, _with_dependents(failure, correlation_id)),
         _refused_names(failure),
         answer.product_code,
         details,
@@ -51,6 +51,17 @@ def _with_dependents(failure: Failure, correlation_id: str) -> str:
     if not isinstance(names, list):
         return correlation_id
     return f"{correlation_id} Still used by: {', '.join(str(name) for name in names)}."
+
+
+def _with_messages(failure: Failure, diagnostics: str) -> str:
+    """What to fix, as `/api/v1` says it: the fixed message of each refused field."""
+    raw = failure.details.get("fields", [])
+    said = [
+        f"{item['field']}: {item['message']}"
+        for item in (raw if isinstance(raw, list) else [])
+        if isinstance(item, dict) and "message" in item and "field" in item
+    ]
+    return f"{diagnostics} {' '.join(said)}" if said else diagnostics
 
 
 def _detail_extensions(failure: Failure) -> list[Resource]:

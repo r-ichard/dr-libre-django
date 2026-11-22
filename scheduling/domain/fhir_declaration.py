@@ -7,6 +7,19 @@ from enum import StrEnum
 READ_ONLY = ("read", "search-type")
 COMMON_PARAMETERS = ("_count", "_offset", "_sort", "_format", "_include")
 SORTABLE_PARAMETERS = ("name", "address-city", "active")
+# Closed code lists of a search parameter: a value outside is 400, never an empty set.
+APPOINTMENT_STATUSES = (
+    "booked",
+    "checked-in",
+    "fulfilled",
+    "cancelled",
+    "noshow",
+    "waitlist",
+    "proposed",
+    "pending",
+)
+SLOT_STATUSES = ("free", "busy", "busy-tentative", "busy-unavailable")
+AUDIT_ACTIONS = ("C", "R", "U", "D", "E")
 
 
 class ParameterKind(StrEnum):
@@ -35,6 +48,7 @@ class SearchParameter:
     kind: ParameterKind
     maximum_repeats: int = 1
     required: bool = False
+    codes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -134,7 +148,7 @@ FHIR_RESOURCES = (
             SearchParameter("schedule.actor", ParameterKind.REFERENCE),
             SearchParameter("service-type", ParameterKind.CODE, required=True),
             SearchParameter("start", ParameterKind.DATE, maximum_repeats=2, required=True),
-            SearchParameter("status", ParameterKind.CODE, maximum_repeats=4),
+            SearchParameter("status", ParameterKind.CODE, maximum_repeats=4, codes=SLOT_STATUSES),
         ),
         includes=("Slot:schedule",),
         interactions=READ_ONLY,
@@ -151,9 +165,9 @@ FHIR_RESOURCES = (
                 ("patient", _REFERENCE),
                 ("practitioner", _REFERENCE),
                 ("location", _REFERENCE),
-                ("status", _CODE),
                 ("service-type", _CODE),
             ),
+            SearchParameter("status", ParameterKind.CODE, codes=APPOINTMENT_STATUSES),
             SearchParameter("date", ParameterKind.DATE, maximum_repeats=2),
         ),
         includes=("Appointment:patient", "Appointment:practitioner", "Appointment:location"),
@@ -171,12 +185,9 @@ FHIR_RESOURCES = (
     ResourceDeclaration(
         "AuditEvent",
         (
-            *_parameters(
-                ("agent", _REFERENCE),
-                ("entity", _CODE),
-                ("entity-type", _CODE),
-                ("action", _CODE),
-            ),
+            *_parameters(("agent", _REFERENCE), ("entity", _CODE), ("entity-type", _CODE)),
+            SearchParameter("action", ParameterKind.CODE, codes=AUDIT_ACTIONS),
+            SearchParameter("type", ParameterKind.CODE),
             SearchParameter("date", ParameterKind.DATE, maximum_repeats=2),
         ),
     ),

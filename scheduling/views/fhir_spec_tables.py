@@ -157,6 +157,6 @@ SPEC_RESOURCES = (
         "AuditEvent",
         ADMIN_ONLY,
         {},
-        ("agent", "entity", "entity-type", "action", "date"),
+        ("agent", "entity", "entity-type", "action", "type", "date"),
     ),
 )

@@ -10,7 +10,7 @@ from django.db.models.functions import Coalesce
 from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.fhir_appointment import FHIR_STATUS_OF_APPOINTMENT, PENDING
 from scheduling.domain.fhir_common import Resource
-from scheduling.domain.fhir_dates import day_bounds
+from scheduling.domain.fhir_dates import combined_bounds
 from scheduling.domain.fhir_search import SearchQuery, parse_id
 from scheduling.domain.vocabulary import Role, WaitlistStatus
 from scheduling.models import Appointment, BookingHold, User, WaitlistEntry
@@ -162,10 +162,10 @@ def _waitlist_status(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
 
 def starts_within(column: str) -> Filter:
     def narrow(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
-        first, last = day_bounds([value])
-        if first is not None:
-            rows = rows.filter(**{f"{column}__gte": first})
-        return rows if last is None else rows.filter(**{f"{column}__lt": last})
+        low, high = combined_bounds([value])
+        if low is not None:
+            rows = rows.filter(**{f"{column}__gte": low})
+        return rows if high is None else rows.filter(**{f"{column}__lt": high})
 
     return narrow
 

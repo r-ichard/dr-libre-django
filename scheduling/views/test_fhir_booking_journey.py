@@ -99,7 +99,7 @@ def _taken_slot(clinic: Clinic) -> Appointment:
 
 
 def _audit(admin: str, action: str, entity_id: str) -> dict[str, object]:
-    response = get(f"/fhir/AuditEvent?action={action}&entity={entity_id}", admin)
+    response = get(f"/fhir/AuditEvent?type={action}&entity={entity_id}", admin)
     assert response.json()["total"] == 1, (action, response.content)
     event: dict[str, object] = response.json()["entry"][0]["resource"]
     return event

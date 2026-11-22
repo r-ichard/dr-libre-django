@@ -768,3 +768,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   does not scroll. At 375 px nothing is clipped.
 - Launched with `--target owner/repo@branch --goal-file` from `main`, with the task file
   alone committed on the held branch: no cherry-picked process commit, no doc conflict.
+
+## 2026-11-22 a work-in-progress commit reached `main` (e9a419c)
+
+- To verify a run I squash it onto my local `main` as "wip ... local verification only",
+  run the gates from a clone, and amend the message before the push. With task 24's
+  squash sitting there I wrote four task files, committed them on top and pushed. The
+  squash went out under its wip message, before its gates had finished.
+- The content is what I meant to merge: the read side of AppointmentResponse,
+  Communication and AuditEvent, checked on the stack with a token per role. Only the
+  message is wrong, and the history of a public `main` is not mine to rewrite without
+  the owner. It stays; this entry and the backlog say what `e9a419c` is.
+- The recipe changes: the squash under verification lives on `verify/<task>`. `main`
+  never holds a commit I would not push.

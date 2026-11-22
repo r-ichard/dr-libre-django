@@ -152,6 +152,11 @@ branch as `task/<nn>-<slug>`, then from `main` (the branch has no `sync` workflo
 One agent merges `main` keeping both sides, then lint, tests and gate. The orchestrator
 verifies the sync run's branch like a task run and squash-merges it.
 
+**Verifying a run:** the squash to verify lives on a local branch `verify/<task>`, never
+on `main`: gates and the container stack run from a clone of that branch, and `main`
+gets the squash only with its final message. A work-in-progress commit on `main` goes
+out with the next push of a backlog edit (task 24, commit `e9a419c`).
+
 **Hand-applied gaps:** (1) fabro checkpoints carry "Generated with Fabro" and
 `Co-Authored-By: Fabro`; never merge run branch as-is, squash with hand-written message,
 disclose tooling in body. (2) "Red for right reason" judged by agent and reviewer; gate

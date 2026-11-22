@@ -37,6 +37,9 @@ authorization read from a payload (§11). Everything else goes to Later and is a
 When the plan declared a slice, hold the run to the slice, not to the whole task: an
 item under `## Not in this run` is never a blocker. Copy that list into the review under
 `## Left for the orchestrator`, and add any item of the slice the run did not finish.
+A change of `drlibre-specs.md` in the diff is blocking: the specification is the
+owner's text, and a decision it leaves open belongs in an ADR and in this review under
+`## For the owner`.
 A time, speed or size budget in the task (how long `make test` takes, for example) is
 never a blocker: the sandbox shares its machine with other runs, so a number measured
 here proves nothing. Write the number you measured under Later; the orchestrator

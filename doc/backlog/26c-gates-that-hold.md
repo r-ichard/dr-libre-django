@@ -9,7 +9,8 @@ was found untrue or unchecked. No product behaviour changes.
     suite, with the number in one place; say it in the plan after measuring the ten
     slowest tests. Bring those under it without dropping a case.
     Measured by the orchestrator after task 26a2 (`pytest --durations=25`, eight
-    workers, fresh clone): 4591 tests take 95 seconds where 4531 took 45. The slowest
+    workers, fresh clone, two other runs on the machine): 4591 tests take 95 seconds;
+    alone the suite takes 38 to 45. Under that load the slowest
     entries are not tests but teardowns: 28, 24, 22, 10, 7 and 6 seconds, charged to
     tests that do nothing slow (`scheduling/domain/test_audit_metadata.py`,
     `drlibre/test_parallel_run.py`, `scripts/test_size_cap.py`). Something waits at the

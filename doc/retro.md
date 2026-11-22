@@ -982,8 +982,9 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   `auth.lockout`. Twelve holds for one address, six at a time: five 201, seven 429.
   Search: 120, then the search page itself with 429 and `Retry-After`. Two holds in two
   tabs of one browser, both completed; another browser gets the missing-hold page.
-- `make test` went from 45 seconds to 95 on a fresh clone with 60 more tests. Measured
-  for task 26c.
+- `make test` took 95 seconds on a fresh clone while two runs and a stack shared the
+  machine; alone it takes 45 (4618 tests, task 26b) and 38 (4817 tests, task 27d). Under
+  load the time goes to teardowns of 20 to 28 seconds, which task 26c looks at.
 
 ## 2026-11-22 QA round 3 closed: 20 issues, six P1, no P0
 
@@ -993,3 +994,32 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   FHIR client would show an empty day, so 27d runs before the backlog moves on.
 - I verified tasks 23a and 24 with a token per role and never searched by date across
   a bound. The mutation gate and 4500 tests did not see it either: 27d has to say why.
+
+## 2026-11-22 task 26b, run 01M823QBG80V (merged, first slice)
+
+- Slice of five items of seven; the review held the run to it and sent it back once for
+  a test the plan promised and the diff lacked (the log privacy test). One pass after.
+- By hand, three servers on one database: `DEBUG` off refuses the published key, an
+  empty host list and the published demo password, each by name; cookies are `Secure`,
+  `HttpOnly`, `SameSite=Strict`; with no trusted proxy a forwarded address changes
+  nothing (limit at ten for the connection), with one the last entry counts and a
+  spoofed first entry does not; a failed mail is logged with type, trace and
+  correlation id and without the recipient.
+- The run edited `scripts/qa_stack.sh`, which is mine, because start-up now refuses the
+  values that script ran the server with. It had to: the alternative was a QA stack that
+  cannot start. Kept, with the seed under the same key as the server.
+
+## 2026-11-22 task 27d, run 01M823QAZ8F3 (merged, first slice)
+
+- Cause of #51, from the plan: the domain returned exact half-open instants and the use
+  case threw them away for a pair of inclusive days, compared against a datetime
+  column. The domain was right and under the mutation gate; the fault sat at the seam,
+  in `use_cases/`, which the gate does not cover and no test searched with a time.
+- My check script reads the booked appointments from the database and asks `/fhir` for
+  each day, and for a bound one second before, on and after every start, with four
+  prefixes, in `Z` and `+01:00`: all equal. The same for `AuditEvent.date` and
+  `Communication.sent`. A comma list never widens what a patient's token reads.
+- The run edited `drlibre-specs.md` so that the test over the tables of section 15
+  would pass after it added a search parameter. The review saw the new parameter and
+  let it by; nobody was told the specification is not a run's to edit. Now the card and
+  the review prompt say so, and 27d2 puts the file back.

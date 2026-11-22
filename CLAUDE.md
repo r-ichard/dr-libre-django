@@ -29,6 +29,9 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   review.
 - **Risk classes (§13.1):** `doc/plans/**`, `doc/reviews/**`, `scratch/**` throwaway.
   Rest product code. Unclassified = product.
+- **Specification:** `drlibre-specs.md` is the owner's text. A run never edits it; a
+  decision it leaves open goes into an ADR and into the review under "For the owner"
+  (task 27d edited section 15.5 to make a test pass).
 - **Owner decisions, fixed:** latest stable Django + Django REST Framework; PostgreSQL,
   tests too. Front end: server-rendered Django templates, hand-written CSS, no CSS
   framework, no Node build; specialty icons from healthicons.org vendored as SVG. Local

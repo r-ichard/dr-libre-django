@@ -29,7 +29,7 @@ manage() { SECRET_KEY=$QA_SAFE_KEY DEMO_PASSWORD= uv run --env-file .env.example
 
 manage migrate --noinput >/dev/null
 # The seed refuses to run with DEBUG off; the server below runs without it.
-DEBUG=true SECRET_KEY=development-only-not-a-secret DEMO_PASSWORD=demo-password-published uv run --env-file .env.example python manage.py seed_demo >/dev/null
+DEBUG=true SECRET_KEY=$QA_SAFE_KEY DEMO_PASSWORD=demo-password-published uv run --env-file .env.example python manage.py seed_demo >/dev/null
 
 # A script node is not an agent stage: these processes are meant to outlive it.
 start() {

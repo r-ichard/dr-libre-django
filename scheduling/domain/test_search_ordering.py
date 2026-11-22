@@ -3,6 +3,8 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+import pytest
+
 from scheduling.domain.search_ordering import (
     Sortable,
     haversine_kilometres,
@@ -142,3 +144,26 @@ def returns_a_zero_distance_before_a_positive_one_when_sort_is_distance() -> Non
     items = [_item(1, "Away", EARLY, 0.5), _item(2, "Here", EARLY, 0.0)]
 
     assert _names(sort_results(items, "distance")) == ["Here", "Away"]
+
+
+@pytest.mark.parametrize(
+    ("total", "page", "expected"),
+    [
+        (45, 1, (1, 3, 0)),
+        (45, 3, (3, 3, 40)),
+        (45, 4, (3, 3, 40)),
+        (45, 0, (1, 3, 0)),
+        (45, -2, (1, 3, 0)),
+        (40, 2, (2, 2, 20)),
+        (41, 9, (3, 3, 40)),
+        (0, 5, (1, 1, 0)),
+    ],
+)
+def returns_shown_page_page_count_and_first_row_when_page_is_cut_in_the_database(
+    total: int, page: int, expected: tuple[int, int, int]
+) -> None:
+    from scheduling.domain.search_ordering import page_bounds
+
+    bounds = page_bounds(total, page, 20)
+
+    assert (bounds.page, bounds.page_count, bounds.first) == expected

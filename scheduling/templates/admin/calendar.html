@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Calendar of {{ title }} · DrLibre{% endblock %}
+{% block head %}{% load static %}<link rel="stylesheet" href="{% static 'css/time-grid.css' %}"><link rel="stylesheet" href="/admin-console/type-colours.css">{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Calendar of {{ title }}</h1>
+<p>{{ week_label }}. Times are in the hospital's time zone, {{ time_zone }}. Read only.</p>
+<div class="button-row">
+  <a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous week</a>
+  <a class="button button--secondary" href="{{ next_href }}" rel="next">Next week</a>
+  <a class="button button--secondary" href="{{ back_path }}">Back to the clinician</a>
+</div>
+{% include "components/time_grid.html" with empty_text="Nothing booked" %}
+{% endblock %}

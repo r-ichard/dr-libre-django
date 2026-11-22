@@ -42,7 +42,8 @@ FIELD_NAMES = [
     "email", "password", "page", "page_size", "from", "to", "starts_at", "code", "q", "next",
     "appointment_type_id", "clinician_id", "token", "reason", "date", "week", "status",
     "name", "version", "hospital", "department", "time_zone", "latitude", "longitude",
-    "capacity", "colour", "equipment",
+    "capacity", "colour", "equipment", "full_name", "role", "user", "specialty", "title", "bio",
+    "default_room", "round_robin_weight", "user_id", "profile_id", "is_active",
 ]  # fmt: skip
 
 

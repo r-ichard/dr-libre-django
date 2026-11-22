@@ -68,6 +68,7 @@ def grid_column(
 def _shown(item: GridItem) -> dict[str, object]:
     return {
         "lines": item.lines,
+        "drawn": (item.lines[0].replace(" to ", "–"), *item.lines[1:]),
         "href": item.href,
         "badge": item.badge,
         "spoken": ", ".join(item.lines),

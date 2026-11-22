@@ -1,6 +1,6 @@
 /* Time grid of the clinician calendar and rooms timeline: stacked lists from 375 px; from 64rem
    columns on a 07:00 to 19:00 axis of 24 visible 30 minute rows. Row classes are static. */
-.time-grid { --row-height: 4.25rem; --line-height: 1.125rem; --rail: 1rem; --heading-height: 3rem; margin-top: var(--space-5); }
+.time-grid { --row-height: 4.25rem; --line-height: 1.125rem; --rail: 1rem; --heading-height: 3rem; margin-top: var(--space-5); position: relative; }
 .time-grid ol { margin: 0; padding: 0; list-style: none; }
 .time-grid__axis { display: none; }
 .time-grid__columns { display: grid; gap: var(--space-4); }
@@ -12,6 +12,7 @@
 .time-grid-item__line { display: block; }
 .time-grid-item__lines { display: block; }
 .time-grid-item__time { font-weight: 700; }
+.time-grid-item__time .icon { width: 1em; height: 1em; margin: 0 var(--space-1) 0 0; vertical-align: middle; }
 .time-grid-off { background: var(--colour-warning-wash); border-left-style: dashed; }
 .time-grid-occupied { border-left-style: dotted; color: var(--colour-ink-muted); }
 @media (min-width: 64rem) {

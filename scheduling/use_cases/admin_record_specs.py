@@ -7,10 +7,12 @@ from django.db.models import Model, QuerySet
 
 from scheduling.models import (
     AppointmentType,
+    ClinicianProfile,
     Department,
     Hospital,
     Room,
     Specialty,
+    User,
 )
 
 CODE_TAKEN = "Code is taken."
@@ -26,6 +28,10 @@ DEPENDENT_WORDS = {
         "clinicians with this default room",
     ),
     "waitlist_entries": ("waitlist entry", "waitlist entries"),
+    "appointments_as_patient": ("appointment as a patient", "appointments as a patient"),
+    "appointments_as_clinician": ("appointment as a clinician", "appointments as a clinician"),
+    "audit_entries": ("audit entry", "audit entries"),
+    "clinician_profile": ("clinician profile", "clinician profiles"),
 }
 
 
@@ -36,6 +42,13 @@ class RecordSpec:
     fields: tuple[str, ...]
     parent_field: str = ""
     parent_model: type[Model] | None = None
+    search_fields: tuple[str, ...] = ("name", "code")
+    order_by: tuple[str, ...] = ("name", "id")
+    related: tuple[str, ...] = ()
+
+    @property
+    def select_related(self) -> tuple[str, ...]:
+        return self.related or ((self.parent_form_name,) if self.parent_field else ())
 
     @property
     def parent_form_name(self) -> str:
@@ -101,6 +114,23 @@ SPECS = {
             "department_id",
             Department,
         ),  # fmt: skip
+        RecordSpec(
+            "user",
+            User,
+            ("full_name", "email", "role", "is_active"),
+            search_fields=("full_name", "email"),
+            order_by=("full_name", "id"),
+        ),
+        RecordSpec(
+            "clinician",
+            ClinicianProfile,
+            ("title", "bio", "round_robin_weight", "department_id"),
+            "department_id",
+            Department,
+            search_fields=("user__full_name", "user__email", "title"),
+            order_by=("user__full_name", "id"),
+            related=("user", "department", "specialty", "default_room"),
+        ),
     )
 }
 

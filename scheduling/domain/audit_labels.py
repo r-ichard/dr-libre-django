@@ -6,8 +6,11 @@ RECORD_WORDS = {
     "department": "Department",
     "room": "Room",
     "appointment_type": "Appointment type",
+    "user": "User",
+    "clinician": "Clinician profile",
 }
 VERB_WORDS = {"create": "created", "update": "updated", "delete": "deleted"}
+USER_VERB_WORDS = {"deactivate": "deactivated", "activate": "activated"}
 
 AUDIT_LABELS = {
     "api_client.issue": "API token issued",
@@ -27,6 +30,7 @@ AUDIT_LABELS = {
         for record, noun in RECORD_WORDS.items()
         for verb, past in VERB_WORDS.items()
     },
+    **{f"user.{verb}": f"User {past}" for verb, past in USER_VERB_WORDS.items()},
     "auth.link_refused": "Sign-in link refused",
     "auth.link_requested": "Sign-in link requested",
     "auth.link_used": "Signed in with a link",

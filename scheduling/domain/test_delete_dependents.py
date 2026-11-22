@@ -98,3 +98,36 @@ def returns_no_refusal_when_a_count_is_not_in_the_section_10_table_for_the_kind(
 def raises_when_the_kind_is_not_one_of_the_five_records() -> None:
     with pytest.raises(KeyError):
         _refusal("clinician_profile", {"appointments": 1})
+
+
+def returns_no_refusal_when_user_has_no_dependents() -> None:
+    counts = {
+        "own_account": 0, "appointments_as_patient": 0, "appointments_as_clinician": 0,
+        "audit_entries": 0, "clinician_profile": 0, "waitlist_entries": 0,
+    }  # fmt: skip
+
+    assert _refusal("user", counts) == ()
+
+
+def returns_every_reason_in_table_order_when_user_has_all_dependents() -> None:
+    counts = {
+        "own_account": 1, "appointments_as_patient": 2, "appointments_as_clinician": 3,
+        "audit_entries": 4, "clinician_profile": 1, "waitlist_entries": 5,
+    }  # fmt: skip
+
+    assert _refusal("user", counts) == (
+        _dependent("own_account", 1),
+        _dependent("appointments_as_patient", 2),
+        _dependent("appointments_as_clinician", 3),
+        _dependent("audit_entries", 4),
+        _dependent("clinician_profile", 1),
+        _dependent("waitlist_entries", 5),
+    )
+
+
+def returns_appointments_when_clinician_profile_has_appointments() -> None:
+    assert _refusal("clinician", {"appointments": 6}) == (_dependent("appointments", 6),)
+
+
+def returns_no_refusal_when_clinician_profile_has_no_appointments() -> None:
+    assert _refusal("clinician", {"appointments": 0}) == ()

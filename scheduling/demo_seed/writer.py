@@ -129,9 +129,11 @@ class _Seeding:
                 {"name": department.name, "hospital": self.hospitals[department.hospital_code]},
             )
         for specialty in catalogue.SPECIALTIES:
+            self._adopt_legacy_specialty(specialty.code)
             self.specialties[specialty.code] = self._upsert(
                 Specialty, {"code": specialty.code}, {"name": specialty.name, "is_active": True}
             )
+        self._drop_unused_legacy_specialties()
         for room in catalogue.ROOMS:
             self.rooms[room.code] = self._upsert(
                 Room,
@@ -153,6 +155,17 @@ class _Seeding:
                     "department": self.departments[kind.department_code],
                 },
             )  # fmt: skip
+
+    def _adopt_legacy_specialty(self, code: str) -> None:
+        """Older databases hold `demo-<code>`; renaming keeps the id and its clinicians."""
+        legacy = Specialty.objects.filter(code=f"demo-{code}").first()
+        if legacy is not None and not Specialty.objects.filter(code=code).exists():
+            legacy.code = code
+            legacy.save()
+
+    def _drop_unused_legacy_specialties(self) -> None:
+        unused = Specialty.objects.filter(code__startswith="demo-", clinicianprofile__isnull=True)
+        unused.delete()
 
     def _people(self) -> None:
         for person in catalogue.PEOPLE:

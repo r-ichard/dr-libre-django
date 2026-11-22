@@ -1,7 +1,7 @@
 """Task 15: the patient's profile (phone, date of birth) and change password. The patient is the
 session's user; a passwordless patient gets 404 for the password page."""
 
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.vocabulary import Role
@@ -84,6 +84,9 @@ class PasswordPage(PageView):
         changed = change_password(current, new, user, keep)
         if isinstance(changed, Failure):
             return self._render(request, failure_messages(changed), 422)
+        return self._done()
+
+    def _done(self) -> HttpResponse:
         return redirect_with_notice(PROFILE_PATH, "password-changed")
 
     def _require_password(self) -> User:
@@ -97,3 +100,16 @@ class PasswordPage(PageView):
     ) -> HttpResponse:
         context = {"errors": errors, "summary": summary_items(errors), "profile_path": PROFILE_PATH}
         return self.page(request, context, status)
+
+
+class AccountPasswordPage(PasswordPage):
+    """Task 19: a clinician or an admin replaces the temporary password an admin set. Same use
+    case as the patient's page; it checks the current password and ends the other sessions."""
+
+    template_name = "account/password.html"
+    allowed_roles = frozenset({Role.CLINICIAN, Role.ADMIN})
+
+    def _done(self) -> HttpResponse:
+        assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
+        home = "/admin-console/" if Role(self.user.role) == Role.ADMIN else "/clinician/today"
+        return HttpResponseRedirect(home, status=303)

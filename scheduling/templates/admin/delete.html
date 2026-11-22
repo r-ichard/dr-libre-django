@@ -4,11 +4,11 @@
 {% include "components/admin_nav.html" %}
 <h1>Delete {{ view.singular }}</h1>
 <section class="card" aria-labelledby="record-title">
-  <h2 id="record-title">{{ record.name }}</h2>
+  <h2 id="record-title">{{ title }}</h2>
   {% if reasons %}
   <p>This {{ view.singular }} cannot be deleted while it is still used by:</p>
   <ul>{% for reason in reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
-  <p>Move or remove these first.</p>
+  <p>{% if view.has_deactivate %}Deactivate it instead: the person can no longer sign in, and the history stays.{% else %}Move or remove these first.{% endif %}</p>
   {% else %}
   <p>This deletes the {{ view.singular }} for good.</p>
   {% endif %}
@@ -20,6 +20,7 @@
     <button class="button button--danger" type="submit">Delete {{ view.singular }}</button>
   </form>
   {% endif %}
+  {% if reasons and view.has_deactivate %}<a class="button button--primary" href="{{ back_path }}/deactivate">Deactivate instead</a>{% endif %}
   <a class="button button--secondary" href="{{ back_path }}">{% if reasons %}Back{% else %}Keep it{% endif %}</a>
 </div>
 {% endblock %}

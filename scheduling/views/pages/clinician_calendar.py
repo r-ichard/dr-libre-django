@@ -3,6 +3,7 @@ a list of days of blocks, so it reads in order for a screen reader and at 375 px
 lay the same lists out as a grid with static row classes."""
 
 import re
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -52,12 +53,7 @@ class CalendarPage(ClinicianPage):
         today = current_request_context().now.astimezone(ZoneInfo(time_zone)).date()
         asked = week_from(request.GET.get("week", "")) or today
         monday = asked - timedelta(days=asked.weekday())
-        blocks = _blocks(profile, monday)
-        week_days = [monday + timedelta(days=offset) for offset in range(DAYS_PER_WEEK)]
-        off = week_time_off(profile, monday)
-        days = [
-            _day(day, blocks + _time_off_items(off, day, time_zone), time_zone) for day in week_days
-        ]
+        days = week_columns(profile, monday, linked=True)
         last_day = monday + timedelta(days=DAYS_PER_WEEK - 1)
         context = {
             "columns": days,
@@ -69,6 +65,23 @@ class CalendarPage(ClinicianPage):
             "time_zone": time_zone,
         }
         return self.page(request, context)
+
+
+def week_columns(
+    profile: ClinicianProfile, monday: date, *, linked: bool
+) -> list[dict[str, object]]:
+    """The seven days of the week as grid columns; `linked` False draws blocks with no link."""
+    time_zone = profile.department.hospital.time_zone
+    items = _blocks(profile, monday)
+    off = week_time_off(profile, monday)
+    columns = []
+    for offset in range(DAYS_PER_WEEK):
+        day = monday + timedelta(days=offset)
+        day_items = items + _time_off_items(off, day, time_zone)
+        if not linked:
+            day_items = [replace(item, href="") for item in day_items]
+        columns.append(_day(day, day_items, time_zone))
+    return columns
 
 
 def _blocks(profile: ClinicianProfile, monday: date) -> list[GridItem]:
@@ -107,11 +120,14 @@ def _time_off_items(rows: list[TimeOff], day: date, time_zone: str) -> list[Grid
     items: list[GridItem] = []
     for row in rows:
         for part in cut_into_days(row.starts_at, row.ends_at, [day], time_zone):
-            if part.starts_at == row.starts_at and part.ends_at == row.ends_at:
-                when = _span_text(row.starts_at, row.ends_at, zone)
-            else:
-                when = f"{_dated_clock(row.starts_at, zone)} to {_dated_clock(row.ends_at, zone)}"
-            lines = (when, "Time off") + ((row.reason,) if row.reason else ())
+            whole = part.starts_at == row.starts_at and part.ends_at == row.ends_at
+            when = _span_text(part.starts_at, part.ends_at, zone)
+            real = (
+                ()
+                if whole
+                else (f"{_dated_clock(row.starts_at, zone)} to {_dated_clock(row.ends_at, zone)}",)
+            )
+            lines = (when, "Time off", *real) + ((row.reason,) if row.reason else ())
             href = f"{TIME_OFF_PATH}#time-off-{row.pk}"
             items.append(
                 GridItem(

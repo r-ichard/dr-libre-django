@@ -215,3 +215,5 @@
   .details { grid-template-columns: minmax(0, 1fr); }
   .details dd { margin-bottom: var(--space-3); }
 }
+
+.list-count { margin-top: var(--space-4); }

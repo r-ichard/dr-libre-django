@@ -135,3 +135,13 @@ def returns_every_line_fitting_when_the_item_is_outside_the_grid() -> None:
 
     outside = column["outside"]
     assert isinstance(outside, list) and outside[0]["fits"] == 5
+
+
+def returns_drawn_time_with_dash_and_spoken_time_with_to_when_the_first_line_is_a_span() -> None:
+    start = WINDOW_START + timedelta(hours=8)
+    item = GridItem(start, start + timedelta(minutes=30), ("08:00 to 08:30", "Visit"), "", "", None)
+
+    [shown] = _inside(grid_column("Mon", "Monday", [item], WINDOW, ZONE))
+
+    assert shown["drawn"] == ("08:00–08:30", "Visit")
+    assert shown["spoken"] == "08:00 to 08:30, Visit"

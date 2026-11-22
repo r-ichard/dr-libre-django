@@ -14,6 +14,7 @@
     {% if field.widget == "select" %}{% include "components/select.html" with name=field.name label=field.label options=field.options selected=field.value hint=field.hint error=field.error %}
     {% elif field.widget == "checkbox" %}{% include "components/checkbox.html" with name=field.name label=field.label checked=field.checked hint=field.hint error=field.error %}
     {% elif field.widget == "textarea" %}{% include "components/textarea.html" with name=field.name label=field.label value=field.value hint=field.hint error=field.error %}
+    {% elif field.widget == "password" %}{% include "components/field.html" with name=field.name label=field.label type="password" hint=field.hint error=field.error autocomplete="new-password" %}
     {% else %}{% include "components/field.html" with name=field.name label=field.label type=field.widget value=field.value hint=field.hint error=field.error %}
     {% endif %}
   {% endfor %}

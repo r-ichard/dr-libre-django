@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}{{ record.name }} · DrLibre{% endblock %}
+{% block title %}{{ title }} · DrLibre{% endblock %}
 {% block content %}
 {% include "components/admin_nav.html" %}
-<h1>{{ record.name }}</h1>
+<h1>{{ title }}</h1>
 <dl class="details">
   {% for label, text in details %}<dt>{{ label }}</dt><dd>{{ text }}</dd>{% endfor %}
 </dl>
@@ -21,6 +21,8 @@
 {% endif %}
 <div class="button-row">
   <a class="button button--primary" href="{{ record_path }}/edit">Edit</a>
+  {% if can_deactivate %}<a class="button button--secondary" href="{{ record_path }}/deactivate">Deactivate</a>{% endif %}
+  {% if view.has_calendar %}<a class="button button--secondary" href="{{ record_path }}/calendar">Week calendar</a>{% endif %}
   <a class="button button--danger" href="{{ record_path }}/delete">Delete</a>
   <a class="button button--secondary" href="{{ view.base_path }}">Back to {{ view.plural }}</a>
 </div>

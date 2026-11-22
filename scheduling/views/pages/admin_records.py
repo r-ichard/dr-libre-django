@@ -7,6 +7,8 @@ from uuid import UUID
 from django.db.models import Model
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 from django.urls import URLPattern, path
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
 
 from scheduling.domain.failure import Failure, FailureCode, Result
 from scheduling.domain.specialty_icons import FALLBACK_ICON, icon_file_for
@@ -14,24 +16,22 @@ from scheduling.domain.vocabulary import Role
 from scheduling.models.base import Versioned
 from scheduling.use_cases import admin_record_reads
 from scheduling.use_cases.admin_record_specs import count_text
-from scheduling.use_cases.admin_records import (
-    RecordEdit,
-    create_record,
-    delete_record,
-    dependents_of,
-    update_record,
-)
+from scheduling.use_cases.admin_record_writers import WRITERS
+from scheduling.use_cases.admin_records import RecordEdit
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.pages.admin_record_forms import (
     form_fields,
     initial_text,
+    kept_text,
     parse_form,
     typed_text,
 )
 from scheduling.views.pages.admin_record_kinds import (
     CHECKBOX,
     KIND_VIEWS,
+    PASSWORD,
     SELECT,
+    FormField,
     KindView,
 )
 from scheduling.views.pages.booking_links import path_uuid
@@ -75,7 +75,7 @@ def _cell(record: Model, accessor: str) -> str:
         value = getattr(value, part)
     if isinstance(value, bool):
         return "Active" if value else "Inactive"
-    return str(value)
+    return str(value).capitalize() if accessor == "role" else str(value)
 
 
 class RecordListPage(RecordPage):
@@ -87,12 +87,16 @@ class RecordListPage(RecordPage):
             self.kind, query, _page_number(request.GET.get("page", ""))
         )
         view = self.view
+        extras = admin_record_reads.list_extras(self.kind, found.items)
         rows = [
             {
-                "name": _cell(record, "name"),
+                "name": _cell(record, view.title_accessor),
                 "href": f"{view.base_path}/{record.pk}",
-                "code": _cell(record, "code"),
-                "cells": [_cell(record, accessor) for _, accessor in view.columns],
+                "code": _cell(record, view.identifier_accessor),
+                "cells": [
+                    extras.get(record.pk, "") if accessor == "extra" else _cell(record, accessor)
+                    for _, accessor in view.columns
+                ],
             }
             for record in found.items
         ]
@@ -122,12 +126,22 @@ class RecordShowPage(RecordPage):
         record = self.record_or_404()
         view = self.view
         details = [
-            (field.label, _detail(record, field.name, field.widget)) for field in view.fields
+            (field.label, _detail(record, field.name, field.widget))
+            for field in view.fields
+            if field.widget != PASSWORD
         ]
+        assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
+        can_deactivate = (
+            view.has_deactivate
+            and getattr(record, "is_active", False)
+            and record.pk != self.user.pk
+        )
         uses = admin_record_reads.dependent_counts(self.kind, record.pk)
         context = {
             "view": view,
             "record": record,
+            "title": _cell(record, view.title_accessor),
+            "can_deactivate": can_deactivate,
             "details": details,
             "uses": [count_text(count, reason) for reason, count in uses.items() if count],
             "icon": _icon_of(record) if self.kind == "specialty" else None,
@@ -138,10 +152,17 @@ class RecordShowPage(RecordPage):
 
 
 def _detail(record: Model, name: str, widget: str) -> str:
-    if widget == SELECT:
-        related = getattr(record, name)
-        return str(related) if name == "time_zone" else str(related.name)
     value = getattr(record, name)
+    if widget == SELECT:
+        if not isinstance(value, Model):
+            return (
+                "None"
+                if value is None
+                else str(value).capitalize()
+                if name == "role"
+                else str(value)
+            )
+        return str(getattr(value, "name", None) or getattr(value, "full_name", ""))
     if widget == CHECKBOX:
         return "Yes" if value else "No"
     if isinstance(value, list):
@@ -154,48 +175,77 @@ def _icon_of(record: Model) -> dict[str, object]:
     return {"file": file, "is_fallback": file == FALLBACK_ICON}
 
 
+def _shown_fields(
+    view: KindView, record: Model | None, actor_id: UUID | None
+) -> tuple[FormField, ...]:
+    """What the form asks for: a password only when creating, a role never for one's own account,
+    the active box only to bring an inactive user back (deactivating is its own step)."""
+    dropped: set[str] = set()
+    if view.kind == "user":
+        if record is None:
+            dropped.add("is_active")
+        else:
+            dropped.add("password")
+            if record.pk == actor_id:
+                dropped.add("role")
+            if getattr(record, "is_active", False):
+                dropped.add("is_active")
+    if view.kind == "clinician" and record is not None:
+        dropped.add("user")
+    return tuple(field for field in view.fields if field.name not in dropped)
+
+
+@method_decorator(sensitive_post_parameters("password"), name="post")
 class RecordFormPage(RecordPage):
     """New at /new, edit at /<id>/edit; one form."""
 
     template_name = "admin/form.html"
 
+    def _fields(self, record: Model | None) -> tuple[FormField, ...]:
+        return _shown_fields(self.view, record, self.user.pk if self.user else None)
+
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
         record = self.record_or_404() if "record_id" in self.kwargs else None
         version = record.version if record is not None else None
-        return self._form(request, initial_text(self.kind, record), {}, version)
+        initial = initial_text(self._fields(record), record)
+        return self._form(request, record, initial, {}, version)
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
-        typed = typed_text(self.kind, request.POST)
-        values, errors = parse_form(self.kind, typed)
-        if "record_id" not in self.kwargs:
+        writers = WRITERS[self.kind]
+        record = self.record_or_404() if "record_id" in self.kwargs else None
+        fields = self._fields(record)
+        typed = typed_text(fields, request.POST)
+        values, errors = parse_form(fields, typed)
+        if record is None:
             if errors:
-                return self._form(request, typed, errors, None, 422)
-            result = create_record(self.kind, values, self.user)
+                return self._form(request, record, typed, errors, None, 422)
+            result = writers.create(self.kind, values, self.user)
             return self._answer(request, result, typed, None)
-        record_id = path_uuid(self, "record_id")
         version = request.POST.get("version", "")
         if not (version.isascii() and version.isdigit()):
-            return self._form(request, typed, {}, None, 422, UNREADABLE_VERSION)
+            return self._form(request, record, typed, {}, None, 422, UNREADABLE_VERSION)
         if errors:
-            return self._form(request, typed, errors, int(version), 422)
-        result = update_record(RecordEdit(self.kind, record_id, values, int(version)), self.user)
+            return self._form(request, record, typed, errors, int(version), 422)
+        result = writers.update(RecordEdit(self.kind, record.pk, values, int(version)), self.user)
         return self._answer(request, result, typed, int(version))
 
     def _answer(
         self, request: HttpRequest, result: Result[UUID], typed: dict[str, str], version: int | None
     ) -> HttpResponse:
+        record = self.record_or_404() if "record_id" in self.kwargs else None
         if not isinstance(result, Failure):
             return HttpResponseRedirect(f"{self.view.base_path}/{result.value}", status=303)
         if result.code == FailureCode.INVALID_INPUT:
-            return self._form(request, typed, errors_by_field(result), version, 422)
-        if result.code == FailureCode.CONFLICT:
-            return self._form(request, typed, {}, self.record_or_404().version, 409, STALE_TEXT)
+            return self._form(request, record, typed, errors_by_field(result), version, 422)
+        if result.code == FailureCode.CONFLICT and record is not None:
+            return self._form(request, record, typed, {}, record.version, 409, STALE_TEXT)
         return self.refusal_of(request, result)
 
     def _form(
         self,
         request: HttpRequest,
+        record: Model | None,
         typed: dict[str, str],
         errors: dict[str, str],
         version: int | None,
@@ -207,7 +257,7 @@ class RecordFormPage(RecordPage):
         context = {
             "view": view,
             "title": f"Edit {view.singular}" if editing else view.new_text,
-            "fields": form_fields(self.kind, typed, errors),
+            "fields": form_fields(self.kind, self._fields(record), kept_text(typed), errors),
             "summary": [{"target": f"id_{name}", "message": text} for name, text in errors.items()],
             "version": version,
             "problem": problem,
@@ -242,12 +292,14 @@ class RecordDeletePage(RecordPage):
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
         record = self.record_or_404()
-        return self._confirmation(request, record, dependents_of(self.kind, record.pk))
+        assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
+        reasons = WRITERS[self.kind].dependents(self.kind, record.pk, self.user)
+        return self._confirmation(request, record, reasons)
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         record_id: UUID = path_uuid(self, "record_id")
-        result = delete_record(self.kind, record_id, self.user)
+        result = WRITERS[self.kind].delete(self.kind, record_id, self.user)
         if not isinstance(result, Failure):
             return HttpResponseRedirect(self.view.base_path, status=303)
         if result.code != FailureCode.HAS_DEPENDENTS:
@@ -263,6 +315,7 @@ class RecordDeletePage(RecordPage):
         context = {
             "view": self.view,
             "record": record,
+            "title": _cell(record, self.view.title_accessor),
             "reasons": reasons,
             "action": request.path,
             "back_path": f"{self.view.base_path}/{record.pk}",

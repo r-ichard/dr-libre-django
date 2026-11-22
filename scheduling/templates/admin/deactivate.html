@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Deactivate user · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Deactivate user</h1>
+<section class="card" aria-labelledby="record-title">
+  <h2 id="record-title">{{ title }}</h2>
+  {% if reasons %}
+  <p>This user cannot be deactivated:</p>
+  <ul>{% for reason in reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+  {% else %}
+  <p>The person is signed out at once and cannot sign in again until an admin activates the account. Unused sign-in links stop working.</p>
+  <p>{{ appointments_text }}</p>
+  {% endif %}
+</section>
+{% if problem %}{% include "components/notice.html" with kind="warning" text=problem %}{% endif %}
+<div class="button-row">
+  {% if not reasons %}
+  <form class="form" method="post" action="{{ action }}">
+    {% csrf_token %}
+    <input type="hidden" name="version" value="{{ version }}">
+    <button class="button button--danger" type="submit">Deactivate user</button>
+  </form>
+  {% endif %}
+  <a class="button button--secondary" href="{{ back_path }}">Back</a>
+</div>
+{% endblock %}

@@ -102,11 +102,11 @@ ROOMS = (
 )
 
 SPECIALTIES = (
-    SpecialtySeed("demo-cardiology", "Cardiology"),
-    SpecialtySeed("demo-dermatology", "Dermatology"),
-    SpecialtySeed("demo-general-practice", "General practice"),
-    SpecialtySeed("demo-paediatrics", "Paediatrics"),
-    SpecialtySeed("demo-orthopaedics", "Orthopaedics"),
+    SpecialtySeed("cardiology", "Cardiology"),
+    SpecialtySeed("dermatology", "Dermatology"),
+    SpecialtySeed("general-practice", "General practice"),
+    SpecialtySeed("paediatrics", "Paediatrics"),
+    SpecialtySeed("orthopaedics", "Orthopaedics"),
 )
 
 APPOINTMENT_TYPES = (
@@ -157,14 +157,14 @@ PEOPLE = (
 )
 
 CLINICIANS = (
-    ClinicianSeed("clinician@example.test", "demo-berlin-cardiology", "demo-cardiology",
+    ClinicianSeed("clinician@example.test", "demo-berlin-cardiology", "cardiology",
                   "Consultant", "demo-room-cardiology"),
-    ClinicianSeed("clinician.heart@example.test", "demo-berlin-cardiology", "demo-cardiology",
+    ClinicianSeed("clinician.heart@example.test", "demo-berlin-cardiology", "cardiology",
                   "Registrar", "demo-room-cardiology"),
-    ClinicianSeed("clinician.skin@example.test", "demo-berlin-dermatology", "demo-dermatology",
+    ClinicianSeed("clinician.skin@example.test", "demo-berlin-dermatology", "dermatology",
                   "Consultant", "demo-room-dermatology"),
-    ClinicianSeed("clinician.general@example.test", "demo-newyork-general", "demo-general-practice",
+    ClinicianSeed("clinician.general@example.test", "demo-newyork-general", "general-practice",
                   "Physician", "demo-room-general"),
-    ClinicianSeed("clinician.child@example.test", "demo-sydney-paediatrics", "demo-paediatrics",
+    ClinicianSeed("clinician.child@example.test", "demo-sydney-paediatrics", "paediatrics",
                   "Consultant", "demo-room-paediatrics"),
 )  # fmt: skip

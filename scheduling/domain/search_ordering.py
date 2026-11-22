@@ -59,7 +59,20 @@ def haversine_kilometres(
 
 
 def paginate[Item](items: Sequence[Item], page: int, page_size: int) -> Page[Item]:
-    page_count = max(1, math.ceil(len(items) / page_size))
-    shown = min(page, page_count)
-    first = (shown - 1) * page_size
-    return Page(list(items[first : first + page_size]), len(items), shown, page_count)
+    bounds = page_bounds(len(items), page, page_size)
+    shown = list(items[bounds.first : bounds.first + page_size])
+    return Page(shown, len(items), bounds.page, bounds.page_count)
+
+
+@dataclass(frozen=True)
+class PageBounds:
+    page: int
+    page_count: int
+    first: int
+
+
+def page_bounds(total: int, page: int, page_size: int) -> PageBounds:
+    """Where a page starts when the database cuts it; a page out of range is clamped."""
+    page_count = max(1, math.ceil(total / page_size))
+    shown = min(max(1, page), page_count)
+    return PageBounds(shown, page_count, (shown - 1) * page_size)

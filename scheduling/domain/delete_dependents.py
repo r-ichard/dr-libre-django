@@ -9,6 +9,15 @@ REASONS_BY_KIND = {
     "specialty": ("clinicians",),
     "room": ("appointments", "availability_rules", "default_room_clinicians"),
     "appointment_type": ("appointments", "waitlist_entries"),
+    "user": (
+        "own_account",
+        "appointments_as_patient",
+        "appointments_as_clinician",
+        "audit_entries",
+        "clinician_profile",
+        "waitlist_entries",
+    ),
+    "clinician": ("appointments",),
 }
 
 

@@ -16,8 +16,9 @@ pytestmark = pytest.mark.django_db
 CONSOLE = "admin-console/"
 # One fixed id: workers of a parallel run must collect the same test ids.
 SOME_ID = "6f1c3a52-0d1e-4b8a-9c53-2f7d1b0e4a11"
-RECORD_KINDS = 5
+RECORD_KINDS = 7
 ROUTES_PER_KIND = 5
+EXTRA_ROUTES = 3  # deactivate, clinician calendar, type colours
 
 
 def _templates(patterns: list[URLPattern | URLResolver], prefix: str = "") -> Iterator[str]:
@@ -37,8 +38,8 @@ def _console_paths() -> list[str]:
     return sorted(found)
 
 
-def returns_the_console_home_and_twenty_five_record_routes_when_urls_are_listed() -> None:
-    assert len(_console_paths()) == 1 + RECORD_KINDS * ROUTES_PER_KIND
+def returns_the_console_home_and_the_record_routes_when_urls_are_listed() -> None:
+    assert len(_console_paths()) == 1 + RECORD_KINDS * ROUTES_PER_KIND + EXTRA_ROUTES
 
 
 @pytest.mark.parametrize("path", _console_paths())

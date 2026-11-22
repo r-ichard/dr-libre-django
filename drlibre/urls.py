@@ -18,6 +18,7 @@ from scheduling.views.fhir.views import fhir_entry
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.admin_records import admin_record_routes
+from scheduling.views.pages.admin_user_pages import admin_user_routes
 from scheduling.views.pages.booking_code import CodePage, ResendPage
 from scheduling.views.pages.booking_confirmation import CalendarFile, ConfirmationPage
 from scheduling.views.pages.booking_details import DetailsPage
@@ -52,7 +53,7 @@ from scheduling.views.pages.patient_notifications import (
     MarkReadPage,
     NotificationsPage,
 )
-from scheduling.views.pages.patient_profile import PasswordPage, ProfilePage
+from scheduling.views.pages.patient_profile import AccountPasswordPage, PasswordPage, ProfilePage
 from scheduling.views.pages.patient_reschedule import ReschedulePage, RescheduleReviewPage
 from scheduling.views.pages.patient_waitlist import AcceptOfferPage, WaitlistPage
 from scheduling.views.pages.public_pages import StylePage
@@ -140,6 +141,7 @@ urlpatterns = [
     path("patient/notifications/<uuid:notification_id>/read", MarkReadPage.as_view()),
     path("patient/profile", ProfilePage.as_view()),
     path("patient/profile/password", PasswordPage.as_view()),
+    path("account/password", AccountPasswordPage.as_view()),
     path("clinician/", TodayPage.as_view()),
     path("clinician/calendar", CalendarPage.as_view()),
     path("clinician/type-colours.css", ColoursPage.as_view()),
@@ -167,6 +169,7 @@ urlpatterns = [
     ),
     path("admin-console/", AdminConsole.as_view()),
     *admin_record_routes(),
+    *admin_user_routes(),
     # Local-only product, so Django's development file server is enough and works with DEBUG off.
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.BASE_DIR / "static"}),
 ]

@@ -176,3 +176,24 @@ def returns_each_lane_class_setting_its_own_number_and_the_rail_set_on_covering_
         assert _declarations_of(f".time-grid-lanes-{number}") == {"--lanes": str(number)}
     assert _declarations_of(".time-grid-front.time-grid-over") == {"--rail-width": "var(--rail)"}
     assert _declarations_of(".time-grid-item")["--rail-width"] == "0px"
+
+
+def returns_scroll_frame_that_holds_the_out_of_flow_text_when_the_grid_is_wide() -> None:
+    """Task 19, item 22: `.visually-hidden` is `position: absolute`; its containing block is the
+    nearest positioned ancestor. `.time-grid` is it, and it scrolls, so the spans of columns past
+    the edge widen the frame and never the page."""
+    base_sheet = STYLE_SHEET.parent / "base.css"
+    assert re.search(r"\.visually-hidden\s*\{[^}]*position:\s*absolute", base_sheet.read_text())
+    assert _declarations_of(".time-grid")["position"] == "relative"
+    assert _declarations_of(".time-grid")["overflow-x"] == "auto"
+
+
+def returns_status_icon_no_taller_than_the_time_line_when_the_first_line_is_drawn() -> None:
+    icon = _declarations_of(".time-grid-item__time .icon")
+    assert (icon["width"], icon["height"]) == ("1em", "1em")
+    assert icon["vertical-align"] == "middle"
+
+
+def returns_count_spaced_with_the_token_when_it_follows_the_search_form() -> None:
+    sheet = (STYLE_SHEET.parent / "components.css").read_text()
+    assert re.search(r"\.list-count\s*\{\s*margin-top:\s*var\(--space-4\)", sheet)

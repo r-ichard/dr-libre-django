@@ -1,19 +1,20 @@
 """Section 10: an admin record form as a browser sends it. Text is read into typed values with
 the domain checks; what was typed is kept as text so a refused form shows it again."""
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from uuid import UUID
 from zoneinfo import available_timezones
 
 from django.db.models import Model
 from django.http import QueryDict
 
-from scheduling.domain import record_fields
-from scheduling.domain.failure import Failure, Result
+from scheduling.domain import clinician_rules, record_fields, user_rules
+from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.vocabulary import Role
 from scheduling.use_cases import admin_record_reads
 from scheduling.views.pages.admin_record_kinds import (
     CHECKBOX,
-    KIND_VIEWS,
+    PASSWORD,
     SELECT,
     FormField,
 )
@@ -50,14 +51,36 @@ PARSERS: dict[str, Parser] = {
     "buffer_minutes": record_fields.check_buffer_minutes,
     "colour": record_fields.check_colour,
     "equipment": record_fields.check_equipment,
+    "full_name": _text("full_name", "a name", 200),
+    "email": user_rules.check_email,
+    "password": user_rules.check_password,
+    "title": clinician_rules.check_title,
+    "bio": lambda raw: record_fields.check_text("bio", raw, 2000, None),
+    "round_robin_weight": clinician_rules.check_weight,
+    "role": lambda raw: _role(raw),
 }
-SELECT_MESSAGES = {"hospital": "Choose a hospital.", "department": "Choose a department."}
+SELECT_MESSAGES = {
+    "hospital": "Choose a hospital.",
+    "department": "Choose a department.",
+    "user": "Choose a clinician user.",
+    "specialty": "Choose a specialty.",
+}
+OPTIONAL_SELECTS = ("default_room",)
+PLAIN_SELECTS = ("time_zone", "role")
 
 
-def typed_text(kind: str, post: QueryDict) -> dict[str, str]:
-    """What was typed, for showing the form again: a checkbox is "on" or empty."""
+def _role(raw: str) -> Result[object]:
+    try:
+        return Success(Role(raw).value)
+    except ValueError:
+        return Failure.invalid_input([FieldMessage("role", "Choose a role.")])
+
+
+def typed_text(fields: Sequence[FormField], post: QueryDict) -> dict[str, str]:
+    """What was typed, for showing the form again: a checkbox is "on" or empty. A password is
+    read for the use case but never kept for the page."""
     raw: dict[str, str] = {}
-    for field in KIND_VIEWS[kind].fields:
+    for field in fields:
         if field.widget == CHECKBOX:
             raw[field.name] = "on" if field.name in post else ""
         else:
@@ -65,21 +88,29 @@ def typed_text(kind: str, post: QueryDict) -> dict[str, str]:
     return raw
 
 
-def initial_text(kind: str, row: Model | None) -> dict[str, str]:
+def kept_text(typed: Mapping[str, str]) -> dict[str, str]:
+    return {name: ("" if name == "password" else text) for name, text in typed.items()}
+
+
+def initial_text(fields: Sequence[FormField], row: Model | None) -> dict[str, str]:
     """A new record starts active, bookable and without buffer; an edit starts from the row."""
     shown: dict[str, str] = {}
-    for field in KIND_VIEWS[kind].fields:
+    for field in fields:
         if row is None:
             fresh = field.name in ("is_active", "is_bookable_online")
-            shown[field.name] = "on" if fresh else ("0" if field.name == "buffer_minutes" else "")
+            default = {"buffer_minutes": "0", "round_robin_weight": "1"}.get(field.name, "")
+            shown[field.name] = "on" if fresh else default
         else:
             shown[field.name] = _stored_text(field, row)
     return shown
 
 
 def _stored_text(field: FormField, row: Model) -> str:
-    if field.widget == SELECT and field.name != "time_zone":
-        return str(getattr(row, f"{field.name}_id"))
+    if field.widget == PASSWORD:
+        return ""
+    if field.widget == SELECT and field.name not in PLAIN_SELECTS:
+        stored = getattr(row, f"{field.name}_id")
+        return "" if stored is None else str(stored)
     value = getattr(row, field.name)
     if field.widget == CHECKBOX:
         return "on" if value else ""
@@ -88,16 +119,20 @@ def _stored_text(field: FormField, row: Model) -> str:
     return "" if value is None else str(value)
 
 
-def parse_form(kind: str, typed: Mapping[str, str]) -> tuple[dict[str, object], dict[str, str]]:
+def parse_form(
+    fields: Sequence[FormField], typed: Mapping[str, str]
+) -> tuple[dict[str, object], dict[str, str]]:
     """Typed values for the use case, and the message of each field that cannot be read."""
     values: dict[str, object] = {}
     errors: dict[str, str] = {}
-    for field in KIND_VIEWS[kind].fields:
+    for field in fields:
         raw = typed[field.name]
         if field.name in ("latitude", "longitude"):
             continue
         if field.widget == CHECKBOX:
             values[field.name] = raw == "on"
+        elif field.name in OPTIONAL_SELECTS:
+            _read_optional(field.name, raw, values, errors)
         elif field.name in SELECT_MESSAGES:
             _read_parent(field.name, raw, values, errors)
         else:
@@ -121,7 +156,14 @@ def _read_parent(name: str, raw: str, values: dict[str, object], errors: dict[st
     try:
         values[f"{name}_id"] = UUID(raw)
     except ValueError:
-        errors[name] = SELECT_MESSAGES[name]
+        errors[name] = SELECT_MESSAGES.get(name, f"Choose a {name.replace('_', ' ')}.")
+
+
+def _read_optional(name: str, raw: str, values: dict[str, object], errors: dict[str, str]) -> None:
+    if not raw:
+        values[f"{name}_id"] = None
+    else:
+        _read_parent(name, raw, values, errors)
 
 
 def _read_coordinates(
@@ -135,10 +177,10 @@ def _read_coordinates(
 
 
 def form_fields(
-    kind: str, typed: dict[str, str], errors: dict[str, str]
+    kind: str, fields: Sequence[FormField], typed: dict[str, str], errors: dict[str, str]
 ) -> list[dict[str, object]]:
     shown: list[dict[str, object]] = []
-    for field in KIND_VIEWS[kind].fields:
+    for field in fields:
         item: dict[str, object] = {
             "name": field.name,
             "label": field.label,
@@ -158,4 +200,21 @@ def _options(kind: str, name: str) -> list[tuple[str, str]]:
     if name == "time_zone":
         zones = [(zone, zone) for zone in sorted(available_timezones())]
         return [("", "Choose a time zone"), *zones]
-    return [("", f"Choose a {name}"), *admin_record_reads.parent_choices(kind)]
+    prompt = (
+        ("", "None") if name in OPTIONAL_SELECTS else ("", f"Choose a {name.replace('_', ' ')}")
+    )
+    return [prompt, *_choices(kind, name)]
+
+
+def _choices(kind: str, name: str) -> list[tuple[str, str]]:
+    match name:
+        case "role":
+            return admin_record_reads.role_choices()
+        case "user":
+            return admin_record_reads.clinician_user_choices()
+        case "specialty":
+            return admin_record_reads.specialty_choices()
+        case "default_room":
+            return admin_record_reads.room_choices()
+        case _:
+            return admin_record_reads.parent_choices(kind)

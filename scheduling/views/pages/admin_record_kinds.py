@@ -8,6 +8,7 @@ NUMBER = "number"
 TEXTAREA = "textarea"
 SELECT = "select"
 CHECKBOX = "checkbox"
+PASSWORD = "password"  # noqa: S105 - a widget name, not a secret
 CONSOLE_PATH = "/admin-console"
 
 
@@ -28,6 +29,12 @@ class KindView:
     fields: tuple[FormField, ...]
     columns: tuple[tuple[str, str], ...]
     new_text: str
+    title_accessor: str = "name"
+    identifier_accessor: str = "code"
+    identifier_label: str = "Code"
+    search_label: str = "Search by name or code"
+    has_deactivate: bool = False
+    has_calendar: bool = False
 
     @property
     def base_path(self) -> str:
@@ -97,6 +104,43 @@ KIND_VIEWS = {
             ),
             (("Department", "department.name"), ("Minutes", "duration_minutes"), ACTIVE_COLUMN),
             "New appointment type",
+        ),
+        KindView(
+            "user", "users", "user", "users",
+            (
+                FormField("full_name", "Name"),
+                FormField("email", "Email"),
+                FormField("role", "Role", SELECT),
+                FormField(
+                    "password", "Temporary password", PASSWORD,
+                    "10 to 72 characters. Tell the person to change it after the first sign-in.",
+                ),
+                ACTIVE,
+            ),
+            (("Role", "role"), ACTIVE_COLUMN),
+            "New user",
+            "full_name", "email", "Email", "Search by name or email", has_deactivate=True,
+        ),
+        KindView(
+            "clinician", "clinicians", "clinician", "clinicians",
+            (
+                FormField("user", "Clinician user", SELECT),
+                FormField("department", "Department", SELECT),
+                FormField("specialty", "Specialty", SELECT),
+                FormField("title", "Title"),
+                FormField("bio", "Bio", TEXTAREA, "Optional."),
+                FormField("default_room", "Default room", SELECT, "Optional."),
+                FormField("round_robin_weight", "Round-robin weight", NUMBER, "Whole number, 1+."),
+            ),
+            (
+                ("Department", "department.name"),
+                ("Specialty", "specialty.name"),
+                ("Status", "user.is_active"),
+                ("Weekly availability", "extra"),
+            ),
+            "Attach a clinician profile",
+            "user.full_name", "title", "Title", "Search by name, email or title",
+            has_calendar=True,
         ),
     )
 }  # fmt: skip

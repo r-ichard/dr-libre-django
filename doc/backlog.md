@@ -69,7 +69,7 @@ tasks.
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | merged `e412ecb` |
 | 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | merged `58caea4` |
 | 17c | QA round 2, clinician: time grid alignment, multi-day time off, four smaller (#25 to #29, #31) | 9, 16 | merged `64d18a7` |
-| 17f | Time grid: blocks stay in their column and show whole lines (#30) | 9, 16 | running |
+| 17f | Time grid: blocks stay in their column and show whole lines (#30) | 9, 16 | running `01M80CQ06WM7` |
 | 17d | Demo seed books through the use cases (#32) | 16 | merged with 17e `3df1aa8` |
 | 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
 | | **M7 Admin console and reporting (#7)** | | |

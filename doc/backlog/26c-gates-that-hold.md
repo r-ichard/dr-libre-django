@@ -34,5 +34,21 @@ was found untrue or unchecked. No product behaviour changes.
 15. The report has no test with hospital zones on both sides of UTC (review of 21): add
     it for the day an appointment is counted on.
 
+Carried from tasks 27a and 27a2, tests that claim more than they check:
+
+16. The hostile-input test sends its values to a fixed list of field names, and two
+    500s of QA round 3 (#33, #38) passed it. It derives its targets: every field of
+    every form the product renders, by its `name` (the walker of
+    `form_walk_support.py`); every field of every request schema of `/api/v1`; every
+    element a write of the FHIR declaration accepts. Each gets the hostile values (a
+    NUL byte, an over-long text, a number beyond 64 bits, a negative number, a wrong
+    type, markup) and none answers 500. The plan of 27a2 counted about 7000 requests,
+    under a minute: keep it inside the time gate of item 11.
+17. One test shows that every form of the product, refused, comes back with what was
+    typed, apart from a password and a code.
+18. One test compares, for every free-text and every one-line field, what the page,
+    `/api/v1` and the FHIR element accept: the three agree, or the difference is
+    listed with its reason.
+
 Done when `make setup && make lint && make test && make gate && make mutate` and
 `make fhir-validate` and `make audit` pass from a fresh clone.

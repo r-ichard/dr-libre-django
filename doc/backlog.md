@@ -171,6 +171,9 @@ Small findings waiting for the next task that touches the same file.
 - ADR 0010 is "proposed": `_sort` on every date parameter (section 15.1 lists none
   of them), 415 for a FHIR write that does not say JSON, and the search-value rules of
   task 27d. Owner to accept or amend.
+- The reason of a booking is one line on the pages and free text in `/api/v1` and FHIR
+  (review of 27a2). Owner to confirm which; tightening the API would refuse text that
+  clients may send today.
 - A wrong method on a route of `/api/v1` answers 404 `not_found`, never 405 (QA round 3,
   public area): section 4 has no failure code for a method. Owner to confirm whether the
   contract gains one. Listed with the owner's questions of task 26d.

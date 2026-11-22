@@ -27,6 +27,10 @@ Messages:
    and no two links of an error summary read the same: assert the second over every
    form the product renders, submitted empty.
 
+5a. Seen while verifying task 27a2: the patient's waitlist reads "Wanted between from
+   Monday 23 November 2026 to Sunday 29 November 2026". The label is "Wanted"; the
+   function of task 27a writes "from … to …" or the one day.
+
 Ways on:
 
 6. #42: after a session ended before an action, signing in sends the browser a GET of

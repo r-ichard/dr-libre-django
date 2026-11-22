@@ -139,6 +139,12 @@ sandbox, database, mail sink (`scratch/qa/mail.log`) and headless browser. One a
 tests, a second reproduces before filing a GitHub issue labelled `qa` + `P0`/`P1`/`P2`.
 Open `P0` issue = next task, before backlog moves on. Orchestrator verifies a P0 first.
 
+**Sync runs:** two task runs may go side by side; the second to finish meets a moved
+`main`. A squash that conflicts in product code is never resolved by hand: check the run
+branch out as `task/<nn>-<slug>`, push it, `fabro run sync --goal "<task>" -d` from that
+checkout. One agent merges `main` keeping both sides, then lint, tests and gate. The
+orchestrator verifies the sync run's branch like a task run and squash-merges it.
+
 **Hand-applied gaps:** (1) fabro checkpoints carry "Generated with Fabro" and
 `Co-Authored-By: Fabro`; never merge run branch as-is, squash with hand-written message,
 disclose tooling in body. (2) "Red for right reason" judged by agent and reviewer; gate

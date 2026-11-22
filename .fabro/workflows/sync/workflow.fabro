@@ -1,0 +1,25 @@
+digraph Sync {
+    graph [
+        goal="Bring a finished task branch up to date with main. Say with --goal which task it holds.",
+        on_failure="exit",
+        max_node_visits=4
+    ]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    setup [label="Toolchain", script="make setup"]
+
+    // One agent stage: the task's own review already happened; this only joins it to main.
+    subgraph agents {
+        node [backend="acp", acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"]
+        merge [retry_target="merge", label="Merge main into the branch", prompt="@prompts/merge.md", max_visits=3, timeout="3600s"]
+    }
+
+    check [label="Lint, tests, comment gate", script="make lint && make test && make gate", on_failure="route"]
+
+    start -> setup -> merge -> check
+    check -> exit  [label="Clean", condition="outcome=succeeded"]
+    check -> merge [label="Fix"]
+}

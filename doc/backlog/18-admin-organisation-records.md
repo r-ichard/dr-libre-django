@@ -45,13 +45,18 @@ components, no inline script or style, every step works without JavaScript.
 11. A patient, a clinician and a visitor reach none of these pages: forbidden page or
     sign-in, by the rules of section 12.3. Test each role on each route, and derive the
     routes from the URL configuration so a new one is covered.
-12. Every new route joins the hostile-input test of task 17a. Accessibility to WCAG 2.2
+12. Every new route joins the hostile-input test (`scheduling/views/test_hostile_input.py`),
+    with ids of real records so the request reaches the parsing. Accessibility to WCAG 2.2
     level AA and 375 px to 1440 px. Test what the server can prove in the rendered HTML.
     Every form is tested as a browser sends it.
+13. Task 17c runs beside this one and adds two rules this task must already keep, or the
+    two will not merge: every audit action the product can write has its plain words
+    where the appointment history takes them (`audit_label` in the domain layer), and
+    no page holds the same element id twice, also with two forms on one page.
 
 The sandbox has no browser. The orchestrator creates a hospital with a department, a
 room and an appointment type as the demo admin in Chrome, watches the public search
 follow, and tries each refused delete.
 
 Done when `make setup && make lint && make test && make gate && make mutate` pass from a
-fresh clone.
+fresh clone, and `make test` stays under 30 seconds in the sandbox.

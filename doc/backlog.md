@@ -91,7 +91,8 @@ tasks.
 | 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | merged with 25a `4f6dbec` (8 of 17 items; rest in 25b, 25c) |
 | 25a | UX pass: the week fits at 1440 px again; small leftovers | 16 | merged `4f6dbec` |
 | 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | merged `1e10ea1` |
-| 25c | UX pass: admin lists at 375 px, the conflict page, status words, empty states, confirmations | 10, 16 | running `01M81AZR6YGH` (second run) |
+| 25c | UX pass: admin lists at 375 px, the conflict page, confirmations | 10, 16 | merged `e128f6f` |
+| 25d | UX pass: page titles are plain text, status words, empty states, refused forms keep input | 16 | running |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
 | 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |
 
@@ -147,11 +148,6 @@ Small findings waiting for the next task that touches the same file.
   and names its clinician, whom the public search hides. Section 5.8 only asks for an
   active type, and an admin can accept the offer for the patient, but the patient
   cannot. Owner to confirm whether a patient may join for such a type.
-- Admin lists at 375 px: the table scrolls sideways inside its frame and shows the name
-  and half of the code; the other columns are found only by scrolling. A list of cards
-  under 40rem would read better. Task 25.
-- Review of 18, small: the stale-save page offers "saving again replaces theirs" and
-  shows no difference between the two versions. Task 25.
 - Review of 19, small: the email pattern of `user_rules.py` accepts `a@b`. Task 26.
 - `make test`: 3298 tests, 53 seconds on a loaded machine. Measure it alone, list the
   slowest tests, and decide a budget that is checked by a gate, not by a sentence in a
@@ -159,8 +155,6 @@ Small findings waiting for the next task that touches the same file.
 - Review of 21: `test_api_tokens.py::returns_audit_entries_with_ids_only_when_token_issued_and_revoked`
   failed once in four full runs, a flaky test; the report has no test with hospital zones
   on both sides of UTC; the export holds up to 50,000 rows in memory. Task 26.
-- Dashboard at 375 px: the per-day table is 507 px wide in a 341 px frame and its bars
-  are found only by scrolling sideways. With the admin lists, task 25.
 - ADR 0006, open points for the owner: whether a busy slot can be read by its id;
   whether a Patient search by email or phone in the address is acceptable.
 - Time grid: two time off periods that overlap each other share the column at 70 px

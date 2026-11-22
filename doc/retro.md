@@ -833,3 +833,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   answers, and `AuditEvent.action` is now C, R, U, D or E with the product's action as
   the type.
 - The work of the reverted commit is back on `main`, verified this time.
+
+## 2026-11-22 task 25c, second run 01M81AZR6YGH (20 minutes, merged)
+
+- The slice rule worked the first time it applied: the plan declared items 1, 2 and 5,
+  the review held the run to them and listed items 3 and 4 under "Left for the
+  orchestrator". One pass, no bounce, 20 minutes; the first attempt at the same task
+  had died in planning.
+- In Chrome: at 375 px every admin list I opened is cards with labelled values and no
+  sideways scroll (frame 0, page 0), the dashboard bars included; at 720 px the table
+  is back, scrolls 76 px inside its frame and takes keyboard focus; a second save from
+  another tab shows "You read / Now stored / You typed" for the three fields that
+  differ.
+- The browser's tab strip showed me a defect from task 21 that no check of mine had
+  looked at: the appointments page's title holds the export form and the session's
+  cross-site token. My task 21 check fetched the page and read its body. The page
+  quality test checks that a title exists. Task 25d, with the rule that a title is
+  plain text.

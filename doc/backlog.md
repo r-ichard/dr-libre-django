@@ -73,7 +73,7 @@ tasks.
 | 17d | Demo seed books through the use cases (#32) | 16 | merged with 17e `3df1aa8` |
 | 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
 | | **M7 Admin console and reporting (#7)** | | |
-| 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | run `01M80BHGNBMQ` passed; sync with `main` running `01M80DN7M194` |
+| 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | merged `42600a0` |
 | 19 | Users and clinicians | 10 | todo |
 | 20 | Appointments, waitlist, audit log, settings | 10 | todo |
 | 21 | Dashboard, reporting, CSV export | 13 | todo |
@@ -158,3 +158,8 @@ Small findings waiting for the next task that touches the same file.
   and names its clinician, whom the public search hides. Section 5.8 only asks for an
   active type, and an admin can accept the offer for the patient, but the patient
   cannot. Owner to confirm whether a patient may join for such a type.
+- Admin lists at 375 px: the table scrolls sideways inside its frame and shows the name
+  and half of the code; the other columns are found only by scrolling. A list of cards
+  under 40rem would read better. Task 25.
+- Review of 18, small: the stale-save page offers "saving again replaces theirs" and
+  shows no difference between the two versions. Task 25.

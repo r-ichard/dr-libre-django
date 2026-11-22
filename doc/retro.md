@@ -576,3 +576,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The reviewer measured `make test` at 38 to 43 seconds in the sandbox for a tree that
   takes 22 alone: two sandboxes share the machine. A time budget read under load is
   noise; I read it from my own fresh-clone run, one at a time.
+
+## 2026-11-22 task 18 merged 42600a0, sync run 01M80DN7M194 (2 minutes)
+
+- The sync run merged `main` into the branch, kept both sides of the one conflict, ran
+  lint, tests and gate: 2 minutes 10. The diff against `main` had the size of task 18.
+  A branch cut before a workflow existed cannot name it: launch with `--target`.
+- As the demo admin in Chrome: create, edit, refuse, delete for the five records; every
+  bad value I could think of answered on its field, none with 500; refused deletes name
+  what blocks with counts; a second admin's save answers 409; the public search follows
+  a deactivated hospital and a new type at once. Lighthouse accessibility 100 at 375 px.
+- Looking at the specialty page showed "uses fallback.svg" for Cardiology. The demo
+  codes are `demo-cardiology`, the icons answer to `cardiology`: since task 10a no demo
+  specialty has shown its icon, and I checked that task in the browser. I saw an icon and
+  did not ask which one. Carried into task 19.
+- Suite: 2831 tests, 41 seconds on my machine with a sandbox running beside it.

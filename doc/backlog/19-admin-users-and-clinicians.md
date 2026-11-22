@@ -60,6 +60,24 @@ Everywhere:
 16. Accessibility to WCAG 2.2 level AA and 375 px to 1440 px. Test what the server can
     prove in the rendered HTML. Every form is tested as a browser sends it.
 
+Carried from task 18, to fix here because this task reuses the same list flow:
+
+17. `list_records` (`scheduling/use_cases/admin_record_reads.py`) loads every row and
+    cuts the page in Python. Count and cut in the database, for the five lists of task
+    18 and the two of this task; assert the number of queries of a list page in a test.
+18. A delete whose dependent appears between the count and the delete answers
+    `has_dependents` (`delete_record`): the code handles it and no test holds it. Add
+    the test, with the dependent inserted between the two steps.
+19. Found in the browser: every demo specialty shows the fallback icon, on the public
+    search, the specialty page and the admin page. The seed's codes are `demo-cardiology`
+    and so on; the vendored icons answer to `cardiology` and so on
+    (`scheduling/domain/specialty_icons.py`). The icons the product ships are never seen.
+    Make the demo specialties show their icons, and add a test that every seeded
+    specialty has a vendored icon and every vendored icon is used by the seed. A
+    database seeded before this change must not end up with two sets of specialties.
+20. Found at 375 px: under the search form the count ("6 appointment types") touches the
+    Search button. Use the spacing token.
+
 The sandbox has no browser. The orchestrator creates a clinician user, attaches a
 profile, signs in as that clinician, deactivates the account from the admin console and
 watches the clinician's session end.

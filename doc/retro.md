@@ -721,3 +721,22 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - 3747 tests, 44 seconds on my machine with one sandbox beside it.
 - The admin console is whole. Left for it in task 25: lists and the dashboard table at
   375 px, the notice cookie, the stale-save page.
+
+## 2026-11-22 task 23a, runs 01M80M4WGA8Q and 01M816DGNJBS (merged)
+
+- Four review passes, each with real blockers: the model declaration still said "not
+  exposed", three carried items silently skipped, the race tested with two requests in
+  a row, no test that a booking rule's name reaches the client, and then it turned out
+  the name did not reach the client at all. The reviewer found a product defect by
+  insisting on a test. Slow, and worth it.
+- The steering note was taken: both reviews wrote the suite time under Later.
+- With a token per role: `next` followed to the end on all eleven types (299 slots, 43
+  pages); booking by slot, a second booking refused, another patient refused,
+  reschedule with a stale and a current version, cancel without and with a reason; two
+  clients on one slot at once gave 201 and 409; a refusal names `lead_time_too_short`
+  and `outside_availability`; a hold shows as `pending` to staff without the visitor's
+  name. Three emails in the inbox for three FHIR writes.
+- Four passes did not notice that the validator samples nothing for Appointment. I
+  validated eleven saved resources with the pinned jar: 0 errors. The gap is task 24's,
+  with a test that a declared type without a sample fails.
+- 3922 tests, 61 seconds on my machine with one sandbox beside it.

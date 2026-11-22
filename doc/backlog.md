@@ -81,8 +81,8 @@ tasks.
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
 | 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | merged `ca45d88` |
-| 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | running `01M816DGNJBS` (rewound) |
-| 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | todo |
+| 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
+| 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | running |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass (impeccable) | 16 | running `01M816PEF17N` |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
@@ -168,15 +168,10 @@ Small findings waiting for the next task that touches the same file.
 - `make test`: 3298 tests, 53 seconds on a loaded machine. Measure it alone, list the
   slowest tests, and decide a budget that is checked by a gate, not by a sentence in a
   task. Task 26.
-- Review of 22a, small: `scripts/fhir_validate.sh` never drops its throwaway database;
-  FHIR search sorts by the database collation where it sorted by code point; the
-  `fhir_samples` command imports from the view layer. Task 24.
-- Review of 23, small: `fhir_slot_reads.py` is 279 lines, split the busy intervals out;
-  an `assert` in `_allowed_methods` of the FHIR views. ADR 0006 open points for the
-  owner: whether a busy slot can be read by id; whether a Patient search by email or
-  phone in the address is acceptable. Task 24.
 - Review of 21: `test_api_tokens.py::returns_audit_entries_with_ids_only_when_token_issued_and_revoked`
   failed once in four full runs, a flaky test; the report has no test with hospital zones
   on both sides of UTC; the export holds up to 50,000 rows in memory. Task 26.
 - Dashboard at 375 px: the per-day table is 507 px wide in a 341 px frame and its bars
   are found only by scrolling sideways. With the admin lists, task 25.
+- ADR 0006, open points for the owner: whether a busy slot can be read by its id;
+  whether a Patient search by email or phone in the address is acceptable.

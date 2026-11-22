@@ -56,6 +56,26 @@ Admin writes (15.4, "Create, update, delete: Admin"):
 10. Every write is tested as a FHIR client sends it, with each role's token and with
     none; joins the hostile-input test; and has its samples in `make fhir-validate`.
 
+Carried from task 23a and its review:
+
+10a. `make fhir-validate` samples nothing for `Appointment`
+    (`scheduling/views/fhir/samples.py`). Add every view of it: booked, cancelled with
+    its reason, checked in, fulfilled, no-show, a hold (`pending`), a waitlist entry
+    (`waitlist`, `proposed`), the body of each write, a refusal that names a violated
+    rule, a search with every `_include`. And a test that fails when a resource type of
+    the declaration has no sample, so the next type cannot be forgotten.
+10b. Task 23a made decisions and wrote no record: `doc/adr/0007-*` for Appointment (the
+    status and source extensions, the `violated-rule` and `conflicting-resource`
+    extensions of a refusal, how a hold and a waitlist entry appear, what a body may
+    change). Task 26 uses the number 0008 for its own record.
+10c. `update_appointment` looks the appointment up twice; `read_appointment` parses an id
+    its caller already parsed; `test_fhir_appointment_race.py` silences the type checker
+    line by line. Tidy the three.
+10d. From task 22a's review: `scripts/fhir_validate.sh` never drops its throwaway
+    database; a FHIR search sorts by the database collation where it sorted by code
+    point, say which in the ADR. From task 23's: split the busy intervals out of
+    `fhir_slot_reads.py`; replace the `assert` in `_allowed_methods`.
+
 Closing section 15:
 
 11. A test walks the tables of 15.2, 15.4 and 15.5 as data and asserts, against the

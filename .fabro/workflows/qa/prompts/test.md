@@ -35,7 +35,10 @@ do not report a guess: every finding has steps you ran and the answer you got.
 Rules. Every command runs in the foreground with a timeout. Touch nothing outside
 127.0.0.1. No real secret and no real person's data in a request.
 
-Write `scratch/qa/findings.md`, one section per finding: title, severity, steps to
+Write `scratch/qa/findings.md` as you go: create it before the first check and add a
+finding's section the moment you have reproduced it. The stage is cut off after 60
+minutes, and what is not in the file by then is lost with it. After 40 minutes stop
+testing and finish the file. One section per finding: title, severity, steps to
 reproduce as commands or clicks that can be repeated, what you observed, what the
 specification says (section number), evidence. Severity: P0 is a security hole, a leak of
 personal data, a double booking or lost write, or a core flow broken for everyone; P1 is

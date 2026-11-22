@@ -956,3 +956,11 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   24c3, 24d) where the backlog had three lines. What made it converge: the validator as
   a make target, then as a scripted gate; a token per role in every check; and slices
   small enough that a reviewer could hold a run to them.
+
+## 2026-11-22 QA round 3, public area: a tester cut off with nothing written
+
+- Run 01M81XHXJFFV failed after 61 minutes: "the agent turn timed out after 3600000ms".
+  The tester wrote `scratch/qa/findings.md` at the end of its turn, so an hour of checks
+  left three log files and no finding. Its session log holds five progress lines.
+- Process: the tester prompt now says to create the file first, add a finding when it is
+  reproduced, and stop testing after 40 minutes. Launched the area again.

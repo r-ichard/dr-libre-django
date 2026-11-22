@@ -934,3 +934,13 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   find nothing. Launched again from the start, 25 minutes repeated.
 - If the QA tester committed `scratch/qa/findings.md` to its run branch, a rewind would
   keep it. Not worth a change for two runs left in this round.
+
+## 2026-11-22 task 24c3, run 01M81WDKSXHX3 (rewound, merged)
+
+- A task of one item: whole in one run, one review pass, last gate green. From a fresh
+  clone: 4390 tests, 115 validator samples with 0 errors, mutation gate clean.
+- With a token per role: only an admin writes a Practitioner; a title change on the
+  profile moves the Practitioner's version and the old `If-Match` answers 412; a
+  deactivated clinician's own token answers 401 until the reactivation; a delete with a
+  profile and bookings answers 409 with the console's counts.
+- Every write of section 15.4 exists now. Seven runs for what the backlog called task 24.

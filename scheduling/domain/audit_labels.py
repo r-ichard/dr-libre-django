@@ -1,5 +1,14 @@
 """Section 9.3: a plain label for each audit action shown in an appointment's history."""
 
+RECORD_WORDS = {
+    "hospital": "Hospital",
+    "specialty": "Specialty",
+    "department": "Department",
+    "room": "Room",
+    "appointment_type": "Appointment type",
+}
+VERB_WORDS = {"create": "created", "update": "updated", "delete": "deleted"}
+
 AUDIT_LABELS = {
     "appointment.book": "Booked",
     "appointment.booked": "Booked",
@@ -11,6 +20,11 @@ AUDIT_LABELS = {
     "appointment.reschedule": "Rescheduled",
     "appointment.rescheduled": "Rescheduled",
     "appointment.note_save": "Clinical note saved",
+    **{
+        f"{record}.{verb}": f"{noun} {past}"
+        for record, noun in RECORD_WORDS.items()
+        for verb, past in VERB_WORDS.items()
+    },
     "auth.link_refused": "Sign-in link refused",
     "auth.link_requested": "Sign-in link requested",
     "auth.link_used": "Signed in with a link",

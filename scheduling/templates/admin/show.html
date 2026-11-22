@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ record.name }} · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>{{ record.name }}</h1>
+<dl class="details">
+  {% for label, text in details %}<dt>{{ label }}</dt><dd>{{ text }}</dd>{% endfor %}
+</dl>
+{% if icon %}
+<section class="card" aria-labelledby="icon-title">
+  <h2 id="icon-title">Icon</h2>
+  {% include "components/specialty_icon.html" with file=icon.file %}
+  <p>{% if icon.is_fallback %}This specialty uses {{ icon.file }}: no vendored icon exists for its code.{% else %}This specialty uses {{ icon.file }}.{% endif %}</p>
+</section>
+{% endif %}
+{% if uses %}
+<section aria-labelledby="uses-title">
+  <h2 id="uses-title">Used by</h2>
+  <ul>{% for use in uses %}<li>{{ use }}</li>{% endfor %}</ul>
+</section>
+{% endif %}
+<div class="button-row">
+  <a class="button button--primary" href="{{ record_path }}/edit">Edit</a>
+  <a class="button button--danger" href="{{ record_path }}/delete">Delete</a>
+  <a class="button button--secondary" href="{{ view.base_path }}">Back to {{ view.plural }}</a>
+</div>
+{% endblock %}

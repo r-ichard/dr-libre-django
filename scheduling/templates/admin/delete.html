@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ view.singular }} · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Delete {{ view.singular }}</h1>
+<section class="card" aria-labelledby="record-title">
+  <h2 id="record-title">{{ record.name }}</h2>
+  {% if reasons %}
+  <p>This {{ view.singular }} cannot be deleted while it is still used by:</p>
+  <ul>{% for reason in reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+  <p>Move or remove these first.</p>
+  {% else %}
+  <p>This deletes the {{ view.singular }} for good.</p>
+  {% endif %}
+</section>
+<div class="button-row">
+  {% if not reasons %}
+  <form class="form" method="post" action="{{ action }}">
+    {% csrf_token %}
+    <button class="button button--danger" type="submit">Delete {{ view.singular }}</button>
+  </form>
+  {% endif %}
+  <a class="button button--secondary" href="{{ back_path }}">{% if reasons %}Back{% else %}Keep it{% endif %}</a>
+</div>
+{% endblock %}

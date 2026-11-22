@@ -16,6 +16,7 @@ from scheduling.views.auth import LinkVerifyView, LinkView, LoginView, LogoutVie
 from scheduling.views.booking import HoldsView, ResendView, VerifyView
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
+from scheduling.views.pages.admin_records import admin_record_routes
 from scheduling.views.pages.booking_code import CodePage, ResendPage
 from scheduling.views.pages.booking_confirmation import CalendarFile, ConfirmationPage
 from scheduling.views.pages.booking_details import DetailsPage
@@ -162,6 +163,7 @@ urlpatterns = [
         ClinicianRescheduleReviewPage.as_view(),
     ),
     path("admin-console/", AdminConsole.as_view()),
+    *admin_record_routes(),
     # Local-only product, so Django's development file server is enough and works with DEBUG off.
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.BASE_DIR / "static"}),
 ]

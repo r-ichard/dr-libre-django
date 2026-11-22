@@ -204,3 +204,14 @@
 .portal-nav ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0 0 var(--space-5); padding: 0; list-style: none; }
 .portal-nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); }
 .portal-nav a[aria-current="page"] { font-weight: 700; text-decoration: underline; text-underline-offset: 0.3em; }
+
+/* Admin console: sections not built yet read as plain text, details as a term list */
+.portal-nav [aria-disabled="true"] { display: inline-flex; align-items: center; min-height: 44px; padding: 0 var(--space-3); color: var(--colour-ink-muted); }
+.details { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-2) var(--space-5); margin: 0 0 var(--space-5); }
+.details dt { color: var(--colour-ink-muted); font-size: var(--text-small); }
+.details dd { margin: 0; overflow-wrap: anywhere; }
+.textarea { min-height: 6rem; font: inherit; resize: vertical; }
+@media (max-width: 30rem) {
+  .details { grid-template-columns: minmax(0, 1fr); }
+  .details dd { margin-bottom: var(--space-3); }
+}

@@ -13,6 +13,7 @@ from scheduling.domain.slot_search import (
     SlotOffer,
     free_slots_by_start,
 )
+from scheduling.models import AppointmentType, Room
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.schedule_loading import (
     active_appointment_type,
@@ -37,18 +38,26 @@ def find_free_slots(
     appointment_type = active_appointment_type(appointment_type_id, online_only)
     if appointment_type is None:
         return Failure.not_found()
+    slot_type = slot_type_of(appointment_type)
+    time_zone_name = appointment_type.department.hospital.time_zone
+    if _lacks_room(appointment_type):
+        return Success(FoundSlots([], slot_type.duration, time_zone_name))
     clinicians = department_clinicians(appointment_type, clinician_id, online_only)
     clinician_ids = list(clinicians.values_list("pk", flat=True))
     if clinician_id is not None and not clinician_ids:
         return Failure.not_found()
     now = current_request_context().now
-    slot_type = slot_type_of(appointment_type)
     schedules = load_schedules(clinician_ids, slot_type, window, now)
-    time_zone_name = appointment_type.department.hospital.time_zone
     offers = free_slots_by_start(schedules, slot_type, window, now, ZoneInfo(time_zone_name))
     if isinstance(offers, QueryTooWide):
         return _too_wide()
     return Success(FoundSlots(offers, slot_type.duration, time_zone_name))
+
+
+def _lacks_room(appointment_type: AppointmentType) -> bool:
+    """A type that needs a room has nothing to offer while its department has no active room."""
+    active_rooms = Room.objects.filter(department_id=appointment_type.department_id, is_active=True)
+    return appointment_type.needs_room and not active_rooms.exists()
 
 
 def _too_wide() -> Failure:

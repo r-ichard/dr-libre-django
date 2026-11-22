@@ -1,0 +1,17 @@
+{% comment %}Parameter: current (dashboard, hospitals, specialties, departments, rooms, appointment-types). The admin console's sections; the current one carries aria-current. Sections whose pages are not built yet are plain text marked aria-disabled, not dead links.{% endcomment %}
+<nav class="portal-nav" aria-label="Admin console">
+  <ul>
+    <li><a href="/admin-console/"{% if current == "dashboard" %} aria-current="page"{% endif %}>Dashboard</a></li>
+    <li><a href="/admin-console/hospitals"{% if current == "hospitals" %} aria-current="page"{% endif %}>Hospitals</a></li>
+    <li><a href="/admin-console/specialties"{% if current == "specialties" %} aria-current="page"{% endif %}>Specialties</a></li>
+    <li><a href="/admin-console/departments"{% if current == "departments" %} aria-current="page"{% endif %}>Departments</a></li>
+    <li><a href="/admin-console/rooms"{% if current == "rooms" %} aria-current="page"{% endif %}>Rooms</a></li>
+    <li><a href="/admin-console/appointment-types"{% if current == "appointment-types" %} aria-current="page"{% endif %}>Appointment types</a></li>
+    <li><span aria-disabled="true">Users</span></li>
+    <li><span aria-disabled="true">Clinicians</span></li>
+    <li><span aria-disabled="true">Appointments</span></li>
+    <li><span aria-disabled="true">Waitlist</span></li>
+    <li><span aria-disabled="true">Audit log</span></li>
+    <li><span aria-disabled="true">Settings</span></li>
+  </ul>
+</nav>

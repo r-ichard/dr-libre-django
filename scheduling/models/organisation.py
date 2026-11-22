@@ -10,6 +10,7 @@ from django.db.models import (
     TextField,
     UniqueConstraint,
 )
+from django.db.models.functions import Lower
 
 from scheduling.models.base import Versioned, at_least, between, check, not_blank
 
@@ -34,9 +35,7 @@ class Hospital(Versioned):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["code"],
-                name="hospital_code_unique",
-                violation_error_message="code is taken",
+                Lower("code"), name="hospital_code_unique", violation_error_message="code is taken"
             ),
             not_blank("hospital", "name"),
             not_blank("hospital", "code"),
@@ -61,7 +60,7 @@ class Department(Versioned):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["code"],
+                Lower("code"),
                 name="department_code_unique",
                 violation_error_message="code is taken",
             ),
@@ -80,9 +79,7 @@ class Specialty(Versioned):
         verbose_name_plural = "specialties"
         constraints = [
             UniqueConstraint(
-                fields=["code"],
-                name="specialty_code_unique",
-                violation_error_message="code is taken",
+                Lower("code"), name="specialty_code_unique", violation_error_message="code is taken"
             ),
             not_blank("specialty", "name"),
             not_blank("specialty", "code"),
@@ -102,7 +99,7 @@ class Room(Versioned):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["code"], name="room_code_unique", violation_error_message="code is taken"
+                Lower("code"), name="room_code_unique", violation_error_message="code is taken"
             ),
             not_blank("room", "name"),
             not_blank("room", "code"),
@@ -125,7 +122,7 @@ class AppointmentType(Versioned):
     class Meta:
         constraints = [
             UniqueConstraint(
-                fields=["code"],
+                Lower("code"),
                 name="appointmenttype_code_unique",
                 violation_error_message="code is taken",
             ),

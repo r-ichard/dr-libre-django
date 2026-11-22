@@ -20,6 +20,7 @@
   {% include "components/field.html" with name="sample_error" label="Date of birth" hint="For example 27 3 1984." error="Enter a date of birth." %}
   {% include "components/select.html" with name="sample_select" label="Specialty" options=specialties selected="cardiology" %}
   {% include "components/select.html" with name="sample_select_error" label="Hospital" options=specialties error="Choose a hospital." %}
+  {% include "components/textarea.html" with name="sample_notes" label="Equipment" hint="One item on each line." %}
   {% include "components/checkbox.html" with name="sample_check" label="Email me a reminder" hint="One message the day before." %}
   {% include "components/checkbox.html" with name="sample_checked" label="Join the waitlist" checked=True %}
 </div>
@@ -64,6 +65,12 @@
     </tbody>
   </table>
 </div>
+
+<h2>Details</h2>
+<dl class="details"><dt>Time zone</dt><dd>Europe/Paris</dd><dt>Status</dt><dd>Active</dd></dl>
+
+<h2>Admin console navigation</h2>
+{% include "components/admin_nav.html" with current="hospitals" %}
 
 <h2>Pagination</h2>
 {% include "components/pagination.html" with page=2 page_count=5 previous_href="#" next_href="#" %}

@@ -38,6 +38,8 @@ CATCH_ALL_SUFFIX = "x"  # the API catch-all is a prefix regex; a path under it e
 FIELD_NAMES = [
     "email", "password", "page", "page_size", "from", "to", "starts_at", "code", "q", "next",
     "appointment_type_id", "clinician_id", "token", "reason", "date", "week", "status",
+    "name", "version", "hospital", "department", "time_zone", "latitude", "longitude",
+    "capacity", "colour", "equipment",
 ]  # fmt: skip
 
 
@@ -81,6 +83,18 @@ def _every_route_path() -> list[str]:
     return sorted({_filled(template, {}) for template in _route_templates()})
 
 
+def _record_of_every_kind() -> uuid.UUID:
+    """The admin console routes share one `record_id` name, so one id names a record of each of
+    the five kinds and every route of every kind reaches its parsing."""
+    shared = uuid.uuid4()
+    hospital = make("Hospital", id=shared)
+    department = make("Department", id=shared, hospital=hospital)
+    make("Specialty", id=shared)
+    make("Room", id=shared, department=department)
+    make("AppointmentType", id=shared, department=department)
+    return shared
+
+
 def _world_ids(clinic: Clinic) -> dict[str, str]:
     """One record of every kind a path names, tied to the clinic's patient and clinician."""
     appointment = make(
@@ -106,6 +120,7 @@ def _world_ids(clinic: Clinic) -> dict[str, str]:
         ),
         "rule_id": str(make("AvailabilityRule", clinician=clinic.clinician, weekday=3).pk),
         "time_off_id": str(make("TimeOff", clinician=clinic.clinician).pk),
+        "record_id": str(_record_of_every_kind()),
     }
 
 

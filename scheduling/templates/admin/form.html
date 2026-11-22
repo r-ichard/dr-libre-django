@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>{{ title }}</h1>
+{% if problem %}{% include "components/notice.html" with kind="warning" text=problem %}{% endif %}
+{% if is_stale %}<p><a href="{{ back_path }}">See the current values</a></p>{% endif %}
+{% if time_zone_note %}{% include "components/notice.html" with kind="information" text=time_zone_note %}{% endif %}
+<form class="form" method="post" novalidate>
+  {% csrf_token %}
+  {% if version %}<input type="hidden" name="version" value="{{ version }}">{% endif %}
+  {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
+  {% for field in fields %}
+    {% if field.widget == "select" %}{% include "components/select.html" with name=field.name label=field.label options=field.options selected=field.value hint=field.hint error=field.error %}
+    {% elif field.widget == "checkbox" %}{% include "components/checkbox.html" with name=field.name label=field.label checked=field.checked hint=field.hint error=field.error %}
+    {% elif field.widget == "textarea" %}{% include "components/textarea.html" with name=field.name label=field.label value=field.value hint=field.hint error=field.error %}
+    {% else %}{% include "components/field.html" with name=field.name label=field.label type=field.widget value=field.value hint=field.hint error=field.error %}
+    {% endif %}
+  {% endfor %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Save</button>
+    <a class="button button--secondary" href="{{ back_path }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

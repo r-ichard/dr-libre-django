@@ -46,5 +46,10 @@ Appointment page:
 Write the commit so that merging it closes the issues: the reply of the last stage lists
 "Closes #25, #26, #27, #28, #29, #30, #31".
 
+Each item names a rule, and the issue is one case of it: fix the rule wherever it
+applies, not only the page the issue names. The demo seed changed after these issues
+were filed (task 17d): seeded time off now runs from local midnight to local midnight,
+so build the fixtures a test needs instead of relying on the seeded rows.
+
 Done when `make setup && make lint && make test && make gate && make mutate` pass from a
-fresh clone.
+fresh clone, and `make test` stays under 30 seconds in the sandbox.

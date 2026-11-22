@@ -85,7 +85,8 @@ tasks.
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass (impeccable) | 16 | running `01M816PEF17N` |
-| 26 | Security review, smoke test, README, hand-over | all | todo |
+| 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
+| 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |
 
 ## Carried items
 

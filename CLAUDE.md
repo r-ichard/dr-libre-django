@@ -176,6 +176,11 @@ review. (4) A reviewer
   under later stages. `scripts/no_background.sh` hook blocks it in the sandbox
   (`DRLIBRE_PIPELINE=1`). Foreground only; start, use and stop a server in one command.
 - Run ids from `fabro run -d` output; mistyped id makes `fabro wait` return at once.
+- `fabro attach <id>` blocks while the run is live: read stage lines only after
+  `fabro wait` returned. A failed agent stage shows `Error: ?`; the reason is the last
+  event of `fabro events <id> --json` (the subscription's 5-hour limit, twice so far).
+- A failed run is resumed with `fabro rewind <id> <last good stage>`, which makes a new
+  run. `fabro steer` reaches only the stage that is live.
 - No `fabro server restart` during a run; kills it. `fabro resume <id>`.
 - Laptop sleep kills sandboxes mid-run. Keep `caffeinate -i -s` running during runs.
 - Goal paths may be stale; `ls` them before launch.

@@ -3,7 +3,7 @@
 import pytest
 from django.db.models import Field
 
-from scheduling.models.builders import model_class
+from scheduling.models.builders import SIXTY_FOUR, make, model_class
 
 pytestmark = pytest.mark.django_db
 
@@ -11,6 +11,7 @@ SECRET_MODELS = {
     "Session": "token_hash",
     "VerificationCode": "code_hash",
     "SignInLink": "token_hash",
+    "ApiClient": "token_hash",
 }
 FORBIDDEN_NAMES = {"token", "code", "secret", "key", "link", "url", "password"}
 
@@ -58,3 +59,17 @@ def returns_link_open_by_default_when_sign_in_link_is_created() -> None:
     link = make("SignInLink")
 
     assert link.cancelled_at is None  # type: ignore[attr-defined]
+
+
+def returns_refusal_when_two_api_clients_share_a_token_hash() -> None:
+    from scheduling.models.builders import refuses  # noqa: PLC0415
+
+    make("ApiClient", token_hash=SIXTY_FOUR)
+
+    refuses("ApiClient", token_hash=SIXTY_FOUR)
+
+
+def returns_refusal_when_api_client_name_is_blank() -> None:
+    from scheduling.models.builders import refuses  # noqa: PLC0415
+
+    refuses("ApiClient", name="")

@@ -1,4 +1,5 @@
 from scheduling.models.access import (
+    ApiClient,
     BookingHold,
     RateLimitHit,
     Session,
@@ -13,7 +14,8 @@ from scheduling.models.organisation import AppointmentType, Department, Hospital
 from scheduling.models.people import ClinicianProfile, User
 
 __all__ = [
-    "Appointment", "AppointmentType", "AuditLogEntry", "AvailabilityRule", "BookingHold",
+    "ApiClient", "Appointment", "AppointmentType", "AuditLogEntry", "AvailabilityRule",
+    "BookingHold",
     "ClinicalNote", "ClinicianProfile", "Department", "Hospital", "Notification", "RateLimitHit",
     "Room", "Session",
     "SignInFailure", "SignInLink", "Specialty", "TimeOff", "User",

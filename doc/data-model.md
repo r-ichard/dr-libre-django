@@ -11,6 +11,7 @@ No relation cascades: deleting a referenced row fails in the database.
 
 ```mermaid
 erDiagram
+    User ||--o{ ApiClient : "user"
     User ||--o{ Appointment : "patient"
     ClinicianProfile ||--o{ Appointment : "clinician"
     AppointmentType ||--o{ Appointment : "appointment_type"
@@ -41,6 +42,30 @@ erDiagram
     ClinicianProfile |o--o{ WaitlistEntry : "preferred_clinician"
     Appointment |o--o{ WaitlistEntry : "offered_appointment"
 ```
+
+## ApiClient
+
+Table `scheduling_apiclient`.
+
+FHIR: not exposed, credential, never served; token events are AuditEvent
+
+| Field | Type | Null | Rule |
+| --- | --- | --- | --- |
+| `id` | UUIDField | no | primary key; at most 32 characters |
+| `created_at` | DateTimeField | no |  |
+| `updated_at` | DateTimeField | no |  |
+| `created_by` | ForeignKey | yes | refers to User, protected |
+| `name` | CharField | no | at most 100 characters |
+| `user` | ForeignKey | no | refers to User, protected |
+| `token_hash` | CharField | no | at most 64 characters |
+| `last_used_at` | DateTimeField | yes |  |
+| `revoked_at` | DateTimeField | yes |  |
+
+Constraints:
+
+- `apiclient_name_not_blank` (check): name must not be empty
+- `apiclient_token_hash_64_characters` (check): token_hash must be exactly 64 characters
+- `apiclient_token_hash_unique` (unique): token_hash is taken
 
 ## Appointment
 
@@ -349,14 +374,14 @@ FHIR: not exposed, rate limit bookkeeping, never served; holds the keyed hash of
 | `created_at` | DateTimeField | no |  |
 | `updated_at` | DateTimeField | no |  |
 | `created_by` | ForeignKey | yes | refers to User, protected |
-| `scope` | CharField | no | at most 20 characters; one of hold, code, link |
+| `scope` | CharField | no | at most 20 characters; one of hold, code, link, token |
 | `key_hash` | CharField | no | at most 64 characters |
 | `hit_at` | DateTimeField | no |  |
 
 Constraints:
 
 - `ratelimithit_key_hash_64_characters` (check): key_hash must be exactly 64 characters
-- `ratelimithit_scope_listed` (check): scope must be one of hold, code, link
+- `ratelimithit_scope_listed` (check): scope must be one of hold, code, link, token
 
 ## Room
 

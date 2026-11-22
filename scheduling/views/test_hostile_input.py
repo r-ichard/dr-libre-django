@@ -18,7 +18,8 @@ from hypothesis import given, settings, strategies
 from scheduling.domain.request_context import RequestContext
 from scheduling.domain.vocabulary import SessionKind
 from scheduling.models import User
-from scheduling.models.builders import Clinic, make, make_clinic
+from scheduling.models.builders import Clinic, make, make_clinic, make_user
+from scheduling.use_cases.api_tokens import issue_token
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session
 from scheduling.views import clock
@@ -34,7 +35,9 @@ HOSTILE_DATES = ["0001-01-01", "9999-12-31T23:59:59Z", "2024-02-30", "0000-00-00
 ACTORS = ("ANONYMOUS", "PATIENT", "CLINICIAN", "ADMIN")
 SHARDS = 8
 SESSION_COOKIE = "drlibre_session"
-CATCH_ALL_SUFFIX = "x"  # the API catch-all is a prefix regex; a path under it exercises it
+CATCH_ALL_SUFFIX = (
+    "x"  # the API and FHIR catch-alls are prefix regexes; a path under it exercises it
+)
 FIELD_NAMES = [
     "email", "password", "page", "page_size", "from", "to", "starts_at", "code", "q", "next",
     "appointment_type_id", "clinician_id", "token", "reason", "date", "week", "status",
@@ -69,7 +72,9 @@ def _route_templates() -> list[str]:
         for path in _walk(get_resolver().url_patterns)
         if not path.startswith(SKIPPED_PREFIXES)
     ]
-    return sorted({path + CATCH_ALL_SUFFIX if path.endswith("api/v1/") else path for path in paths})
+    return sorted(
+        {path + CATCH_ALL_SUFFIX if path.endswith(("api/v1/", "fhir/")) else path for path in paths}
+    )
 
 
 def _filled(template: str, ids: dict[str, str]) -> str:
@@ -290,3 +295,39 @@ def returns_no_500_when_actor_sends_generated_json_to_any_route(actor: str) -> N
         assert _send(client, method, path, "json", {"body": json.dumps(body)}) < 500
 
     attempt()
+
+
+FHIR_TYPES = ["Organization", "Location", "HealthcareService", "CodeSystem", "ValueSet",
+              "Practitioner", "PractitionerRole", "metadata", "Nothing"]  # fmt: skip
+FHIR_AUTHORIZATIONS = [
+    "", "Bearer", "Bearer ", "Basic abc", "Bearer \x00", "Bearer " + "x" * 100_000, "bearer x",
+    "Bearer dlk_unknown", "Bearer " + "é" * 50,
+]  # fmt: skip
+
+
+@pytest.mark.parametrize("actor", ["ANONYMOUS", "ADMIN", "CLINICIAN", "PATIENT"])
+def returns_outcome_and_no_500_when_fhir_gets_hostile_authorization(actor: str) -> None:
+    clinic = make_clinic()
+    headers_to_try = [{"Authorization": value} for value in FHIR_AUTHORIZATIONS]
+    if actor != "ANONYMOUS":
+        with bind_request_context(RequestContext("hostile", clock.now_utc())):
+            token = issue_token(make_user(role=actor), "Hostile").token
+        headers_to_try.append({"Authorization": f"Bearer {token}"})
+    client = Client(raise_request_exception=False)
+    paths = [f"/fhir/{name}" for name in FHIR_TYPES] + [
+        f"/fhir/Organization/{clinic.department.hospital_id}",
+        f"/fhir/Practitioner/{clinic.clinician.user_id}",
+        "/fhir/Practitioner/not-an-id",
+    ]
+
+    failures = []
+    for headers in headers_to_try:
+        for path in paths:
+            for query in ("", "?_count=x&name=%00&_include=%00&near=%00"):
+                response = client.get(path + query, headers=headers)
+                body = response.json()
+                if response.status_code >= 500 or (
+                    response.status_code >= 400 and body["resourceType"] != "OperationOutcome"
+                ):
+                    failures.append((path, query, response.status_code))
+    assert failures == []

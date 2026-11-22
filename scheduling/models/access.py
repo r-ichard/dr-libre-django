@@ -25,6 +25,7 @@ from scheduling.models.base import (
     expires_after_creation,
     hash_is_64_characters,
     lower_case,
+    not_blank,
     one_of,
 )
 from scheduling.models.organisation import AppointmentType
@@ -64,6 +65,26 @@ class Session(Record):
             hash_is_64_characters("session", "token_hash"),
             one_of("session", "opened_by", SessionKind),
             expires_after_creation("session"),
+        ]
+
+
+class ApiClient(Record):
+    fhir_not_exposed = "credential, never served; token events are AuditEvent"
+    name = CharField(max_length=100)
+    user = ForeignKey(User, on_delete=PROTECT)
+    token_hash = CharField(max_length=HASH_LENGTH)
+    last_used_at = DateTimeField(null=True, blank=True)
+    revoked_at = DateTimeField(null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                fields=["token_hash"],
+                name="apiclient_token_hash_unique",
+                violation_error_message="token_hash is taken",
+            ),
+            hash_is_64_characters("apiclient", "token_hash"),
+            not_blank("apiclient", "name"),
         ]
 
 

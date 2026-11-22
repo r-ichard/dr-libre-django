@@ -14,6 +14,7 @@ from scheduling.views.appointment_actions import (
 from scheduling.views.appointments import AppointmentsView
 from scheduling.views.auth import LinkVerifyView, LinkView, LoginView, LogoutView
 from scheduling.views.booking import HoldsView, ResendView, VerifyView
+from scheduling.views.fhir.views import fhir_entry
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.admin_records import admin_record_routes
@@ -104,6 +105,8 @@ urlpatterns = [
     path("api/v1/waitlist/<uuid:entry_id>/offer", OfferView.as_view()),
     path("api/v1/jobs/reminders", RemindersView.as_view()),
     re_path(r"^api/v1/", NotFoundView.as_view()),
+    path("fhir", fhir_entry),
+    re_path(r"^fhir/", fhir_entry),
     path("", SearchPage.as_view()),
     path("favicon.ico", lambda request: redirect("/static/favicon.svg")),
     path("providers/<uuid:provider_id>", ProviderPage.as_view()),

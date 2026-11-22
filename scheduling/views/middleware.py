@@ -17,11 +17,13 @@ from scheduling.views.failure_response import (
     INTERNAL_ERROR_STATUS,
     error_response,
 )
+from scheduling.views.fhir.responses import internal_error_response
 from scheduling.views.pages.errors import bad_request_page
 
 CORRELATION_HEADER = "X-Correlation-Id"
 UNMATCHED_ROUTE = "<unmatched>"
 API_PREFIX = "/api/v1/"
+FHIR_PREFIX = "/fhir"
 
 request_logger = logging.getLogger("drlibre.request")
 error_logger = logging.getLogger("drlibre.error")
@@ -40,6 +42,10 @@ def generic_api_error() -> HttpResponse:
     return response
 
 
+def is_fhir_path(path: str) -> bool:
+    return path == FHIR_PREFIX or path.startswith(f"{FHIR_PREFIX}/")
+
+
 class RequestContextMiddleware:
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         self.get_response = get_response
@@ -54,6 +60,8 @@ class RequestContextMiddleware:
             is_api = request.path.startswith(API_PREFIX)
             if is_api and response.status_code == INTERNAL_ERROR_STATUS:
                 response = generic_api_error()
+            elif is_fhir_path(request.path) and response.status_code == INTERNAL_ERROR_STATUS:
+                response = internal_error_response()
             response[CORRELATION_HEADER] = correlation_id
             match = request.resolver_match
             request_logger.info(
@@ -69,7 +77,7 @@ class RequestContextMiddleware:
 
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
         """With DEBUG on Django would show its technical page for a refused size; pages get ours."""
-        if request.path.startswith(API_PREFIX):
+        if request.path.startswith(API_PREFIX) or is_fhir_path(request.path):
             return None
         if isinstance(exception, TooManyFieldsSent | RequestDataTooBig):
             return bad_request_page(request, exception)

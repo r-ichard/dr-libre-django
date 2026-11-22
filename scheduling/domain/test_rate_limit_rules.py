@@ -41,3 +41,9 @@ def returns_false_when_hits_are_one_below_limit() -> None:
 
 def returns_window_start_one_hour_before_now() -> None:
     assert _rules().window_start(NOW) == NOW - timedelta(hours=1)
+
+
+def returns_five_and_twenty_when_token_limits_are_read() -> None:
+    assert _rules().RATE_LIMITS[_rules().RateLimitScope.TOKEN] == _rules().RateLimit(
+        per_email=5, per_address=20
+    )

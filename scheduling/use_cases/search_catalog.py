@@ -1,8 +1,11 @@
 """Section 6.1: the public catalogue, read through explicit field lists only, so a column
 added to a model can never reach a search result by default."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from uuid import UUID
+
+from django.db.models import QuerySet
 
 from scheduling.domain.search_availability import BookableType
 from scheduling.models import AppointmentType, ClinicianProfile
@@ -30,6 +33,21 @@ class CatalogProvider:
     types: tuple[BookableType, ...]
 
 
+def bookable_types() -> QuerySet[AppointmentType]:
+    """The one rule for which types a caller without a session may see (also used by FHIR)."""
+    return AppointmentType.objects.filter(is_active=True, is_bookable_online=True)
+
+
+def listable_profiles(department_ids: Iterable[UUID]) -> QuerySet[ClinicianProfile]:
+    """The one rule for which clinicians a caller without a session may see (also used by FHIR)."""
+    return ClinicianProfile.objects.filter(
+        user__is_active=True,
+        specialty__is_active=True,
+        department__hospital__is_active=True,
+        department_id__in=department_ids,
+    )
+
+
 def load_catalog(
     *,
     provider_id: UUID | None = None,
@@ -38,19 +56,14 @@ def load_catalog(
 ) -> list[CatalogProvider]:
     """Two queries: listable clinicians, then the bookable types of their departments."""
     types_by_department: dict[UUID, list[BookableType]] = {}
-    bookable = AppointmentType.objects.filter(is_active=True, is_bookable_online=True).values_list(
+    bookable = bookable_types().values_list(
         "id", "department_id", "name", "duration_minutes", "buffer_minutes"
     )
     for type_id, department_id, name, minutes, buffer in bookable:
         types_by_department.setdefault(department_id, []).append(
             BookableType(type_id, name, minutes, buffer)
         )
-    listable = ClinicianProfile.objects.filter(
-        user__is_active=True,
-        specialty__is_active=True,
-        department__hospital__is_active=True,
-        department_id__in=list(types_by_department),
-    )
+    listable = listable_profiles(list(types_by_department))
     for column, wanted in (
         ("pk", provider_id),
         ("department__hospital_id", hospital_id),

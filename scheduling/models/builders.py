@@ -187,6 +187,11 @@ def _defaults() -> dict[str, dict[str, Callable[[], object]]]:
             "expires_at": lambda: FAR_FUTURE,
             "user_agent": lambda: "",
         },
+        "ApiClient": {
+            "name": lambda: "Reporting service",
+            "user": lambda: make("User"),
+            "token_hash": unique_hash,
+        },
         "SignInFailure": {"email_hash": unique_hash, "failed_at": lambda: STARTS_AT},
         "BookingHold": _hold_defaults(),
         "VerificationCode": _verification_code_defaults(),
@@ -202,6 +207,10 @@ def make(model_name: str, **overrides: object) -> Model:
     factories = _defaults()[model_name]
     fields = {name: factory() for name, factory in factories.items() if name not in overrides}
     return model_class(model_name)._default_manager.create(**fields, **overrides)
+
+
+def make_user(**overrides: object) -> User:
+    return _typed(make("User", **overrides), User)
 
 
 def refuses(model_name: str, **overrides: object) -> None:

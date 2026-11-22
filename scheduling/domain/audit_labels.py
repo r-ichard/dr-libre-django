@@ -10,6 +10,8 @@ RECORD_WORDS = {
 VERB_WORDS = {"create": "created", "update": "updated", "delete": "deleted"}
 
 AUDIT_LABELS = {
+    "api_client.issue": "API token issued",
+    "api_client.revoke": "API token revoked",
     "appointment.book": "Booked",
     "appointment.booked": "Booked",
     "appointment.check_in": "Checked in",

@@ -60,3 +60,27 @@ def _lock_keys(hashes: list[str]) -> None:
     with connection.cursor() as cursor:
         for number in numbers:
             cursor.execute("SELECT pg_advisory_xact_lock(%s)", [number])
+
+
+def is_full(scope: RateLimitScope, email: str, address: str) -> bool:
+    """True when either counter has reached its limit; records nothing."""
+    limit = RATE_LIMITS[scope]
+    recent = RateLimitHit.objects.filter(
+        scope=scope, hit_at__gt=window_start(current_request_context().now)
+    )
+    return any(
+        is_limited(recent.filter(key_hash=key_hash(kind, value)).count(), maximum)
+        for kind, value, maximum in (
+            ("email", email, limit.per_email),
+            ("address", address, limit.per_address),
+        )
+    )
+
+
+def record_hits(scope: RateLimitScope, email: str, address: str) -> None:
+    """Counts one event on both counters, for scopes where only a failure counts."""
+    now = current_request_context().now
+    RateLimitHit.objects.bulk_create(
+        RateLimitHit(scope=scope, key_hash=key_hash(kind, value), hit_at=now)
+        for kind, value in (("email", email), ("address", address))
+    )

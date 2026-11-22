@@ -13,6 +13,7 @@ class RateLimitScope(StrEnum):
     HOLD = "hold"
     CODE = "code"
     LINK = "link"
+    TOKEN = "token"  # noqa: S105 - a scope name, not a secret
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,8 @@ RATE_LIMITS: dict[RateLimitScope, RateLimit] = {
     RateLimitScope.HOLD: RateLimit(per_email=5, per_address=20),
     RateLimitScope.CODE: RateLimit(per_email=3, per_address=10),
     RateLimitScope.LINK: RateLimit(per_email=3, per_address=10),
+    # Failed bearer tokens only: per presented token and per network address.
+    RateLimitScope.TOKEN: RateLimit(per_email=5, per_address=20),
 }
 
 

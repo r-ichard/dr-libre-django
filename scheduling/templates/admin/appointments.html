@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Appointments · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Appointments</h1>
+<form class="form" method="get" action="{{ base_path }}" role="search">
+  {% include "components/field.html" with name="from" label="From day" type="date" value=asked.from %}
+  {% include "components/field.html" with name="to" label="To day" type="date" value=asked.to %}
+  {% include "components/select.html" with name="department" label="Department" options=department_options selected=asked.department %}
+  {% include "components/select.html" with name="clinician" label="Clinician" options=clinician_options selected=asked.clinician %}
+  {% include "components/select.html" with name="status" label="Status" options=status_options selected=asked.status %}
+  {% include "components/select.html" with name="source" label="Source" options=source_options selected=asked.source %}
+  <div class="button-row">
+    <button class="button button--secondary" type="submit">Filter</button>
+    <a class="button button--secondary" href="{{ base_path }}">Clear</a>
+  </div>
+</form>
+<p class="hint list-count">{{ total_text }}, newest first. Times are in each hospital's time zone.</p>
+<p><a class="button button--primary" href="{{ book_path }}">Book for a patient</a></p>
+{% if rows %}
+<div class="table-wrap" tabindex="0" role="region" aria-label="Appointments table">
+  <table class="table">
+    <caption>Appointments, newest first</caption>
+    <thead><tr><th scope="col">When</th><th scope="col">Patient</th><th scope="col">Clinician</th><th scope="col">Type</th><th scope="col">Status</th><th scope="col">Source</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr><th scope="row"><a href="{{ row.href }}">{{ row.time }}</a></th><td>{{ row.patient }}</td><td>{{ row.clinician }}</td><td>{{ row.type_name }}</td><td>{{ row.status }}</td><td>{{ row.source }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% else %}
+{% include "components/empty_state.html" with title="No appointments match" text="Widen the range of days or clear the filters." %}
+{% endif %}
+{% endblock %}

@@ -10,15 +10,15 @@ from scheduling.use_cases.record_access import guard_record
 
 
 def own_waitlist(patient: User) -> list[WaitlistEntry]:
-    return list(_with_details().filter(patient=patient).order_by("-created_at", "-pk"))
+    return list(with_details().filter(patient=patient).order_by("-created_at", "-pk"))
 
 
 def own_entry(entry_id: UUID, patient: User) -> Result[WaitlistEntry]:
-    entry = _with_details().filter(pk=entry_id).first()
+    entry = with_details().filter(pk=entry_id).first()
     return guard_record(entry, lambda found: found.patient_id == patient.pk)
 
 
-def _with_details() -> QuerySet[WaitlistEntry]:
+def with_details() -> QuerySet[WaitlistEntry]:
     return WaitlistEntry.objects.select_related(
         "appointment_type__department__hospital",
         "preferred_clinician__user",

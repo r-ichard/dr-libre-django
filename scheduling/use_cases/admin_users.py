@@ -170,11 +170,11 @@ def delete_user(user_id: UUID, actor: User) -> Result[None]:
         blocked = user_dependents(user_id, actor.pk)
         if blocked:
             return Failure.has_dependents(blocked)
-        Session.objects.filter(user=locked.target).delete()
-        SignInLink.objects.filter(patient=locked.target).delete()
-        Notification.objects.filter(recipient=locked.target).delete()
         try:
             with transaction.atomic():
+                Session.objects.filter(user=locked.target).delete()
+                SignInLink.objects.filter(patient=locked.target).delete()
+                Notification.objects.filter(recipient=locked.target).delete()
                 locked.target.delete()
         except (ProtectedError, IntegrityError):
             return Failure.has_dependents(user_dependents(user_id, actor.pk) or ["records it made"])

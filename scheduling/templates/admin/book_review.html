@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Review the booking · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Review the booking</h1>
+<p>Patient: <strong>{{ patient.full_name }}</strong></p>
+{% include "components/booking_summary.html" %}
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Book the appointment</button>
+    <a class="button button--secondary" href="{{ times_path }}">Choose another time</a>
+  </div>
+</form>
+{% endblock %}

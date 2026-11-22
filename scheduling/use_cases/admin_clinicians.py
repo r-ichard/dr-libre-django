@@ -169,6 +169,22 @@ def _reference_messages(
     return messages
 
 
+def reference_messages(values: dict[str, object], record_id: UUID | None) -> dict[str, str]:
+    """The cross-field messages the form can know before it is saved, so a submission that also
+    holds an unreadable field reports them in the same answer. Writes nothing."""
+    with transaction.atomic():
+        profile = ClinicianProfile.objects.filter(pk=record_id).first() if record_id else None
+        changed = {
+            key: value
+            for key, value in values.items()
+            if key in FIELDS and (profile is None or getattr(profile, key) != value)
+        }
+        messages = _reference_messages(changed, profile)
+        if profile is not None:
+            messages += _move_messages(profile, changed)
+    return {message.field: message.message for message in reversed(messages)}
+
+
 def _department_exists(key: object) -> bool:
     return isinstance(key, UUID) and Department.objects.select_for_update().filter(pk=key).exists()
 

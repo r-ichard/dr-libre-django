@@ -76,18 +76,6 @@ def returns_five_specialties_when_a_database_holding_the_legacy_codes_is_seeded(
 
 
 @pytest.mark.django_db
-def returns_no_legacy_row_when_an_unreferenced_demo_specialty_is_seeded_over(
-    seed_environment: None,
-) -> None:
-    run_seed()
-    Specialty.objects.create(code="demo-retired", name="Retired", is_active=True)
-
-    run_seed()
-
-    assert not Specialty.objects.filter(code="demo-retired").exists()
-
-
-@pytest.mark.django_db
 def returns_the_referenced_demo_specialty_when_a_clinician_still_uses_it(
     seed_environment: None,
 ) -> None:

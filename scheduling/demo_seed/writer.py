@@ -130,10 +130,11 @@ class _Seeding:
             )
         for specialty in catalogue.SPECIALTIES:
             self._adopt_legacy_specialty(specialty.code)
-            self.specialties[specialty.code] = self._upsert(
+            current = self._upsert(
                 Specialty, {"code": specialty.code}, {"name": specialty.name, "is_active": True}
             )
-        self._drop_unused_legacy_specialties()
+            self.specialties[specialty.code] = current
+            self._retire_legacy_specialty(specialty.code, current)
         for room in catalogue.ROOMS:
             self.rooms[room.code] = self._upsert(
                 Room,
@@ -157,15 +158,21 @@ class _Seeding:
             )  # fmt: skip
 
     def _adopt_legacy_specialty(self, code: str) -> None:
-        """Older databases hold `demo-<code>`; renaming keeps the id and its clinicians."""
+        """When only `demo-<code>` exists, renaming keeps its id and its clinicians."""
         legacy = Specialty.objects.filter(code=f"demo-{code}").first()
         if legacy is not None and not Specialty.objects.filter(code=code).exists():
             legacy.code = code
             legacy.save()
 
-    def _drop_unused_legacy_specialties(self) -> None:
-        unused = Specialty.objects.filter(code__startswith="demo-", clinicianprofile__isnull=True)
-        unused.delete()
+    def _retire_legacy_specialty(self, code: str, current: Specialty) -> None:
+        """Older databases hold `demo-<code>`; its clinicians move to the current row first.
+        Only the five codes the seed once made are touched, never an admin's `demo-` specialty."""
+        legacy = Specialty.objects.filter(code=f"demo-{code}").first()
+        if legacy is not None:
+            ClinicianProfile.objects.filter(specialty=legacy).update(
+                specialty=current, version=F("version") + 1
+            )
+            legacy.delete()
 
     def _people(self) -> None:
         for person in catalogue.PEOPLE:

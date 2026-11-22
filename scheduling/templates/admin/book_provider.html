@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Choose a provider · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Choose a provider</h1>
+<p>Step 3 of 4. {{ type_name }} for {{ patient.full_name }}.</p>
+{% if providers %}
+<ul>
+  {% for provider in providers %}<li><a href="{{ provider.href }}">{{ provider.name }}</a>, {{ provider.specialty }}</li>{% endfor %}
+</ul>
+{% else %}
+{% include "components/empty_state.html" with title="No provider offers this service" text="Add a clinician to the department first." %}
+{% endif %}
+<p><a href="{{ service_href }}">Change service</a></p>
+{% endblock %}

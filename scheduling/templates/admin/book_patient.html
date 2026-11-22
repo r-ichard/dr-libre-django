@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Book for a patient · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Book for a patient</h1>
+<p>Step 1 of 4. Find the patient.</p>
+{% include "components/patient_search.html" %}
+<p><a class="button button--secondary" href="/admin-console/appointments">Back to the appointments</a></p>
+{% endblock %}

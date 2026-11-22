@@ -1,0 +1,15 @@
+{% comment %}Parameters: query, found (items with name, email, href), search_action, error. A GET form: the search can be reloaded and shared; nothing is listed without a query. The chosen patient's link carries the id to the next step.{% endcomment %}
+<form class="form" method="get" action="{{ search_action }}" role="search">
+  {% include "components/field.html" with name="q" label="Find a patient by name or email" value=query error=error autofocus=error %}
+  {% for name, value in keep %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+  <button class="button button--secondary" type="submit">Search</button>
+</form>
+{% if query %}
+  {% if found %}
+  <ul class="card-list" aria-label="Patients found">
+    {% for person in found %}<li><a href="{{ person.href }}">{{ person.name }}</a> <span class="hint">{{ person.email }}</span></li>{% endfor %}
+  </ul>
+  {% else %}
+  {% include "components/empty_state.html" with title="No patient matches" text="Try fewer letters of the name or the email." %}
+  {% endif %}
+{% endif %}

@@ -3,21 +3,20 @@ accepting an offer. Every change locks the entry, audits and notifies in one tra
 
 from dataclasses import dataclass
 from datetime import datetime
+from itertools import islice
 from uuid import UUID
 
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.vocabulary import AppointmentStatus, Role, WaitlistStatus
 from scheduling.domain.waitlist_rules import (
-    CancelledSlot,
     FreedSlot,
     WaitingEntry,
     authorize_join,
     best_match,
-    first_offerable_slot,
 )
 from scheduling.models import Appointment, AppointmentType, ClinicianProfile, User, WaitlistEntry
 from scheduling.models.booking import NotificationKind
@@ -28,7 +27,7 @@ from scheduling.use_cases.notifications import (
     notify_waitlist_patient,
 )
 from scheduling.use_cases.placement import PlacementCommand, place_appointment
-from scheduling.use_cases.placement_checks import slot_of
+from scheduling.use_cases.placement_checks import find_conflicts, slot_of
 from scheduling.use_cases.placement_choice import free_clinician_ids
 from scheduling.use_cases.record_access import guard_record
 from scheduling.use_cases.request_context import current_request_context
@@ -56,11 +55,13 @@ def join_waitlist(command: JoinCommand, actor: User) -> Result[WaitlistEntry]:
         if appointment_type is None or not patient_is_active:
             return Failure.not_found()
         clinician_id = command.preferred_clinician_id
-        if clinician_id is not None and not _is_active_clinician_of(appointment_type, clinician_id):
+        if clinician_id is not None and not clinician_offers_type(appointment_type, clinician_id):
             return Failure.not_found()
-        window_failure = _window_failure(command, current_request_context().now)
-        if window_failure is not None:
-            return window_failure
+        problem = window_failure(
+            command.earliest_at, command.latest_at, current_request_context().now
+        )
+        if problem is not None:
+            return problem
         entry = WaitlistEntry.objects.create(
             patient_id=patient_id.value,
             appointment_type=appointment_type,
@@ -102,8 +103,8 @@ def offer_waitlist_entry(entry_id: UUID, actor: User) -> Result[WaitlistEntry]:
         if entry.status != WaitlistStatus.WAITING:
             return Failure.invalid_transition(entry.status)
         freed = _first_free_cancelled_slot(entry)
-        if freed is None:
-            return Failure.no_clinician_available()
+        if isinstance(freed, Failure):
+            return freed
         _offer(entry, freed, actor)
         return Success(entry)
 
@@ -145,17 +146,17 @@ def _may_accept(entry: WaitlistEntry, actor: User) -> bool:
     return actor.role == Role.ADMIN or entry.patient_id == actor.pk
 
 
-def _is_active_clinician_of(appointment_type: AppointmentType, clinician_id: UUID) -> bool:
+def clinician_offers_type(appointment_type: AppointmentType, clinician_id: UUID) -> bool:
     return ClinicianProfile.objects.filter(
         pk=clinician_id, department_id=appointment_type.department_id, user__is_active=True
     ).exists()
 
 
-def _window_failure(command: JoinCommand, now: datetime) -> Failure | None:
-    if command.earliest_at >= command.latest_at:
+def window_failure(earliest_at: datetime, latest_at: datetime, now: datetime) -> Failure | None:
+    if earliest_at >= latest_at:
         message = "The latest time must be after the earliest time."
         return Failure.invalid_input([FieldMessage("latest_at", message)])
-    if command.latest_at <= now:
+    if latest_at <= now:
         return Failure.invalid_input([FieldMessage("latest_at", "The latest time has passed.")])
     return None
 
@@ -182,33 +183,56 @@ def _waiting_entry_of(entry: WaitlistEntry) -> WaitingEntry:
     )
 
 
-def _first_free_cancelled_slot(entry: WaitlistEntry) -> Appointment | None:
+MAX_SLOTS_CHECKED = 100
+RESOURCE_ORDER = ("clinician", "patient", "room")
+
+
+def _first_free_cancelled_slot(entry: WaitlistEntry) -> Appointment | Failure:
+    """The first cancelled slot, soonest first, whose clinician, room and patient are free."""
     now = current_request_context().now
-    cancelled = Appointment.objects.filter(
+    candidates = _cancelled_candidates(entry, now).iterator()
+    held = _held_slot_ids(entry)
+    seen = 0
+    busy: set[str] = set()
+    for cancelled in islice(candidates, MAX_SLOTS_CHECKED):
+        seen += 1
+        if cancelled.pk in held:
+            continue
+        slot = slot_of(entry.appointment_type, cancelled.starts_at, now)
+        conflicts = find_conflicts(
+            cancelled.clinician_id, entry.patient_id, cancelled.room_id, slot.window, cancelled.pk
+        )
+        if not conflicts and cancelled.clinician_id not in free_clinician_ids(
+            [cancelled.clinician], slot, None
+        ):
+            conflicts = ["clinician"]
+        if not conflicts:
+            return cancelled
+        busy.update(conflicts)
+    if seen == 0 or busy == {"clinician"}:
+        return Failure.no_clinician_available()
+    return Failure.conflict([name for name in RESOURCE_ORDER if name in busy] or ["offer"])
+
+
+def _cancelled_candidates(entry: WaitlistEntry, now: datetime) -> QuerySet[Appointment]:
+    candidates = Appointment.objects.filter(
         status=AppointmentStatus.CANCELLED,
         appointment_type_id=entry.appointment_type_id,
         starts_at__gt=now,
-    ).select_related("clinician")
-    by_id = {appointment.pk: appointment for appointment in cancelled}
-    held = set(
-        WaitlistEntry.objects.filter(
-            status=WaitlistStatus.OFFERED, offered_appointment_id__in=by_id
-        ).values_list("offered_appointment_id", flat=True)
+        starts_at__gte=entry.earliest_at,
+        ends_at__lte=entry.latest_at,
     )
-    slots = [
-        CancelledSlot(row.pk, row.clinician_id, row.starts_at, row.ends_at)
-        for row in by_id.values()
-    ]
-    while (chosen := first_offerable_slot(_waiting_entry_of(entry), slots, held, now)) is not None:
-        if _clinician_is_free(entry, by_id[chosen], now):
-            return by_id[chosen]
-        held.add(chosen)
-    return None
+    if entry.preferred_clinician_id is not None:
+        candidates = candidates.filter(clinician_id=entry.preferred_clinician_id)
+    return candidates.select_related("clinician").order_by("starts_at", "pk")
 
 
-def _clinician_is_free(entry: WaitlistEntry, cancelled: Appointment, now: datetime) -> bool:
-    slot = slot_of(entry.appointment_type, cancelled.starts_at, now)
-    return cancelled.clinician_id in free_clinician_ids([cancelled.clinician], slot, None)
+def _held_slot_ids(entry: WaitlistEntry) -> set[UUID]:
+    """Slots another entry already holds as its open offer, for this type."""
+    held = WaitlistEntry.objects.filter(
+        status=WaitlistStatus.OFFERED, appointment_type_id=entry.appointment_type_id
+    ).values_list("offered_appointment_id", flat=True)
+    return {slot_id for slot_id in held if slot_id is not None}
 
 
 def _offer(entry: WaitlistEntry, freed: Appointment, actor: User | None) -> None:

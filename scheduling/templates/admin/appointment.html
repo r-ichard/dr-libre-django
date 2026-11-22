@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Appointment · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>{{ appointment.patient.full_name }}, {{ type_name }}</h1>
+<section class="card" aria-labelledby="details-title">
+  <h2 id="details-title">Details {% include "components/badge.html" with kind=badge_kind text=badge_text %}</h2>
+  <dl class="facts">
+    <div><dt>Patient</dt><dd>{{ appointment.patient.full_name }}</dd></div>
+    <div><dt>Clinician</dt><dd>{{ appointment.clinician.title }} {{ appointment.clinician.user.full_name }}</dd></div>
+    <div><dt>Type</dt><dd>{{ type_name }}</dd></div>
+    <div><dt>Room</dt><dd>{{ room }}</dd></div>
+    <div><dt>When</dt><dd>{{ when }}</dd></div>
+    <div><dt>Source</dt><dd>{{ source }}</dd></div>
+    <div><dt>Reason for the visit</dt><dd>{{ appointment.patient_reason|default:"None given" }}</dd></div>
+    {% if appointment.cancellation_reason %}<div><dt>Cancelled because</dt><dd>{{ appointment.cancellation_reason }}</dd></div>{% endif %}
+  </dl>
+  <div class="button-row">
+    {% for form in forms %}
+    <form method="post" action="{{ form.action }}">
+      {% csrf_token %}
+      <button class="button button--primary" type="submit">{{ form.label }}</button>
+    </form>
+    {% endfor %}
+    {% if reschedule_href %}<a class="button button--secondary" href="{{ reschedule_href }}">Reschedule</a>{% endif %}
+    {% if cancel_href %}<a class="button button--secondary" href="{{ cancel_href }}">Cancel appointment</a>{% endif %}
+    <a class="button button--secondary" href="{{ back_path }}">Back to the list</a>
+  </div>
+</section>
+<section aria-labelledby="history-title">
+  <h2 id="history-title">History</h2>
+  <p class="hint">Times are in the hospital's time zone, {{ time_zone }}.</p>
+  {% include "components/history_list.html" %}
+</section>
+{% endblock %}

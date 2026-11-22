@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Choose a service · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Choose a service</h1>
+<p>Step 2 of 4. Booking for {{ patient.full_name }}. Staff can book every active service.</p>
+{% for hospital in hospitals %}
+<section aria-labelledby="hospital-{{ forloop.counter }}">
+  <h2 id="hospital-{{ forloop.counter }}">{{ hospital.name }}</h2>
+  {% for department in hospital.departments %}
+  <h3>{{ department.name }}</h3>
+  <ul>
+    {% for type in department.types %}<li><a href="{{ type.href }}">{{ type.name }}</a> ({{ type.duration }}{% if type.note %}, {{ type.note }}{% endif %})</li>{% endfor %}
+  </ul>
+  {% endfor %}
+</section>
+{% empty %}{% include "components/empty_state.html" with title="No active services" text="Add an appointment type first." action_href="/admin-console/appointment-types" action_text="Appointment types" %}{% endfor %}
+<p><a href="/admin-console/appointments/new">Choose another patient</a></p>
+{% endblock %}

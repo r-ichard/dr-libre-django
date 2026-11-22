@@ -1,4 +1,4 @@
-{% comment %}Parameter: current (dashboard, hospitals, specialties, departments, rooms, appointment-types, users, clinicians). The admin console's sections; the current one carries aria-current. Sections whose pages are not built yet are plain text marked aria-disabled, not dead links.{% endcomment %}
+{% comment %}Parameter: current (dashboard, hospitals, specialties, departments, rooms, appointment-types, users, clinicians, appointments, waitlist, audit, settings). The admin console's sections; the current one carries aria-current.{% endcomment %}
 <nav class="portal-nav" aria-label="Admin console">
   <ul>
     <li><a href="/admin-console/"{% if current == "dashboard" %} aria-current="page"{% endif %}>Dashboard</a></li>
@@ -9,9 +9,9 @@
     <li><a href="/admin-console/appointment-types"{% if current == "appointment-types" %} aria-current="page"{% endif %}>Appointment types</a></li>
     <li><a href="/admin-console/users"{% if current == "users" %} aria-current="page"{% endif %}>Users</a></li>
     <li><a href="/admin-console/clinicians"{% if current == "clinicians" %} aria-current="page"{% endif %}>Clinicians</a></li>
-    <li><span aria-disabled="true">Appointments</span></li>
-    <li><span aria-disabled="true">Waitlist</span></li>
-    <li><span aria-disabled="true">Audit log</span></li>
-    <li><span aria-disabled="true">Settings</span></li>
+    <li><a href="/admin-console/appointments"{% if current == "appointments" %} aria-current="page"{% endif %}>Appointments</a></li>
+    <li><a href="/admin-console/waitlist"{% if current == "waitlist" %} aria-current="page"{% endif %}>Waitlist</a></li>
+    <li><a href="/admin-console/audit"{% if current == "audit" %} aria-current="page"{% endif %}>Audit log</a></li>
+    <li><a href="/admin-console/settings"{% if current == "settings" %} aria-current="page"{% endif %}>Settings</a></li>
   </ul>
 </nav>

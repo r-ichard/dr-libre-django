@@ -145,11 +145,14 @@ class HospitalServices:
     departments: list[DepartmentServices]
 
 
-def bookable_services() -> list[HospitalServices]:
-    """Active online-bookable types, grouped hospital then department, in name order."""
+def bookable_services(online_only: bool = True) -> list[HospitalServices]:
+    """Active types, grouped hospital then department, in name order. Staff pass online_only
+    False and see the types that are not bookable online too."""
     types = AppointmentType.objects.filter(
-        is_active=True, is_bookable_online=True, department__hospital__is_active=True
+        is_active=True, department__hospital__is_active=True
     ).select_related("department__hospital")
+    if online_only:
+        types = types.filter(is_bookable_online=True)
     ordered = types.order_by("department__hospital__name", "department__name", "name")
     hospitals: dict[str, dict[str, list[AppointmentType]]] = {}
     for appointment_type in ordered:

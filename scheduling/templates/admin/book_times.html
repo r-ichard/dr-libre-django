@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Choose a time · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Choose a time</h1>
+<p>Step 4 of 4. Booking for {{ patient.full_name }}. Times are in the hospital's time zone, {{ summary.time_zone }}.</p>
+{% include "components/booking_summary.html" %}
+{% include "components/week_strip.html" %}
+{% endblock %}

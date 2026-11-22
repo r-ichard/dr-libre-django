@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Audit log · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Audit log</h1>
+<p class="hint">Entries are never changed or removed. Times are in UTC.</p>
+<form class="form" method="get" action="{{ base_path }}" role="search">
+  {% include "components/select.html" with name="actor" label="Who did it" options=actors selected=asked.actor %}
+  {% include "components/select.html" with name="entity_type" label="Record kind" options=entity_types selected=asked.entity_type %}
+  {% include "components/field.html" with name="from" label="From day" type="date" value=asked.from %}
+  {% include "components/field.html" with name="to" label="To day" type="date" value=asked.to %}
+  <div class="button-row">
+    <button class="button button--secondary" type="submit">Filter</button>
+    <a class="button button--secondary" href="{{ base_path }}">Clear</a>
+  </div>
+</form>
+<p class="hint list-count">{{ total_text }}</p>
+{% if rows %}
+<div class="table-wrap" tabindex="0" role="region" aria-label="Audit log table">
+  <table class="table">
+    <caption>Audit log, newest first</caption>
+    <thead><tr><th scope="col">Time</th><th scope="col">Who</th><th scope="col">What happened</th><th scope="col">Record</th><th scope="col">Correlation id</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr><th scope="row">{{ row.time }}</th><td>{{ row.actor }}</td><td>{{ row.action }}</td><td>{{ row.entity }}</td><td>{{ row.correlation_id }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% else %}
+{% include "components/empty_state.html" with title="Nothing matches" text="Try a wider range of days or another kind of record." %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Waitlist · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Waitlist</h1>
+<form class="form" method="get" action="{{ base_path }}" role="search">
+  {% include "components/select.html" with name="status" label="Status" options=status_options selected=asked.status %}
+  <div class="button-row">
+    <button class="button button--secondary" type="submit">Filter</button>
+    <a class="button button--secondary" href="{{ base_path }}">Clear</a>
+  </div>
+</form>
+<p class="hint list-count">{{ total_text }}, oldest first</p>
+<p><a class="button button--primary" href="{{ add_path }}">Add a patient to the waitlist</a></p>
+{% if rows %}
+<div class="table-wrap" tabindex="0" role="region" aria-label="Waitlist table">
+  <table class="table">
+    <caption>Waitlist, oldest entry first</caption>
+    <thead><tr><th scope="col">Patient</th><th scope="col">Service</th><th scope="col">Provider</th><th scope="col">Window</th><th scope="col">Status</th><th scope="col">Offered time</th><th scope="col">Action</th></tr></thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <th scope="row">{{ row.patient }}</th>
+        <td>{{ row.type_name }}, {{ row.hospital }}</td>
+        <td>{{ row.provider }}</td>
+        <td>{{ row.window }}</td>
+        <td>{% include "components/badge.html" with kind=row.badge_kind text=row.badge_text %}</td>
+        <td>{% if row.offer %}{{ row.offer.day }}, {{ row.offer.starts }} with {{ row.offer.provider }}{% else %}None{% endif %}</td>
+        <td>
+          {% if row.offer_action %}<form method="post" action="{{ row.offer_action }}">{% csrf_token %}<button class="button button--secondary" type="submit">Offer a cancelled time<span class="visually-hidden"> to {{ row.patient }}</span></button></form>{% endif %}
+          {% if row.accept_action %}<form method="post" action="{{ row.accept_action }}">{% csrf_token %}<button class="button button--secondary" type="submit">Accept for the patient<span class="visually-hidden">: {{ row.patient }}</span></button></form>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% include "components/pagination.html" %}
+{% else %}
+{% include "components/empty_state.html" with title="Nobody is waiting" text="Entries appear here when a patient or an admin adds one." action_href=add_path action_text="Add a patient to the waitlist" %}
+{% endif %}
+{% endblock %}

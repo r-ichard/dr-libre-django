@@ -15,6 +15,7 @@ from scheduling.domain.specialty_icons import FALLBACK_ICON, icon_file_for
 from scheduling.domain.vocabulary import Role
 from scheduling.models.base import Versioned
 from scheduling.use_cases import admin_record_reads
+from scheduling.use_cases.admin_clinicians import reference_messages
 from scheduling.use_cases.admin_record_specs import count_text
 from scheduling.use_cases.admin_record_writers import WRITERS
 from scheduling.use_cases.admin_records import RecordEdit
@@ -217,6 +218,10 @@ class RecordFormPage(RecordPage):
         fields = self._fields(record)
         typed = typed_text(fields, request.POST)
         values, errors = parse_form(fields, typed)
+        if errors and self.kind == "clinician":
+            record_id = record.pk if record is not None else None
+            for name, text in reference_messages(values, record_id).items():
+                errors.setdefault(name, text)
         if record is None:
             if errors:
                 return self._form(request, record, typed, errors, None, 422)

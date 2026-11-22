@@ -1,4 +1,5 @@
-from django.db.models import PROTECT, CharField, DateTimeField, ForeignKey, JSONField
+from django.contrib.postgres.indexes import BTreeIndex
+from django.db.models import PROTECT, CharField, DateTimeField, ForeignKey, Index, JSONField
 from django.utils import timezone
 
 from scheduling.models.base import Versioned, not_blank
@@ -22,6 +23,14 @@ class AuditLogEntry(Versioned):
 
     class Meta:
         verbose_name_plural = "audit log entries"
+        # The admin list pages a log that only grows. A created_at key alone is half the size
+        # of one with the id, so the planner walks it even when many dead rows bloat the table;
+        # entries are only appended, so pages are filled to the brim.
+        indexes = [
+            BTreeIndex(fields=["created_at"], name="audit_created_idx", fillfactor=100),
+            Index(fields=["actor", "created_at", "id"], name="audit_actor_created_idx"),
+            Index(fields=["entity_type", "created_at", "id"], name="audit_entity_created_idx"),
+        ]
         constraints = [
             not_blank("auditlogentry", "action"),
             not_blank("auditlogentry", "entity_type"),

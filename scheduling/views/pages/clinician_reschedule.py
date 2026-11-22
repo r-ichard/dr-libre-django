@@ -83,8 +83,8 @@ class RescheduleReviewPage(ClinicianPage):
         context = {
             "patient": found.patient.full_name,
             "type_name": found.appointment_type.name,
-            "old_text": _when(found.starts_at, found.ends_at, zone),
-            "new_text": _when(starts_at, ends_at, zone),
+            "old_text": when_text(found.starts_at, found.ends_at, zone),
+            "new_text": when_text(starts_at, ends_at, zone),
             "time_zone": str(zone),
             "action": request.get_full_path(),
             "times_path": request.path.removesuffix("/review"),
@@ -109,6 +109,6 @@ class RescheduleReviewPage(ClinicianPage):
         return HttpResponseRedirect(appointment_path(found.pk), status=303)
 
 
-def _when(starts_at: datetime, ends_at: datetime, zone: ZoneInfo) -> str:
+def when_text(starts_at: datetime, ends_at: datetime, zone: ZoneInfo) -> str:
     day = day_label(starts_at.astimezone(zone).date())
     return f"{day}, {clock_label(starts_at, zone)} to {clock_label(ends_at, zone)}"

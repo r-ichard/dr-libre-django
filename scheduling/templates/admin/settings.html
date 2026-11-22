@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Settings · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Settings</h1>
+{% if reminders_text %}{% include "components/notice.html" with kind="success" text=reminders_text %}{% endif %}
+<section class="card" aria-labelledby="policy-title">
+  <h2 id="policy-title">Booking policy</h2>
+  <p class="hint">These values are set in the booking rules. They cannot be changed here.</p>
+  <dl class="facts">
+    <div><dt>Shortest notice for a new online booking</dt><dd>{{ lead_minutes }} minutes</dd></div>
+    <div><dt>Latest a patient may cancel or reschedule</dt><dd>{{ cancellation_hours }} hours before the visit</dd></div>
+    <div><dt>Open online bookings per patient</dt><dd>{{ open_bookings }}</dd></div>
+  </dl>
+</section>
+<section aria-labelledby="reminders-title">
+  <h2 id="reminders-title">Reminders</h2>
+  <p>Creates a reminder for every visit in the next 24 hours that has none yet. The scheduled job does the same.</p>
+  <form method="post" action="{{ action }}">
+    {% csrf_token %}
+    <button class="button button--primary" type="submit">Send reminders now</button>
+  </form>
+</section>
+{% endblock %}

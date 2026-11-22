@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Review the new time · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Review the new time</h1>
+<section class="card" aria-labelledby="reschedule-title">
+  <h2 id="reschedule-title">{{ type_name }}, {{ patient }}</h2>
+  <dl class="facts">
+    <div><dt>Old time</dt><dd>{{ old_text }} ({{ time_zone }})</dd></div>
+    <div><dt>New time</dt><dd>{{ new_text }} ({{ time_zone }})</dd></div>
+  </dl>
+</section>
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Confirm new time</button>
+    <a class="button button--secondary" href="{{ times_path }}">Choose another time</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,12 +1,15 @@
 """Section 5.8: a waiting entry past its latest time expires; an offer whose slot passed or was
 taken goes back to waiting while the window is open, and expires once it is closed."""
 
+from uuid import UUID
+
 from django.db import transaction
 
-from scheduling.domain.appointment_status import ACTIVE_STATUSES
+from scheduling.domain.free_slots import TimeRange
 from scheduling.domain.vocabulary import WaitlistStatus
 from scheduling.domain.waitlist_rules import ExpiryDecision, WaitlistSnapshot, expiry_decision
 from scheduling.models import Appointment, WaitlistEntry
+from scheduling.use_cases.placement_checks import find_conflicts
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.waitlist import audit_waitlist_change
 
@@ -39,20 +42,14 @@ def _snapshot_of(entry: WaitlistEntry) -> WaitlistSnapshot:
         WaitlistStatus(entry.status),
         entry.latest_at,
         offered.starts_at if offered is not None else None,
-        offered is not None and _is_taken(offered),
+        offered is not None and _is_taken(offered, entry.patient_id),
     )
 
 
-def _is_taken(offered: Appointment) -> bool:
-    return (
-        Appointment.objects.filter(
-            clinician_id=offered.clinician_id,
-            status__in=ACTIVE_STATUSES,
-            starts_at__lt=offered.ends_at,
-            ends_at__gt=offered.starts_at,
-        )
-        .exclude(pk=offered.pk)
-        .exists()
+def _is_taken(offered: Appointment, patient_id: UUID) -> bool:
+    window = TimeRange(offered.starts_at, offered.ends_at)
+    return bool(
+        find_conflicts(offered.clinician_id, patient_id, offered.room_id, window, offered.pk)
     )
 
 

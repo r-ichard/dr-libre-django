@@ -17,8 +17,14 @@ from scheduling.views.booking import HoldsView, ResendView, VerifyView
 from scheduling.views.fhir.views import fhir_entry
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
+from scheduling.views.pages.admin_appointment_book import admin_book_routes
+from scheduling.views.pages.admin_appointment_reschedule import admin_reschedule_routes
+from scheduling.views.pages.admin_appointments import admin_appointment_routes
+from scheduling.views.pages.admin_audit import admin_audit_routes
 from scheduling.views.pages.admin_records import admin_record_routes
+from scheduling.views.pages.admin_settings import admin_settings_routes
 from scheduling.views.pages.admin_user_pages import admin_user_routes
+from scheduling.views.pages.admin_waitlist import admin_waitlist_routes
 from scheduling.views.pages.booking_code import CodePage, ResendPage
 from scheduling.views.pages.booking_confirmation import CalendarFile, ConfirmationPage
 from scheduling.views.pages.booking_details import DetailsPage
@@ -170,6 +176,12 @@ urlpatterns = [
     path("admin-console/", AdminConsole.as_view()),
     *admin_record_routes(),
     *admin_user_routes(),
+    *admin_appointment_routes(),
+    *admin_book_routes(),
+    *admin_reschedule_routes(),
+    *admin_audit_routes(),
+    *admin_settings_routes(),
+    *admin_waitlist_routes(),
     # Local-only product, so Django's development file server is enough and works with DEBUG off.
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.BASE_DIR / "static"}),
 ]

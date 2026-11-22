@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Add to the waitlist · DrLibre{% endblock %}
+{% block content %}
+{% include "components/admin_nav.html" %}
+<h1>Add a patient to the waitlist</h1>
+{% if patient %}
+<p>Patient: <strong>{{ patient.full_name }}</strong> <span class="hint">{{ patient.email }}</span> <a href="{{ action }}">Choose another patient</a></p>
+{% else %}
+{% include "components/patient_search.html" with error=errors.q %}
+{% endif %}
+<form class="form" method="post" action="{{ action }}" novalidate>
+  {% csrf_token %}
+  {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
+  <input type="hidden" name="patient" value="{{ patient.pk|default:"" }}">
+  {% include "components/select.html" with name="appointment_type" label="Service" options=type_options selected=entered.appointment_type error=errors.appointment_type %}
+  {% include "components/select.html" with name="preferred_clinician" label="Provider (optional)" options=provider_options selected=entered.preferred_clinician error=errors.preferred_clinician %}
+  {% include "components/field.html" with name="earliest_at" label="Earliest time" hint="In the hospital's time zone." type="datetime-local" value=entered.earliest_at error=errors.earliest_at %}
+  {% include "components/field.html" with name="latest_at" label="Latest time" hint="In the hospital's time zone." type="datetime-local" value=entered.latest_at error=errors.latest_at %}
+  <div class="button-row">
+    <button class="button button--primary" type="submit">Add to the waitlist</button>
+    <a class="button button--secondary" href="{{ back_path }}">Back to the waitlist</a>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

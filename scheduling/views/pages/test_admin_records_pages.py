@@ -366,12 +366,12 @@ def returns_labelled_inputs_and_captioned_tables_on_every_admin_page() -> None:
             assert "<caption" in html and 'scope="col"' in html, path
 
 
-def returns_unbuilt_sections_as_text_not_links_in_the_navigation() -> None:
+def returns_the_four_task_20_sections_as_links_in_the_navigation() -> None:
     html = _page(admin_client(), f"{CONSOLE}/")
 
     for section in ("Appointments", "Waitlist", "Audit log", "Settings"):
-        assert re.search(rf'aria-disabled="true"[^>]*>{section}<', html), section
-        assert not re.search(rf"<a [^>]*>{section}</a>", html), section
+        assert re.search(rf"<a href=\"/admin-console/[^\"]+\"[^>]*>{section}</a>", html), section
+        assert "aria-disabled" not in html
 
 
 def returns_403_and_keeps_the_row_when_a_delete_post_has_no_origin_header() -> None:

@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from scheduling.domain.appointment_status import ACTIVE_STATUSES
 from scheduling.domain.failure import Failure, FailureCode, FieldMessage, Result, Success
 from scheduling.domain.fhir_common import Resource
 from scheduling.domain.fhir_dates import bounded_window
@@ -22,19 +21,17 @@ from scheduling.domain.fhir_slot import (
     slot_resource,
 )
 from scheduling.domain.fhir_slot_id import parse_slot_id
-from scheduling.domain.free_slots import AvailabilityWindow, BusyInterval, TimeRange, free_slots
+from scheduling.domain.free_slots import AvailabilityWindow, TimeRange, free_slots
 from scheduling.domain.slot_search import MAXIMUM_QUERY_DAYS
 from scheduling.domain.slot_status import BUSY_STATUSES, FREE, busy_status
 from scheduling.domain.vocabulary import Role
 from scheduling.models import (
-    Appointment,
     AppointmentType,
     AvailabilityRule,
-    BookingHold,
     ClinicianProfile,
-    TimeOff,
 )
 from scheduling.use_cases import fhir_loading as loading
+from scheduling.use_cases.fhir_busy_slots import busy_intervals
 from scheduling.use_cases.fhir_caller import Caller
 from scheduling.use_cases.fhir_reads import SearchPage
 from scheduling.use_cases.free_slots_query import FoundSlots, find_free_slots
@@ -213,7 +210,7 @@ def _busy_placed(
         return []
     slot_type = slot_type_of(grid.appointment_type)
     now = current_request_context().now
-    busy = _busy_intervals(clinician_ids, grid.window, slot_type.buffer, now)
+    busy = busy_intervals(clinician_ids, grid.window, slot_type.buffer, now)
     placed = []
     for clinician_id in clinician_ids:
         windows = [
@@ -226,29 +223,6 @@ def _busy_placed(
             if status in grid.filters.statuses and rule_id is not None:
                 placed.append(Placed(start, rule_id, status))
     return placed
-
-
-type Blocks = tuple[list[BusyInterval], list[BusyInterval], list[BusyInterval]]
-
-
-def _busy_intervals(
-    clinician_ids: Collection[UUID], window: TimeRange, buffer: timedelta, now: datetime
-) -> dict[UUID, Blocks]:
-    blocks: dict[UUID, Blocks] = {key: ([], [], []) for key in clinician_ids}
-    reaching = {"starts_at__lt": window.ends_at, "clinician_id__in": clinician_ids}
-    earliest_end = window.starts_at - buffer
-    for off in TimeOff.objects.filter(ends_at__gt=window.starts_at, **reaching):
-        blocks[off.clinician_id][0].append(BusyInterval(off.starts_at, off.ends_at))
-    booked = Appointment.objects.filter(
-        status__in=ACTIVE_STATUSES, ends_at__gt=earliest_end, **reaching
-    )
-    for item in booked:
-        blocks[item.clinician_id][1].append(BusyInterval(item.starts_at, item.ends_at))
-    for hold in BookingHold.objects.filter(
-        expires_at__gt=now, ends_at__gt=earliest_end, **reaching
-    ):
-        blocks[hold.clinician_id][2].append(BusyInterval(hold.starts_at, hold.ends_at))
-    return blocks
 
 
 def _rule_rows(clinician_ids: Collection[UUID]) -> dict[UUID, RuleRow]:

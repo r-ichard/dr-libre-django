@@ -98,7 +98,8 @@ def returns_audit_entries_with_ids_only_when_token_issued_and_revoked(
     user = make_user(full_name="Planted Name")
     with caplog.at_level(logging.DEBUG):
         issued = issue_token(user, "Planted Service")
-        revoke_token(issued.client.pk)
+        with _at(NOW + timedelta(seconds=1)):
+            revoke_token(issued.client.pk)
         list_tokens()
 
     entries = list(AuditLogEntry.objects.order_by("created_at", "id"))

@@ -16,6 +16,8 @@ ID_SUFFIXES = ("_id", "_ids")
 COUNT_SUFFIX = "_count"
 STATUS_SUFFIX = "_status"
 
+METADATA_KEYS = ("ids", "counts", "statuses", "changed_fields", "email_domain")
+
 FieldName = NewType("FieldName", str)
 EmailDomain = NewType("EmailDomain", str)
 

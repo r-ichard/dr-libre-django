@@ -9,7 +9,13 @@ VALIDATOR_URL="https://github.com/hapifhir/org.hl7.fhir.core/releases/download/$
 CACHE=".cache/fhir-validator/$VALIDATOR_VERSION"
 JAR="$CACHE/validator_cli.jar"
 SAMPLES=$(mktemp -d)
-trap 'rm -rf "$SAMPLES"' EXIT
+DB_NAME="drlibre_validate_$$"
+export DB_NAME
+cleanup() {
+  rm -rf "$SAMPLES"
+  uv run --env-file .env.example python scripts/drop_database.py || true
+}
+trap cleanup EXIT
 
 if ! command -v java >/dev/null; then
   apt-get update -qq && apt-get install -y -qq default-jre-headless
@@ -21,7 +27,6 @@ if ! { [ -f "$JAR" ] && echo "$VALIDATOR_SHA256  $JAR" | sha256sum -c - >/dev/nu
   echo "$VALIDATOR_SHA256  $JAR" | sha256sum -c -
 fi
 
-export DB_NAME="drlibre_validate_$$"
 export DEBUG=true
 uv run --env-file .env.example python scripts/ensure_database.py
 uv run --env-file .env.example python manage.py migrate --noinput -v 0

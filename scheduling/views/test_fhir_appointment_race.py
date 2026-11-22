@@ -8,8 +8,8 @@ from threading import Barrier, Thread
 import pytest
 from django.db import connections
 
-from scheduling.models import Appointment
-from scheduling.models.builders import STARTS_AT, make_clinic, make_user
+from scheduling.models import Appointment, User
+from scheduling.models.builders import STARTS_AT, Clinic, make_clinic, make_user
 from scheduling.views import clock
 from scheduling.views.fhir_test_support import NOW, send, token_of
 
@@ -23,16 +23,16 @@ def frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(clock, "now_utc", lambda: NOW)
 
 
-def _body(clinic: object, patient: object) -> dict[str, object]:
+def _body(clinic: Clinic, patient: User) -> dict[str, object]:
     return {
         "resourceType": "Appointment",
         "status": "proposed",
         "start": STARTS_AT.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "serviceType": [{"coding": [{"code": str(clinic.appointment_type.pk)}]}],  # type: ignore[attr-defined]
+        "serviceType": [{"coding": [{"code": str(clinic.appointment_type.pk)}]}],
         "participant": [
-            {"actor": {"reference": f"Patient/{patient.pk}"}, "status": "accepted"},  # type: ignore[attr-defined]
+            {"actor": {"reference": f"Patient/{patient.pk}"}, "status": "accepted"},
             {
-                "actor": {"reference": f"Practitioner/{clinic.clinician.user_id}"},  # type: ignore[attr-defined]
+                "actor": {"reference": f"Practitioner/{clinic.clinician.user_id}"},
                 "status": "accepted",
             },
         ],

@@ -4,6 +4,8 @@ emails are the same. No second way to book."""
 
 from uuid import UUID
 
+from django.db.models import Q
+
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.fhir_appointment_write import (
     Book,
@@ -55,10 +57,7 @@ def update_appointment(
     stored = read_appointment(str(identifier), caller)
     if isinstance(stored, Failure):
         return stored
-    row = (
-        Appointment.objects.filter(pk=identifier).first()
-        or Appointment.objects.filter(waitlist_entry_id=identifier).first()
-    )
+    row = Appointment.objects.filter(Q(pk=identifier) | Q(waitlist_entry_id=identifier)).first()
     if row is None:
         return Failure.invalid_transition(str(stored.value.get("status")))
     command = decode_update(stored.value, body)

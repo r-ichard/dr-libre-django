@@ -47,6 +47,7 @@ class Part:
     filters: Mapping[str, Filter]
     build: Callable[[list[UUID]], list[Resource]]
     staff_build: Callable[[list[UUID]], list[Resource]] | None = None
+    newest_column: str = ""
 
     def rows(self, viewer: Viewer) -> QuerySet[Model]:
         return self.everything() if viewer is Viewer.STAFF else self.visible()
@@ -299,7 +300,7 @@ def _candidates(
         for name, value in query.filters:
             refine = part.filters.get(name)
             rows = refine(rows, value) if refine else rows.none()
-        column = part.sort_columns.get(query.sort or DEFAULT_SORT, "pk")
+        column = part.sort_columns.get(query.sort or DEFAULT_SORT, part.newest_column or "pk")
         selections.append(
             rows.annotate(
                 sort_key=Lower(Cast(column, TextField())),
@@ -309,7 +310,7 @@ def _candidates(
             .values_list("sort_key", "identifier", "part_index")
             .distinct()
         )
-    prefix = "-" if query.descending else ""
+    prefix = "-" if query.descending != any(part.newest_column for part in parts) else ""
     ordering = (f"{prefix}sort_key", f"{prefix}identifier")
     united = selections[0].union(*selections[1:])
     return united.order_by(*ordering)

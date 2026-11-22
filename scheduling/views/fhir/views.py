@@ -40,7 +40,7 @@ SERVED_MEDIA_TYPES = ("*/*", "application/*", "application/json", "application/f
 METADATA = "metadata"
 BEARER_PREFIX = "Bearer "
 STAFF_ROLES = (Role.CLINICIAN, Role.ADMIN)
-NO_STORE_TYPES = ("Patient", "Appointment")
+NO_STORE_TYPES = ("Patient", "Appointment", "AppointmentResponse", "Communication", "AuditEvent")
 METHOD_OF_INTERACTION = {
     "read": "GET",
     "search-type": "GET",
@@ -95,7 +95,8 @@ def _allowed_methods(parts: list[str]) -> tuple[str, ...]:
     if parts == [METADATA]:
         return ("GET",)
     declaration = declaration_for(parts[0])
-    assert declaration is not None  # noqa: S101 - the caller checked the type is declared
+    if declaration is None:
+        return ()
     return _methods_of(declaration, instance=len(parts) == 2)
 
 

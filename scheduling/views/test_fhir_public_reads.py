@@ -187,7 +187,7 @@ def returns_406_outcome_when_html_is_asked_for() -> None:
     assert _is_outcome(response)
 
 
-def returns_capability_statement_declaring_all_eleven_resources() -> None:
+def returns_capability_statement_declaring_all_fourteen_resources() -> None:
     response = _get("/fhir/metadata")
 
     body = response.json()
@@ -206,4 +206,7 @@ def returns_capability_statement_declaring_all_eleven_resources() -> None:
         "Slot",
         "Patient",
         "Appointment",
+        "AppointmentResponse",
+        "Communication",
+        "AuditEvent",
     }

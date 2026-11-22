@@ -84,7 +84,10 @@ tasks.
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | running `01M8184D89GV` |
 | | **M9 Hardening and hand-over (#9)** | | |
-| 25 | Accessibility and UX pass (impeccable) | 16 | running `01M816PEF17N` |
+| 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | run `01M816PEF17N` did 8 of 17 items; held on branch `task/25-ux-pass`, continued by 25a |
+| 25a | UX pass: the week fits at 1440 px again; small leftovers; merges 25 with it | 16 | running |
+| 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | todo |
+| 25c | UX pass: admin lists at 375 px, the conflict page, status words, empty states, confirmations | 10, 16 | todo |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
 | 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |
 

@@ -740,3 +740,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   validated eleven saved resources with the pinned jar: 0 errors. The gap is task 24's,
   with a test that a declared type without a sample fails.
 - 3922 tests, 61 seconds on my machine with one sandbox beside it.
+
+## 2026-11-22 task 25, run 01M816PEF17N (25 minutes, failed, held)
+
+- Seventeen items across every area in one task. The run did eight, its `address` stage
+  twice answered "too large for this stage, own task", and the reviewer refused three
+  times because the task did not allow a split. Both were right. A task is one run's
+  worth: the four admin tasks of about a dozen items each worked because each item used
+  the same flow; these seventeen shared nothing.
+- What it did is good: email link first on the sign-in page, a notice cookie without a
+  name, notification times in the hospital's zone, a test that walks every page for
+  labels, names, headings and landmarks.
+- One fix broke more than it mended. To win 9 px for a time line it widened the day
+  columns to 10rem, and at 1440 px the week no longer fits: the grid scrolls sideways
+  by 136 px. I had stated the invariant for the line and not for the week. Every layout
+  rule needs its neighbour rule: what must still fit after the fix.
+- Split: 25a on the held branch (the week fits, small leftovers), 25b (booking and
+  patient pages), 25c (admin lists, conflict page, states).

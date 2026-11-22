@@ -89,7 +89,7 @@ tasks.
 | 24c | FHIR writes: PractitionerRole, time off through `notAvailable` | 15.2, 15.4 | merged with 24c2 `9dbf55c` |
 | 24c2 | FHIR: time off under its R4 name `during`, the two failing gates, an end-to-end time off test | 15.2, 15.4 | merged `9dbf55c` |
 | 24c3 | FHIR: Practitioner update and delete | 15.4 | merged `132bc22` |
-| 24d | Section 15 closed: tables as a test, one journey through FHIR, ADRs, README section | 15 | running `01M81XWB4K9JB` |
+| 24d | Section 15 closed: tables as a test, one journey through FHIR, ADRs, README section | 15 | merged `1a80b5a` |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | merged with 25a `4f6dbec` (8 of 17 items; rest in 25b, 25c) |
 | 25a | UX pass: the week fits at 1440 px again; small leftovers | 16 | merged `4f6dbec` |

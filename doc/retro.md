@@ -944,3 +944,15 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   deactivated clinician's own token answers 401 until the reactivation; a delete with a
   profile and bookings answers 409 with the console's counts.
 - Every write of section 15.4 exists now. Seven runs for what the backlog called task 24.
+
+## 2026-11-22 task 24d merged, milestone M8 complete
+
+- Tests and prose only, one pass. From a fresh clone: 4464 tests, 115 validator samples
+  with 0 errors, mutation gate clean.
+- I ran the README's FHIR commands as written against a fresh stack: token, read,
+  search (299 slots), booking 201, the same booking 409 naming clinician and patient as
+  in conflict, the audit trail 403 for a patient. Each matches the text.
+- The FHIR milestone took eleven runs (22, 22a, 23, 23a, 24, 24a, 24b, 24b2, 24c, 24c2,
+  24c3, 24d) where the backlog had three lines. What made it converge: the validator as
+  a make target, then as a scripted gate; a token per role in every check; and slices
+  small enough that a reviewer could hold a run to them.

@@ -76,7 +76,7 @@ tasks.
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | merged `42600a0` |
 | 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | merged `bc0bbac` |
 | 20 | Appointments, waitlist, audit log, settings | 10 | merged `6f9a986` |
-| 21 | Dashboard, reporting, CSV export; four items carried from task 20 | 13 | running `01M80JJ8BJP3` |
+| 21 | Dashboard, reporting, CSV export; four items carried from task 20 | 13 | merged `8a161f8` |
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
@@ -84,7 +84,7 @@ tasks.
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | running `01M80M4WGA8Q` |
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
-| 25 | Accessibility and UX pass (impeccable) | 16 | todo |
+| 25 | Accessibility and UX pass (impeccable) | 16 | running |
 | 26 | Security review, smoke test, README, hand-over | all | todo |
 
 ## Carried items
@@ -174,3 +174,8 @@ Small findings waiting for the next task that touches the same file.
   an `assert` in `_allowed_methods` of the FHIR views. ADR 0006 open points for the
   owner: whether a busy slot can be read by id; whether a Patient search by email or
   phone in the address is acceptable. Task 24.
+- Review of 21: `test_api_tokens.py::returns_audit_entries_with_ids_only_when_token_issued_and_revoked`
+  failed once in four full runs, a flaky test; the report has no test with hospital zones
+  on both sides of UTC; the export holds up to 50,000 rows in memory. Task 26.
+- Dashboard at 375 px: the per-day table is 507 px wide in a 341 px frame and its bars
+  are found only by scrolling sideways. With the admin lists, task 25.

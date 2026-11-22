@@ -60,6 +60,11 @@ Admin console:
 
 Everywhere:
 
+12a. The notice an admin sees after an action is carried in a signed cookie as a whole
+    sentence, with the patient's name in it ("Booked for Greta Holm"). Signed is not
+    hidden: the name sits readable in the browser's cookie store. The cookie carries a
+    code and ids; the page writes the sentence from what the reader may read.
+
 13. A test walks every page the product can render, signed out and as each role, and
     fails on: a form field without a label, an image without a text alternative, a
     duplicate id (exists since task 17c), headings out of order, a link or button

@@ -708,3 +708,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - What two runs side by side cost tonight, counted: two sync runs for one-line clashes,
   one limit stop, one budget failure made of machine load. What they bought: milestones
   M7 and M8 nearly done in one night. Still worth it; the limit is the price.
+
+## 2026-11-22 task 21 merged 8a161f8, milestone M7 complete
+
+- Third sync run, 2 minutes 20, for `mutation-equivalents.txt` again: every task that
+  touches the domain adds a line at the end of that file, so two tasks side by side
+  always collide there. A file per module would not.
+- In Chrome, against SQL I wrote by hand: the seven-day tiles (3 appointments, 0
+  cancelled, no-show 33 %, online 0 %, waitlist 2, utilisation 60 of 12 000 minutes
+  shown as 1 %), "n/a" for a day with nothing, the export by form only with ten columns
+  of ids and UTC instants and its audit entry with the row count, notices shown once.
+- 3747 tests, 44 seconds on my machine with one sandbox beside it.
+- The admin console is whole. Left for it in task 25: lists and the dashboard table at
+  375 px, the notice cookie, the stale-save page.

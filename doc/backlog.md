@@ -158,6 +158,12 @@ Small findings waiting for the next task that touches the same file.
   active type, and an admin can accept the offer for the patient, but the patient
   cannot. Owner to confirm whether a patient may join for such a type.
 - Review of 19, small: the email pattern of `user_rules.py` accepts `a@b`. Task 26.
+- A wrong method on a route of `/api/v1` answers 404 `not_found`, never 405 (QA round 3,
+  public area): section 4 has no failure code for a method. Owner to confirm whether the
+  contract gains one. Listed with the owner's questions of task 26d.
+- A hold for a type that is not bookable online answers 422, an unknown type 404, so
+  the route confirms the id of a hidden type (QA round 3, public area). Left as section
+  5.3 names the rule; the ids are not public.
 - `make test`: 3298 tests, 53 seconds on a loaded machine. Measure it alone, list the
   slowest tests, and decide a budget that is checked by a gate, not by a sentence in a
   task. Task 26.

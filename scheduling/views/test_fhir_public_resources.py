@@ -141,14 +141,7 @@ def returns_zero_entries_but_total_when_count_is_zero() -> None:
     assert "entry" not in body
 
 
-NEEDS_MORE = (
-    "Slot",
-    "Patient",
-    "Appointment",
-    "AppointmentResponse",
-    "Communication",
-    "AuditEvent",
-)  # a start range and a type; a token
+NEEDS_MORE = ("Slot", "Patient", "Appointment")  # a start range and a type; a token
 
 
 def returns_bounded_queries_whatever_the_number_of_rows() -> None:
@@ -183,7 +176,6 @@ def returns_every_declared_route_and_declares_every_answering_one() -> None:
             assert parameter["name"]
     assert _get("/fhir/Patient").status_code == 401
     assert _get("/fhir/Appointment").status_code == 401
-    assert _get("/fhir/AppointmentResponse").status_code == 401
     assert _get("/fhir/Slot").status_code == 400
 
 

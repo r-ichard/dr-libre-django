@@ -82,7 +82,7 @@ tasks.
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
 | 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | merged `ca45d88` |
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
-| 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | running |
+| 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | running `01M8184D89GV` |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass (impeccable) | 16 | running `01M816PEF17N` |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |

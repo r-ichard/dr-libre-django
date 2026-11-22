@@ -202,10 +202,11 @@ def returns_no_depth_error_when_openers_are_many_but_depth_is_shallow() -> None:
     assert "body" not in _fields_named(_depth_answer(two_shallow_runs))
 
 
-def returns_no_body_error_when_body_is_not_json() -> None:
+def returns_unreadable_body_not_depth_error_when_body_is_not_json() -> None:
     answer = _depth_answer(_nested(30), content_type="text/plain")
 
-    assert "body" not in _fields_named(answer)
+    assert "nested too deeply" not in str(answer.json())
+    assert "not readable" in str(answer.json())
 
 
 def _appointments_from(instant: str) -> Response:

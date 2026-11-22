@@ -53,12 +53,15 @@ class ErrorResponse(Response):
 
 
 def failure_response(failure: Failure) -> Response:
-    return error_response(
+    response = error_response(
         failure.code.value,
         STATUS_BY_CODE[failure.code],
         MESSAGE_BY_CODE[failure.code],
         failure.details,
     )
+    if failure.retry_after_seconds is not None:
+        response["Retry-After"] = str(failure.retry_after_seconds)
+    return response
 
 
 def error_response(code: str, status: int, message: str, details: dict[str, object]) -> Response:

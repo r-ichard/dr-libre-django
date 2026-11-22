@@ -323,3 +323,34 @@ def returns_only_new_failure_stored_when_old_failures_left_the_window() -> None:
     assert list(SignInFailure.objects.values_list("failed_at", flat=True)) == [
         START + timedelta(minutes=16)
     ]
+
+
+def returns_one_lockout_entry_when_a_locked_address_tries_five_more_times() -> None:
+    _user()
+    _fail_times(LOCKOUT_LIMIT)
+
+    _fail_times(5, at=START + timedelta(minutes=1))
+
+    lockouts = AuditLogEntry.objects.filter(action="auth.lockout")
+    assert lockouts.count() == 1
+    assert lockouts.get().metadata["counts"] == {"failure_count": LOCKOUT_LIMIT}
+
+
+def returns_second_lockout_entry_when_a_new_window_locks_the_address_again() -> None:
+    _user()
+    _fail_times(LOCKOUT_LIMIT)
+    _fail_times(1, at=START + timedelta(minutes=1))
+    later = START + timedelta(minutes=30)
+    _fail_times(LOCKOUT_LIMIT, at=later)
+
+    _fail_times(1, at=later + timedelta(minutes=1))
+
+    assert AuditLogEntry.objects.filter(action="auth.lockout").count() == 2
+
+
+def returns_no_lockout_entry_when_failures_stay_under_the_limit() -> None:
+    _user()
+
+    _fail_times(LOCKOUT_LIMIT - 1)
+
+    assert not AuditLogEntry.objects.filter(action="auth.lockout").exists()

@@ -5,6 +5,7 @@ scanner that opens the link cannot spend it."""
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure, FailureCode
+from scheduling.domain.rate_limit_rules import wait_sentence
 from scheduling.domain.sign_in_rules import Home
 from scheduling.use_cases.sign_in_link import ask_for_link, use_link
 from scheduling.views.network_address import network_address
@@ -17,7 +18,8 @@ CHECK_EMAIL_PATH = "/sign-in/check-email"
 EMAIL_MISSING = "Enter your email address."
 EMAIL_INVALID = "Enter a valid email address."
 INVALID_TEMPLATE = "sign_in_link_invalid.html"
-TOO_MANY_LINKS = "Too many sign-in links were asked for. Try again in an hour."
+TOO_MANY_LINKS = "Too many sign-in links were asked for."
+TOO_MANY_LINKS_FALLBACK = "Try again in an hour."
 PATIENT_HOME = HOME_PATHS[Home.PATIENT_PORTAL]
 
 
@@ -32,9 +34,14 @@ class LinkRequestPage(SignInPage):
             return self._refused(request, email, EMAIL_MISSING, 400)
         asked = ask_for_link(email, network_address(request))
         if isinstance(asked, Failure):
-            rate_limited = asked.code == FailureCode.RATE_LIMITED
-            message = TOO_MANY_LINKS if rate_limited else EMAIL_INVALID
-            return self._refused(request, email, message, 429 if rate_limited else 400)
+            if asked.code != FailureCode.RATE_LIMITED:
+                return self._refused(request, email, EMAIL_INVALID, 400)
+            wait = asked.retry_after_seconds
+            sentence = wait_sentence(wait) if wait is not None else TOO_MANY_LINKS_FALLBACK
+            refused = self._refused(request, email, f"{TOO_MANY_LINKS} {sentence}", 429)
+            if wait is not None:
+                refused["Retry-After"] = str(wait)
+            return refused
         return HttpResponseRedirect(CHECK_EMAIL_PATH, status=303)
 
     def _refused(self, request: HttpRequest, email: str, message: str, status: int) -> HttpResponse:

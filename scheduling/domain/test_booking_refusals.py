@@ -59,6 +59,16 @@ def returns_wait_an_hour_when_rate_limited() -> None:
     assert (refusal.message, refusal.status) == ("Too many tries. Wait an hour and try again.", 429)
 
 
+def returns_wait_sentence_and_wait_way_when_rate_limited_with_seconds() -> None:
+    refusal = _refusal_for(Failure.rate_limited(90))
+
+    assert (refusal.message, refusal.way_forward, refusal.status) == (
+        "Too many tries. Try again in 2 minutes.",
+        "wait",
+        429,
+    )
+
+
 def returns_try_again_in_a_few_minutes_when_mail_is_unavailable() -> None:
     refusal = _refusal_for(Failure.mail_unavailable())
 

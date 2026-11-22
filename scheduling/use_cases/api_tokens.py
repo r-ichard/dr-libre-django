@@ -59,8 +59,9 @@ def resolve_token(token: str, address: str) -> Result[User]:
     token_key = hash_token(token)
     client = ApiClient.objects.select_related("user").filter(token_hash=token_key).first()
     if client is None or client.revoked_at is not None or not client.user.is_active:
-        if not take_hit(RateLimitScope.TOKEN, token_key, address):
-            return Failure.rate_limited()
+        wait = take_hit(RateLimitScope.TOKEN, token_key, address)
+        if wait is not None:
+            return Failure.rate_limited(wait)
         return Failure.unauthenticated()
     _touch(client)
     return Success(client.user)

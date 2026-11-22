@@ -29,9 +29,12 @@ def refused_page(
     refusal = refusal_for(failure)
     href, text = _way_forward(refusal, way_back)
     context = {"message": refusal.message, "action_href": href, "action_text": text}
-    return render_page(
+    response = render_page(
         request, REFUSED_TEMPLATE, context, status=refusal.status, signed_in_user=signed_in_user
     )
+    if failure.retry_after_seconds is not None:
+        response["Retry-After"] = str(failure.retry_after_seconds)
+    return response
 
 
 def _way_forward(refusal: Refusal, way_back: WayBack) -> tuple[str, str]:

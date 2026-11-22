@@ -207,3 +207,11 @@ def returns_waitlist_entries_in_plural_when_patient_has_two() -> None:
     refusals = _role_refusals(current=Role.PATIENT, waitlist_entries=2)
 
     assert refusals == ["This patient has 2 waitlist entries."]
+
+
+def returns_invalid_input_on_email_field_when_address_is_a_at_b() -> None:
+    from scheduling.domain.user_rules import check_email
+
+    assert check_email("a@b") == Failure.invalid_input(
+        [FieldMessage("email", "Enter an email address like name@example.org.")]
+    )

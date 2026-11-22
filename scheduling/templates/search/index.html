@@ -2,6 +2,7 @@
 {% load static %}
 {% block title %}Search for a provider, hospital or specialty · DrLibre{% endblock %}
 {% block description %}Search hospitals, providers and specialties and book an appointment without an account.{% endblock %}
+{% block brand %}{% if limited_message %}<span class="site-header__name">DrLibre</span>{% else %}{{ block.super }}{% endif %}{% endblock %}
 {% block content %}
 <h1>Find care and book a time</h1>
 <form class="search-form" method="get" action="/" role="search">
@@ -30,6 +31,9 @@
   </div>
 </form>
 
+{% if limited_message %}
+{% include "components/notice.html" with kind="error" text=limited_message %}
+{% else %}
 {% include "components/list_switch.html" %}
 
 <p class="results-summary">{{ total }} result{{ total|pluralize }}. Page {{ page }} of {{ page_count }}.</p>
@@ -48,6 +52,7 @@
 {% include "components/pagination.html" %}
 {% else %}
 {% include "components/empty_state.html" with title="Nothing matches your search" text="Try fewer words or remove the filters." action_href=widen_href action_text="Widen the search" %}
+{% endif %}
 {% endif %}
 {% endblock %}
 {% block scripts %}<script src="{% static 'js/search_location.js' %}" defer></script>{% endblock %}

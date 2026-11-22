@@ -8,6 +8,7 @@ from scheduling.domain.failure import Failure, FailureCode
 from scheduling.use_cases.booking_holds import resend_code
 from scheduling.use_cases.booking_page_data import HoldSummary, hold_summary
 from scheduling.use_cases.booking_verification import verify_hold
+from scheduling.views.hold_cookie import made_this_hold
 from scheduling.views.hold_schemas import VerifyRequest
 from scheduling.views.network_address import network_address
 from scheduling.views.pages.booking_links import (
@@ -38,14 +39,14 @@ class CodePage(PageView):
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
         hold_id = path_uuid(self, "hold_id")
         summary = hold_summary(hold_id)
-        if summary is None:
+        if summary is None or not made_this_hold(request, hold_id):
             return self._expired(request)
         return self._code_form(request, hold_id, summary, "", request.GET.get("sent") == "1")
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         hold_id = path_uuid(self, "hold_id")
         summary = hold_summary(hold_id)
-        if summary is None:
+        if summary is None or not made_this_hold(request, hold_id):
             return self._expired(request)
         body = validate_body(VerifyRequest, {"code": request.POST.get("code", "").strip()})
         if isinstance(body, Failure):
@@ -100,6 +101,8 @@ class ResendPage(PageView):
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         hold_id = path_uuid(self, "hold_id")
+        if not made_this_hold(request, hold_id):
+            return refused_page(request, Failure.not_found(), WayBack(), None)
         summary = hold_summary(hold_id)
         resent = resend_code(hold_id, network_address(request))
         if isinstance(resent, Failure):

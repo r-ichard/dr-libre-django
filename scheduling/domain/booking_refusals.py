@@ -5,6 +5,7 @@ from typing import Literal
 
 from scheduling.domain.booking_rules import LEAD_TIME, OPEN_ONLINE_BOOKINGS_MAXIMUM, BookingRule
 from scheduling.domain.failure import Failure, FailureCode
+from scheduling.domain.rate_limit_rules import wait_sentence
 
 type WayForward = Literal["times", "start", "retry", "wait"]
 
@@ -24,6 +25,9 @@ def refusal_for(failure: Failure) -> Refusal:
     if code == FailureCode.RULE_VIOLATION:
         return _rule_refusal(failure)
     if code == FailureCode.RATE_LIMITED:
+        if failure.retry_after_seconds is not None:
+            sentence = f"Too many tries. {wait_sentence(failure.retry_after_seconds)}"
+            return Refusal(sentence, "wait", 429)
         return Refusal("Too many tries. Wait an hour and try again.", "wait", 429)
     if code == FailureCode.MAIL_UNAVAILABLE:
         return Refusal("We could not send the email. Try again in a few minutes.", "retry", 503)

@@ -126,3 +126,26 @@ def returns_same_hash_for_the_same_email_on_two_requests() -> None:
     hashes = [row.key_hash for row in _model_rows("RateLimitHit")]  # type: ignore[attr-defined]
     assert len(hashes) == 4
     assert len(set(hashes)) == 2
+
+
+def returns_longer_wait_when_email_and_address_counters_are_both_full() -> None:
+    from scheduling.domain.rate_limit_rules import RateLimitScope
+    from scheduling.models import RateLimitHit
+    from scheduling.use_cases.rate_limits import key_hash, take_hit
+
+    email_full_at = NOW - timedelta(minutes=10)
+    address_full_at = NOW - timedelta(minutes=50)
+    rows = [
+        RateLimitHit(
+            scope="hold", key_hash=key_hash("email", "a@example.test"), hit_at=email_full_at
+        )
+        for _ in range(5)
+    ] + [
+        RateLimitHit(scope="hold", key_hash=key_hash("address", ADDRESS), hit_at=address_full_at)
+        for _ in range(20)
+    ]
+    RateLimitHit.objects.bulk_create(rows)
+
+    wait = take_hit(RateLimitScope.HOLD, "a@example.test", ADDRESS)
+
+    assert wait == 3000

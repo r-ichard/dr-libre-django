@@ -10,11 +10,11 @@ from rest_framework import serializers
 from scheduling.domain.date_parts import BIRTH_PARTS, read_birth_date
 from scheduling.domain.failure import Failure, Success
 from scheduling.domain.profile_rules import phone_failure
+from scheduling.domain.visitor_rules import EMAIL_MAXIMUM
 from scheduling.use_cases.booking_holds import HoldCommand
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.booking_schemas import VISIT_REASON_MAXIMUM
 from scheduling.views.hold_schemas import (
-    EMAIL_MAXIMUM,
     NAME_MAXIMUM,
     PHONE_MAXIMUM,
     hold_command_of,

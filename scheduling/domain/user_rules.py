@@ -1,15 +1,13 @@
 """Task 19, sections 3.1, 4, 10 and 12: the user rules that need no stored data."""
 
-import re
 from dataclasses import dataclass
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.visitor_rules import is_valid_email
 from scheduling.domain.vocabulary import Role
 
 PASSWORD_MINIMUM = 10
 PASSWORD_MAXIMUM = 72
-EMAIL_MAXIMUM = 254
-EMAIL_PATTERN = re.compile(r"[^@\s]+@[^@\s]+")
 OWN_DEACTIVATION = "You cannot deactivate your own account."
 OWN_ROLE = "You cannot change your own role."
 LAST_ADMIN = "This is the last active admin. Make another admin first."
@@ -29,7 +27,7 @@ def check_password(raw: str) -> Result[str]:
 def check_email(raw: str) -> Result[str]:
     """Stored in lower case so that two spellings of one address are one address."""
     address = raw.strip().lower()
-    if len(address) <= EMAIL_MAXIMUM and EMAIL_PATTERN.fullmatch(address):
+    if is_valid_email(address):
         return Success(address)
     message = "Enter an email address like name@example.org."
     return Failure.invalid_input([FieldMessage("email", message)])

@@ -35,7 +35,10 @@ def failure_response(failure: Failure) -> HttpResponse:
     answer = outcome_for(failure)
     text = STALE_MESSAGE if answer is STALE_VERSION else MESSAGE_BY_CODE[failure.code]
     outcome = failure_outcome(failure, text, current_request_context().correlation_id)
-    return resource_response(outcome, answer.status)
+    response = resource_response(outcome, answer.status)
+    if failure.retry_after_seconds is not None:
+        response["Retry-After"] = str(failure.retry_after_seconds)
+    return response
 
 
 def not_acceptable_response() -> HttpResponse:

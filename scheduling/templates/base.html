@@ -15,7 +15,7 @@
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
   <header class="site-header">
-    <a class="site-header__name" href="/">DrLibre</a>
+    {% block brand %}<a class="site-header__name" href="/">DrLibre</a>{% endblock %}
     {% if signed_in_user %}
     <div class="site-header__user">
       <a href="{% if signed_in_user.role == 'ADMIN' %}/admin-console/{% elif signed_in_user.role == 'CLINICIAN' %}/clinician/{% else %}/patient/{% endif %}">{{ signed_in_user.full_name }}</a>

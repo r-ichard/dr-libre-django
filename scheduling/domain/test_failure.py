@@ -80,6 +80,18 @@ def returns_rate_limited_with_empty_details_when_rate_limited_constructor_is_cal
     assert failure.details == {}
 
 
+def returns_seconds_when_rate_limited_is_built_with_seconds() -> None:
+    assert Failure.rate_limited(42).retry_after_seconds == 42
+
+
+def returns_none_seconds_when_rate_limited_is_built_without_seconds() -> None:
+    assert Failure.rate_limited().retry_after_seconds is None
+
+
+def returns_equal_failures_when_only_retry_seconds_differ() -> None:
+    assert Failure.rate_limited(5) == Failure.rate_limited(9)
+
+
 def returns_mail_unavailable_with_empty_details_when_mail_unavailable_constructor_is_called() -> (
     None
 ):

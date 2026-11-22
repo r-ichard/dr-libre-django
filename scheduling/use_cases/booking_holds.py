@@ -13,7 +13,7 @@ from scheduling.domain.booking_codes import HOLD_LIFETIME
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.profile_rules import phone_failure
 from scheduling.domain.rate_limit_rules import RateLimitScope
-from scheduling.domain.visitor_rules import normalise_email, valid_birth_date
+from scheduling.domain.visitor_rules import is_valid_email, normalise_email, valid_birth_date
 from scheduling.models import BookingHold
 from scheduling.models.access import HoldSource
 from scheduling.use_cases.audit import AuditEvent, record_audit
@@ -48,8 +48,9 @@ def create_hold(command: HoldCommand, address: str) -> Result[BookingHold]:
         return invalid
     email = normalise_email(command.email)
     with transaction.atomic():
-        if not take_hit(RateLimitScope.HOLD, email, address):
-            return Failure.rate_limited()
+        wait = take_hit(RateLimitScope.HOLD, email, address)
+        if wait is not None:
+            return Failure.rate_limited(wait)
         earlier = BookingHold.objects.select_for_update().filter(visitor_email=email).first()
         probe = probe_placement(
             PlacementCommand(
@@ -97,8 +98,9 @@ def resend_code(hold_id: UUID, address: str) -> Result[BookingHold]:
         if known is None:
             return Failure.not_found()
         # The counter lock comes before the hold's row lock, as in create_hold.
-        if not take_hit(RateLimitScope.CODE, known.visitor_email, address):
-            return Failure.rate_limited()
+        wait = take_hit(RateLimitScope.CODE, known.visitor_email, address)
+        if wait is not None:
+            return Failure.rate_limited(wait)
         locked = BookingHold.objects.select_for_update().filter(pk=hold_id).first()
         if locked is None:
             return Failure.not_found()
@@ -118,8 +120,6 @@ def _invalid_input(command: HoldCommand, now: datetime) -> Failure | None:
     phone_problem = phone_failure(command.phone)
     if phone_problem is not None:
         problems.append(phone_problem)
-    try:
-        email_domain(normalise_email(command.email))
-    except ValueError:
+    if not is_valid_email(normalise_email(command.email)):
         problems.append(FieldMessage("email", "Enter a valid email address."))
     return Failure.invalid_input(problems) if problems else None

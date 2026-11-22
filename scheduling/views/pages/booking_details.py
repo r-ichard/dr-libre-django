@@ -11,6 +11,7 @@ from scheduling.use_cases.booking_holds import create_hold
 from scheduling.use_cases.booking_page_data import SlotChoice, slot_choice, slot_is_offered
 from scheduling.use_cases.placement import PlacementCommand, place_appointment
 from scheduling.use_cases.schedule_loading import online_only_for
+from scheduling.views.hold_cookie import set_hold_cookie
 from scheduling.views.network_address import network_address
 from scheduling.views.pages.booking_forms import (
     DetailsForm,
@@ -86,7 +87,9 @@ class DetailsPage(PageView):
         created = create_hold(hold_command_from(form, slot), network_address(request))
         if isinstance(created, Failure):
             return self._hold_refused(request, slot, choice, form, created)
-        return HttpResponseRedirect(code_href(created.value.pk), status=303)
+        response = HttpResponseRedirect(code_href(created.value.pk), status=303)
+        set_hold_cookie(request, response, created.value.pk, created.value.expires_at)
+        return response
 
     def _hold_refused(
         self,

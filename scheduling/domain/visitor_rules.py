@@ -1,8 +1,13 @@
 """Section 7.1 step 3: what a visitor may type about themselves."""
 
+import re
 from datetime import date
 
+from scheduling.domain.audit_metadata import HOSTNAME_PATTERN
+
 MAXIMUM_AGE_YEARS = 120
+EMAIL_MAXIMUM = 254
+LOCAL_PART_PATTERN = re.compile(r"[^@\s]+")
 
 
 def valid_birth_date(birth_date: date, today: date) -> bool:
@@ -14,3 +19,14 @@ def valid_birth_date(birth_date: date, today: date) -> bool:
 
 def normalise_email(address: str) -> str:
     return address.strip().lower()
+
+
+def is_valid_email(address: str) -> bool:
+    """The one email rule: a free-form local part, one at sign, a dotted host name."""
+    local, separator, host = address.partition("@")
+    return (
+        len(address) <= EMAIL_MAXIMUM
+        and bool(separator)
+        and LOCAL_PART_PATTERN.fullmatch(local) is not None
+        and HOSTNAME_PATTERN.fullmatch(host) is not None
+    )

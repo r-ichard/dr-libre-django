@@ -14,7 +14,8 @@ from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.lockout_rules import is_locked, window_start
 from scheduling.domain.sign_in_rules import Home, home_for
 from scheduling.domain.vocabulary import Role, SessionKind
-from scheduling.models import SignInFailure, User
+from scheduling.models import AuditLogEntry, SignInFailure, User
+from scheduling.use_cases.advisory_lock import lock_keys
 from scheduling.use_cases.audit import AuditEvent, record_audit
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.session import OpenedSession, open_session
@@ -36,6 +37,7 @@ def sign_in_with_password(email: str, password: str, user_agent: str) -> Result[
     email_key = hash_email(email)
     domain_metadata = AuditMetadata(email_domain=email_domain(email))
     with transaction.atomic():
+        lock_keys([email_key])
         user = User.objects.filter(email=email.lower()).first()
         recent = SignInFailure.objects.filter(email_hash=email_key, failed_at__gt=window_start(now))
         failure_count = recent.count()
@@ -45,7 +47,7 @@ def sign_in_with_password(email: str, password: str, user_agent: str) -> Result[
             lockout_metadata = AuditMetadata(
                 email_domain=domain_metadata.email_domain, counts={"failure_count": failure_count}
             )
-            _audit("auth.lockout", "SignInFailure", str(newest.pk), user, lockout_metadata)
+            _audit_lockout_once(newest, user, lockout_metadata)
         elif user is None or not user.is_active or not password_matches:
             _record_failure(email_key, user, domain_metadata)
         else:
@@ -54,6 +56,15 @@ def sign_in_with_password(email: str, password: str, user_agent: str) -> Result[
             _audit("auth.login", "Session", str(opened.session.pk), user, domain_metadata)
             return Success(SignedIn(home_for(Role(user.role)), opened))
     return Failure.unauthenticated()
+
+
+def _audit_lockout_once(newest: SignInFailure, user: User | None, metadata: AuditMetadata) -> None:
+    """The newest failure row stays the same until a new window starts, so it names the window."""
+    already = AuditLogEntry.objects.filter(
+        action="auth.lockout", entity_type="SignInFailure", entity_id=str(newest.pk)
+    )
+    if not already.exists():
+        _audit("auth.lockout", "SignInFailure", str(newest.pk), user, metadata)
 
 
 def _run_hasher_once(user: User | None, password: str) -> bool:
@@ -72,9 +83,10 @@ def _record_failure(email_key: str, user: User | None, metadata: AuditMetadata) 
 
 def record_wrong_password(user: User) -> None:
     """A wrong current password in change-password counts like a failed sign-in."""
-    _record_failure(
-        hash_email(user.email), user, AuditMetadata(email_domain=email_domain(user.email))
-    )
+    email_key = hash_email(user.email)
+    with transaction.atomic():
+        lock_keys([email_key])
+        _record_failure(email_key, user, AuditMetadata(email_domain=email_domain(user.email)))
 
 
 def _audit(

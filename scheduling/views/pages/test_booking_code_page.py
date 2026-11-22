@@ -106,3 +106,74 @@ def returns_singular_try_when_one_attempt_is_left() -> None:
         response = browser_post(client, code_path, {"code": "000000"})  # type: ignore[arg-type]
 
     assert "You have 1 try left." in response.content.decode()
+
+
+MISSING_HOLD_PATH = "/book/holds/00000000-0000-4000-8000-000000000000/code"
+HOLD_COOKIE = "drlibre_hold"
+
+
+def _other_browser_page(path: str) -> object:
+    return browser_client().get(path)
+
+
+def returns_missing_hold_page_when_another_browser_opens_the_code_page() -> None:
+    _, code_path = _hold_page()
+    missing = browser_client().get(MISSING_HOLD_PATH)
+
+    response = _other_browser_page(code_path)
+
+    assert response.status_code == missing.status_code == 404  # type: ignore[attr-defined]
+    assert "This booking has expired." in response.content.decode()  # type: ignore[attr-defined]
+    assert "v***@example.test" not in response.content.decode()  # type: ignore[attr-defined]
+
+
+def returns_missing_hold_page_and_no_booking_when_another_browser_posts_the_right_code() -> None:
+    _, code_path = _hold_page()
+    found = re.search(r"\b(\d{6})\b", str(mail.outbox[-1].body))
+    assert found is not None
+
+    response = browser_post(browser_client(), code_path, {"code": found.group(1)})
+
+    assert response.status_code == 404
+    assert Appointment.objects.count() == 0
+
+
+def returns_missing_hold_page_when_another_browser_asks_for_a_new_code() -> None:
+    _, code_path = _hold_page()
+
+    response = browser_post(browser_client(), code_path.replace("/code", "/resend"), {})
+
+    assert response.status_code == 404
+    assert len(mail.outbox) == 1
+
+
+def returns_the_code_page_when_the_booking_browser_opens_it() -> None:
+    client, code_path = _hold_page()
+
+    response = client.get(code_path)  # type: ignore[attr-defined]
+
+    assert response.status_code == 200
+    assert "v***@example.test" in response.content.decode()
+
+
+def returns_http_only_strict_cookie_when_a_hold_is_made() -> None:
+    clinic = make_clinic()
+
+    response = browser_post(browser_client(), details_path(clinic), FORM)
+
+    cookie = response.cookies[HOLD_COOKIE]
+    assert cookie["httponly"] is True
+    assert cookie["samesite"] == "Strict"
+
+
+def returns_missing_hold_page_when_the_cookie_of_another_hold_is_presented() -> None:
+    first_client, first_path = _hold_page()
+    second_client = browser_client()
+    other_form = FORM | {"email": "other.visitor@example.test"}
+    second_path = browser_post(second_client, details_path(make_clinic()), other_form)["Location"]
+    assert second_client.get(second_path).status_code == 200
+    assert first_client.get(first_path).status_code == 200  # type: ignore[attr-defined]
+
+    response = second_client.get(first_path)
+
+    assert response.status_code == 404

@@ -32,6 +32,8 @@ class Failure:
 
     code: FailureCode
     details: dict[str, object] = field(default_factory=dict)
+    # Seconds until a limited caller's next request would pass; not part of a failure's identity.
+    retry_after_seconds: int | None = field(default=None, compare=False)
 
     @classmethod
     def invalid_input(cls, fields: Sequence[FieldMessage]) -> Failure:
@@ -74,8 +76,8 @@ class Failure:
         return cls(FailureCode.RULE_VIOLATION, {"violated_rules": list(violated_rules)})
 
     @classmethod
-    def rate_limited(cls) -> Failure:
-        return cls(FailureCode.RATE_LIMITED)
+    def rate_limited(cls, retry_after_seconds: int | None = None) -> Failure:
+        return cls(FailureCode.RATE_LIMITED, retry_after_seconds=retry_after_seconds)
 
     @classmethod
     def mail_unavailable(cls) -> Failure:

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.utils.cache import patch_vary_headers
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ from rest_framework.views import APIView
 from scheduling.use_cases.session import ResolvedSession
 from scheduling.views.access import public
 from scheduling.views.authentication import SessionCookieAuthentication
-from scheduling.views.input_limits import refuse_oversized
+from scheduling.views.input_limits import refuse_non_json_write, refuse_oversized
 from scheduling.views.session_cookie import SESSION_COOKIE, set_session_cookie
 
 SAFE_METHODS = ("GET", "HEAD", "OPTIONS")
@@ -29,6 +30,9 @@ class ApiView(APIView):
 
     def initial(self, request: Request, *args: object, **kwargs: object) -> None:
         refuse_foreign_origin(request)
+        # A method the view has no handler for answers 404 from dispatch, whatever its body.
+        if hasattr(self, request.method.lower() if request.method else ""):
+            refuse_non_json_write(request)
         refuse_oversized(request)
         super().initial(request, *args, **kwargs)
 
@@ -36,6 +40,9 @@ class ApiView(APIView):
         self, request: Request, response: Response, *args: object, **kwargs: object
     ) -> Response:
         response = super().finalize_response(request, response, *args, **kwargs)
+        patch_vary_headers(response, ("Cookie", "Authorization"))
+        if SESSION_COOKIE in request.COOKIES or "Authorization" in request.headers:
+            response["Cache-Control"] = "no-store"
         # Errors skip this so a refused request never triggers authentication of its own.
         if response.status_code < 400 and SESSION_COOKIE not in response.cookies:
             resolved = request.auth

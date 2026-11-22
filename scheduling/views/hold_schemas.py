@@ -6,6 +6,7 @@ from datetime import date
 
 from rest_framework import serializers
 
+from scheduling.domain.visitor_rules import EMAIL_MAXIMUM
 from scheduling.models import BookingHold
 from scheduling.use_cases.booking_holds import HoldCommand
 from scheduling.views.booking_schemas import (
@@ -20,7 +21,6 @@ from scheduling.views.schemas import StrictSerializer
 
 NAME_MAXIMUM = 200
 PHONE_MAXIMUM = 30
-EMAIL_MAXIMUM = 254
 CODE_LENGTH = 6
 
 

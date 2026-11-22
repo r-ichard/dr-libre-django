@@ -3,13 +3,12 @@
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain import lockout_rules, sign_in_link_rules
 from scheduling.domain.failure import Failure
 from scheduling.domain.sign_in_rules import home_for
+from scheduling.domain.visitor_rules import is_valid_email
 from scheduling.domain.vocabulary import Role
 from scheduling.use_cases.sign_in import is_locked_out, sign_in_with_password
 from scheduling.views.pages.homes import HOME_PATHS
@@ -87,9 +86,7 @@ class SignInPage(PageView):
         if form.field_errors:
             form.focus = next(iter(form.field_errors))
             return self._form(request, form)
-        try:
-            validate_email(email)
-        except ValidationError:
+        if not is_valid_email(email.lower()):
             form.field_errors = {"email": EMAIL_INVALID}
             form.focus = "email"
             return self._form(request, form, status=400)

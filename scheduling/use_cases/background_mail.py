@@ -44,5 +44,7 @@ def _forget(future: Future[None]) -> None:
 def _send(message: EmailMessage) -> None:
     try:
         message.send()
-    except Exception:  # noqa: BLE001 - the error text can carry the address, so it is not logged
-        logger.error("background mail not sent")
+    except Exception:  # noqa: BLE001 - any send failure is logged, never raised into the pool
+        # The formatter keeps the error type and frames and drops the message, which can carry
+        # the recipient.
+        logger.error("background mail not sent", exc_info=True)

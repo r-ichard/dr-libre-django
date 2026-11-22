@@ -7,6 +7,7 @@ from uuid import UUID
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure
+from scheduling.views.session_cookie import cookie_secure
 
 ISO_DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
 NOTICE_COOKIE = "drlibre_notice"
@@ -52,6 +53,7 @@ def redirect_with_notice(path: str, key: str) -> HttpResponseRedirect:
         max_age=NOTICE_LIFETIME_SECONDS,
         httponly=True,
         samesite="Strict",
+        secure=cookie_secure(),
     )
     return response
 

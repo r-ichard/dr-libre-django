@@ -1,13 +1,19 @@
+import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.csp import CSP
 
 from drlibre.environment import env_flag, require_env, require_env_list
+from drlibre.startup_checks import startup_refusal
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = require_env("SECRET_KEY")
 DEBUG = env_flag("DEBUG")
 ALLOWED_HOSTS = require_env_list("ALLOWED_HOSTS")
+_refusal = startup_refusal(DEBUG, SECRET_KEY, ALLOWED_HOSTS, os.environ.get("DEMO_PASSWORD", ""))
+if _refusal is not None:
+    raise ImproperlyConfigured(_refusal)
 INSTALLED_APPS = ["django.contrib.postgres", "rest_framework", "scheduling"]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -39,8 +45,14 @@ SECURE_SSL_REDIRECT = HTTPS_ONLY
 SECURE_HSTS_SECONDS = int(require_env("HSTS_SECONDS")) if HTTPS_ONLY else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = HTTPS_ONLY
 SECURE_HSTS_PRELOAD = HTTPS_ONLY
-SESSION_COOKIE_SECURE = HTTPS_ONLY
-CSRF_COOKIE_SECURE = HTTPS_ONLY
+SESSION_COOKIE_SECURE = HTTPS_ONLY or not DEBUG
+CSRF_COOKIE_SECURE = HTTPS_ONLY or not DEBUG
+CSRF_COOKIE_SAMESITE = "Strict"
+try:
+    TRUSTED_PROXY_COUNT = int(os.environ.get("TRUSTED_PROXY_COUNT", "0"))
+except ValueError:
+    raise ImproperlyConfigured("TRUSTED_PROXY_COUNT must be a whole number") from None
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if TRUSTED_PROXY_COUNT > 0 else None
 CSRF_COOKIE_HTTPONLY = True
 CSRF_FAILURE_VIEW = "scheduling.views.pages.errors.csrf_failure_page"
 ROOT_URLCONF = "drlibre.urls"

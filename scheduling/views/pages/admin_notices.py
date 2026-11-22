@@ -8,6 +8,7 @@ from django.core import signing
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.views.pages.notice_sentences import notice_sentence
+from scheduling.views.session_cookie import cookie_secure
 
 ADMIN_NOTICE_COOKIE = "drlibre_admin_notice"
 NOTICE_LIFETIME_SECONDS = 60
@@ -26,6 +27,7 @@ def admin_redirect(
         max_age=NOTICE_LIFETIME_SECONDS,
         httponly=True,
         samesite="Strict",
+        secure=cookie_secure(),
     )
     return response
 

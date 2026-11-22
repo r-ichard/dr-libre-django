@@ -23,6 +23,7 @@ def _production_environment(**overrides: str) -> dict[str, str]:
         **_development_values(),
         "SECRET_KEY": PRODUCTION_SECRET,
         "ALLOWED_HOSTS": "drlibre.example",
+        "DEMO_PASSWORD": "",
         "HTTPS_ONLY": "true",
         "HSTS_SECONDS": "31536000",
     }
@@ -47,13 +48,13 @@ def returns_zero_exit_when_production_values_are_used() -> None:
     assert "WARNING" not in result.stderr
 
 
-def returns_failure_naming_w009_when_development_key_is_used() -> None:
+def returns_failure_naming_secret_key_when_development_key_is_used() -> None:
     development_key = _development_values()["SECRET_KEY"]
 
     result = _deployment_check(_production_environment(SECRET_KEY=development_key))
 
     assert result.returncode != 0
-    assert "security.W009" in result.stderr
+    assert "SECRET_KEY" in result.stderr
 
 
 def returns_failure_when_https_only_is_off() -> None:
@@ -101,4 +102,4 @@ def returns_no_transport_security_when_https_only_is_off() -> None:
         check=False,
     )
 
-    assert result.stdout.strip() == "[false, 0, false, false]", result.stderr
+    assert result.stdout.strip() == "[false, 0, true, true]", result.stderr

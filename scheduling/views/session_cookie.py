@@ -12,6 +12,11 @@ SESSION_COOKIE = "drlibre_session"
 SAME_SITE: Literal["Strict"] = "Strict"
 
 
+def cookie_secure() -> bool:
+    """Outside development every cookie is Secure, whether or not HTTPS_ONLY redirects."""
+    return settings.HTTPS_ONLY or not settings.DEBUG
+
+
 def set_session_cookie(response: HttpResponseBase, token: str, expires_at: datetime) -> None:
     # An explicit expires string: Django would derive max-age from the wall clock.
     response.set_cookie(
@@ -20,7 +25,7 @@ def set_session_cookie(response: HttpResponseBase, token: str, expires_at: datet
         expires=http_date(expires_at.timestamp()),
         httponly=True,
         samesite=SAME_SITE,
-        secure=settings.HTTPS_ONLY,
+        secure=cookie_secure(),
         path="/",
     )
 

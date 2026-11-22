@@ -10,7 +10,7 @@ from django.http import HttpRequest
 from django.http.response import HttpResponseBase
 from django.utils.http import http_date
 
-from scheduling.views.session_cookie import SAME_SITE
+from scheduling.views.session_cookie import SAME_SITE, cookie_secure
 
 HOLD_COOKIE = "drlibre_hold"
 
@@ -44,7 +44,7 @@ def set_hold_cookie(
         expires=http_date(expires_at.timestamp()),
         httponly=True,
         samesite=SAME_SITE,
-        secure=settings.HTTPS_ONLY,
+        secure=cookie_secure(),
         path="/",
     )
 

@@ -60,7 +60,7 @@ def returns_200_home_and_cookie_when_login_is_right() -> None:
     cookie = response.cookies[COOKIE]
     assert cookie["httponly"] is True
     assert cookie["samesite"] == "Strict"
-    assert not cookie["secure"]
+    assert cookie["secure"] is True
     assert len(cookie.value) >= 43
 
 

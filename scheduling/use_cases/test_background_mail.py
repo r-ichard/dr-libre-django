@@ -1,7 +1,9 @@
 """The background send: after commit only, in the request context, failure logged blind."""
 
+import json
 import logging
 from collections.abc import Sequence
+from smtplib import SMTPException
 
 import pytest
 from django.core import mail
@@ -18,10 +20,12 @@ from scheduling.use_cases.test_sign_in_link_support import (
     _patient,
     _token_in_last_mail,
 )
+from scheduling.views.json_logging import JsonFormatter
 
 pytestmark = pytest.mark.django_db
 
 PLANTED_BODY = "planted-body-9f3a"
+PLANTED_ADDRESS = "planted.person@example.test"
 SEEN_CORRELATION_IDS: list[str] = []
 
 
@@ -84,8 +88,9 @@ def returns_log_line_without_body_or_address_when_mail_server_is_down(
         wait_until_idle()
 
     assert [record.getMessage() for record in caplog.records] == ["background mail not sent"]
-    assert PLANTED_BODY not in caplog.text
-    assert PATIENT_EMAIL not in caplog.text
+    written = JsonFormatter().format(caplog.records[0])
+    assert PLANTED_BODY not in written
+    assert PATIENT_EMAIL not in written
 
 
 class UnexpectedFailureBackend(BaseEmailBackend):
@@ -106,8 +111,9 @@ def returns_log_line_without_body_or_address_when_send_raises_other_exception(
         wait_until_idle()
 
     assert [record.getMessage() for record in caplog.records] == ["background mail not sent"]
-    assert PLANTED_BODY not in caplog.text
-    assert PATIENT_EMAIL not in caplog.text
+    written = JsonFormatter().format(caplog.records[0])
+    assert PLANTED_BODY not in written
+    assert PATIENT_EMAIL not in written
 
 
 def returns_link_address_with_only_the_token_when_link_is_mailed(
@@ -122,3 +128,33 @@ def returns_link_address_with_only_the_token_when_link_is_mailed(
 
     expected = f"{settings.PUBLIC_BASE_URL}/sign-in/link?token={_token_in_last_mail()}"  # type: ignore[attr-defined]
     assert expected in str(mail.outbox[-1].body).splitlines()
+
+
+class PlantedAddressSmtpFailureBackend(BaseEmailBackend):
+    def send_messages(self, email_messages: Sequence[EmailMessage]) -> int:
+        raise SMTPException(f"rejected {PLANTED_ADDRESS}")
+
+
+def returns_error_type_trace_and_correlation_id_in_log_when_send_fails(
+    django_capture_on_commit_callbacks: object, settings: object
+) -> None:
+    _use_backend(settings, PlantedAddressSmtpFailureBackend)
+    records: list[str] = []
+    handler = logging.Handler()
+    handler.setFormatter(JsonFormatter())
+    handler.emit = lambda record: records.append(handler.format(record))  # type: ignore[method-assign]
+    logging.getLogger("drlibre.mail").addHandler(handler)
+
+    try:
+        with _at(NOW), django_capture_on_commit_callbacks(execute=True):  # type: ignore[operator]
+            send_after_commit(_message())
+        wait_until_idle()
+    finally:
+        logging.getLogger("drlibre.mail").removeHandler(handler)
+
+    line = json.loads(records[0])
+    assert line["correlation_id"] == "corr-link"
+    assert line["exception"]["type"] == "SMTPException"
+    assert any("send_messages" in frame for frame in line["exception"]["frames"])
+    assert PLANTED_ADDRESS not in records[0]
+    assert PLANTED_BODY not in records[0]

@@ -149,9 +149,10 @@ Gates and review pass and a run is still wrong about one time in three: every ho
 
 ```sh
 git fetch origin
-git checkout -b verify/<task> main
-git merge --squash origin/fabro/run/<run id> && git commit -m "wip: <task>, verification only"
-git checkout main
+git switch -C verify/<task> main            # -C: a stale branch of that name is replaced, never reused
+git merge --squash origin/fabro/run/<run id>
+[ "$(git branch --show-current)" = "verify/<task>" ] && git commit -m "wip: <task>, verification only"
+git switch main && git status -sb | head -1  # must read "## main...origin/main", nothing ahead
 
 # 1. the five gates, from a fresh clone, in a container
 docker run --rm -v "$PWD":/src:ro node:22-bookworm bash -c "git config --global --add safe.directory '*' \
@@ -232,6 +233,9 @@ container.
 
 - Edit `drlibre-specs.md`, or let a run do it.
 - Commit a work-in-progress squash to `main`: verification lives on `verify/<task>`.
+  It happened twice: once pushed (`e9a419c`, reverted), once caught before the push,
+  when `git checkout -b` met a stale `verify/` branch, failed, and the script went on
+  and committed on `main`. Check the branch name before every wip commit.
 - Force-push `main`, or rewrite its history: the repository is public.
 - Put a token, a password other than the published demo one, or a real person's data
   in an issue, a log or a commit.

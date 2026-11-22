@@ -1060,3 +1060,14 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - New workflow `repair`: toolchain, the last gates, one agent that fixes what they name,
   lint and tests, the gates again. For an approved branch only; the orchestrator reads
   its diff, which holds tests and `mutation-equivalents.txt` and nothing else.
+
+## 2026-11-22 a wip squash on local main again, caught before the push
+
+- `git checkout -b verify/27a main` failed because a `verify/27a` from the first
+  verification of 27a still existed; the script went on, squashed the held branch into
+  `main` and committed "wip: ... verification only" there. The gates then ran on the
+  stale branch and passed with 5002 tests, the old count: that number, and a diff that
+  deleted 3205 lines, gave it away. Nothing was pushed. Moved the commit to
+  `verify/27a`, put local `main` back on `origin/main`.
+- Recipe now: `git switch -C verify/<task> main`, and the wip commit only runs when the
+  current branch is the verify branch. `set -e` did not stop the script.

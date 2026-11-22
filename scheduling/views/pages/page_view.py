@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.http.response import HttpResponseBase
 from django.shortcuts import render
 from django.utils.cache import add_never_cache_headers
+from django.utils.log import log_response
 from django.views import View
 
 from scheduling.domain.failure import Failure
@@ -54,6 +55,8 @@ class PageView(View):
     allowed_roles: frozenset[Role] | None = None
     user: User | None = None
     resolved: ResolvedSession | None = None
+    # The page a form-only address belongs to: a path template filled from the URL's kwargs.
+    form_page = ""
     read_scope: RateLimitScope | None = None
 
     def dispatch(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponseBase:
@@ -73,7 +76,8 @@ class PageView(View):
         self.user = self.resolved.user if self.resolved else None
         if self.allowed_roles is not None:
             if self.user is None:
-                query = urlencode({"next": request.get_full_path()}, safe="/")
+                next_path = self._form_page_path() if self.is_form_only else request.get_full_path()
+                query = urlencode({"next": next_path}, safe="/")
                 return HttpResponseRedirect(f"{SIGN_IN_PATH}?{query}")
             if Role(self.user.role) not in self.allowed_roles:
                 return render_page(request, "errors/403.html", status=403, signed_in_user=self.user)
@@ -83,7 +87,43 @@ class PageView(View):
                 return self._limited_page(request, wait)
         if request.method == "GET" and type(self).get is PageView.get and not self.template_name:
             return self.http_method_not_allowed(request)
+        if request.method not in self._allowed_methods():
+            return self.http_method_not_allowed(request)
         return super().dispatch(request, *args, **kwargs)
+
+    @property
+    def is_form_only(self) -> bool:
+        """No page answers a GET: the view refuses GET, or has neither a template nor a get."""
+        answers_get = "get" in self.http_method_names and (
+            bool(self.template_name) or type(self).get is not PageView.get
+        )
+        return not answers_get
+
+    def _form_page_path(self) -> str:
+        return self.form_page.format(**self.kwargs)
+
+    def _allowed_methods(self) -> list[str]:
+        methods = [name.upper() for name in self.http_method_names if hasattr(self, name)]
+        if self.is_form_only:
+            return [method for method in methods if method not in ("GET", "HEAD")]
+        return methods
+
+    def http_method_not_allowed(
+        self, request: HttpRequest, *args: object, **kwargs: object
+    ) -> HttpResponse:
+        response = render_page(
+            request,
+            "errors/405.html",
+            {"form_page": self._form_page_path()},
+            status=405,
+            signed_in_user=self.user,
+        )
+        response.headers["Allow"] = ", ".join(self._allowed_methods())
+        log_response(
+            "Method Not Allowed (%s): %s", request.method, request.path,
+            response=response, request=request,
+        )  # fmt: skip
+        return response
 
     def _limited_page(self, request: HttpRequest, wait: int) -> HttpResponse:
         """Keeps the layout and a way on: the same address, to try again."""

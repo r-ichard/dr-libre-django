@@ -19,6 +19,7 @@ BACK_TO_LIST = (LIST_PATH, "Back to the appointments")
 
 
 class AppointmentExportPage(PageView):
+    form_page = LIST_PATH
     allowed_roles = frozenset({Role.ADMIN})
     http_method_names = ["post"]
 

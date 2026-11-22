@@ -127,6 +127,7 @@ class AppointmentPage(ClinicianPage):
 
 
 class NotesPage(AppointmentPage):
+    form_page = "/clinician/appointments/{appointment_id}"
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:

@@ -179,6 +179,7 @@ def _zone_of(appointment_type: AppointmentType | None) -> ZoneInfo:
 
 
 class OfferPage(AdminWaitlistPage):
+    form_page = LIST_PATH
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
@@ -192,6 +193,7 @@ class OfferPage(AdminWaitlistPage):
 
 
 class AcceptPage(AdminWaitlistPage):
+    form_page = LIST_PATH
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:

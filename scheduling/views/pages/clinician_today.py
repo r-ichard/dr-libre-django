@@ -118,6 +118,7 @@ def _row(row: Appointment, zone: ZoneInfo, day: date) -> dict[str, object]:
 class StatusActionPage(ClinicianPage):
     """One status change by POST; the page to return to is a name from a fixed list."""
 
+    form_page = "/clinician/appointments/{appointment_id}"
     http_method_names = ["post"]
     target = AppointmentStatus.CHECKED_IN
 

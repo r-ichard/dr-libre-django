@@ -54,6 +54,7 @@ def _shown_at(row: Notification) -> str:
 
 
 class MarkReadPage(PageView):
+    form_page = PATH
     allowed_roles = frozenset({Role.PATIENT})
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
@@ -67,6 +68,7 @@ class MarkReadPage(PageView):
 
 
 class MarkAllReadPage(PageView):
+    form_page = PATH
     allowed_roles = frozenset({Role.PATIENT})
 
     def post(self, request: HttpRequest) -> HttpResponse:

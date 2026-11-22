@@ -82,6 +82,7 @@ class WaitlistPage(PageView):
 
 
 class AcceptOfferPage(PageView):
+    form_page = WAITLIST_PATH
     allowed_roles = frozenset({Role.PATIENT})
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:

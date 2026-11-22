@@ -180,6 +180,7 @@ class AppointmentShowPage(AdminAppointmentPage):
 
 
 class StatusActionPage(AdminAppointmentPage):
+    form_page = "/admin-console/appointments/{appointment_id}"
     http_method_names = ["post"]
     target = AppointmentStatus.CHECKED_IN
     done_code = "checked_in"

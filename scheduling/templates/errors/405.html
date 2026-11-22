@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}This address only takes a form · DrLibre{% endblock %}
+{% block content %}
+<h1>This address only takes a form</h1>
+<p>Nothing changes when this address is opened. Use the form on the page it belongs to.</p>
+{% if correlation_id %}<p class="hint">If you contact us, quote this reference: <code>{{ correlation_id }}</code></p>{% endif %}
+{% if form_page %}<p><a href="{{ form_page }}">Back to the page</a></p>{% else %}<p><a href="/">Go to the start page</a></p>{% endif %}
+{% endblock %}

@@ -98,6 +98,7 @@ class CodePage(PageView):
 
 
 class ResendPage(PageView):
+    form_page = "/book/holds/{hold_id}/code"
     http_method_names = ["post"]
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:

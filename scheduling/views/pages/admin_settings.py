@@ -36,6 +36,7 @@ class SettingsPage(PageView):
 
 
 class RemindersPage(PageView):
+    form_page = SETTINGS_PATH
     allowed_roles = frozenset({Role.ADMIN})
     http_method_names = ["post"]
 

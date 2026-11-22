@@ -6,17 +6,17 @@
 <p class="hint">Times are in the hospital's time zone, {{ time_zone }}. When clocks go back, an hour happens twice; the first one is used.</p>
 {% include "components/notice.html" with kind="information" text="Time off does not cancel appointments already booked in it." %}
 {% if rows %}
-<div class="table-wrap">
-  <table class="table">
-    <caption>Recorded time off</caption>
-    <thead><tr><th scope="col">From</th><th scope="col">To</th><th scope="col">Reason</th><th scope="col">Action</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-caption-time_off">
+  <table class="table" role="table">
+    <caption id="table-caption-time_off">Recorded time off</caption>
+    <thead><tr role="row"><th role="columnheader" scope="col">From</th><th role="columnheader" scope="col">To</th><th role="columnheader" scope="col">Reason</th><th role="columnheader" scope="col">Action</th></tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr id="time-off-{{ row.id }}">
-        <th scope="row">{{ row.starts }}</th>
-        <td>{{ row.ends }}</td>
-        <td>{{ row.reason|default:"None given" }}</td>
-        <td><a href="{{ row.delete_href }}">Delete<span class="visually-hidden"> time off from {{ row.starts }}</span></a></td>
+      <tr role="row" id="time-off-{{ row.id }}">
+        <th scope="row" role="rowheader" data-label="From">{{ row.starts }}</th>
+        <td role="cell" data-label="To">{{ row.ends }}</td>
+        <td role="cell" data-label="Reason">{{ row.reason|default:"None given" }}</td>
+        <td role="cell" data-label="Action"><a href="{{ row.delete_href }}">Delete<span class="visually-hidden"> time off from {{ row.starts }}</span></a></td>
       </tr>
       {% endfor %}
     </tbody>

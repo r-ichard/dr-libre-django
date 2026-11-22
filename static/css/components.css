@@ -230,3 +230,21 @@
 .bar { display: block; width: 100%; min-width: 6rem; height: 0.75rem; }
 .bar__track { fill: var(--colour-page); stroke: var(--colour-line); }
 .bar__value { fill: var(--colour-primary); stroke: var(--colour-ink); }
+
+/* Conflict page: three labelled values per field */
+.conflict-fields { margin-block: var(--space-4); }
+.conflict-fields__label { font-size: 1rem; margin-block: var(--space-3) 0; }
+.conflict-fields__values { margin: 0; }
+.conflict-fields__values dt { font-weight: 600; }
+.conflict-fields__values dd { margin: 0 0 var(--space-2); overflow-wrap: anywhere; }
+
+/* Under 40rem a row is a card with every value labelled; the markup stays a table (roles are on
+   the elements) so a screen reader still reads headers. From 40rem it is the table again. */
+@media (max-width: 39.99rem) {
+  .table, .table table, .table tbody, .table tr, .table td, .table th { display: block; }
+  .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .table th, .table td { white-space: normal; overflow-wrap: anywhere; border-top: 0; }
+  .table tr { border-top: 1px solid var(--colour-line); padding-block: var(--space-2); }
+  .table td::before { content: attr(data-label); display: block; color: var(--colour-ink-muted); font-size: var(--text-small); }
+  .table td.numeric, .table th.numeric { text-align: left; }
+}

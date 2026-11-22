@@ -95,7 +95,7 @@ def returns_seven_days_when_the_range_is_missing_or_hostile() -> None:
     for asked in ("", "90", "7;", "=cmd", "٧", "<script>"):
         html = admin_client().get(PATH, {"range": asked}).content.decode()
 
-        assert len(re.findall(r"<tr>\s*<th scope=\"row\">", html)) == 7, asked
+        assert len(re.findall(r"<tr role=\"row\">\s*<th scope=\"row\"", html)) == 7, asked
         assert _tiles(html)["Appointments"] == "0"
 
 
@@ -106,8 +106,8 @@ def returns_the_asked_number_of_days_when_the_range_is_today_or_30() -> None:
     today = admin_client().get(PATH, {"range": "today"}).content.decode()
     month = admin_client().get(PATH, {"range": "30"}).content.decode()
 
-    assert len(re.findall(r"<tr>\s*<th scope=\"row\">", today)) == 1
-    assert len(re.findall(r"<tr>\s*<th scope=\"row\">", month)) == 30
+    assert len(re.findall(r"<tr role=\"row\">\s*<th scope=\"row\"", today)) == 1
+    assert len(re.findall(r"<tr role=\"row\">\s*<th scope=\"row\"", month)) == 30
     assert _tiles(month)["Appointments"] == "1"
 
 
@@ -131,7 +131,7 @@ def returns_a_table_with_the_total_of_the_tile_and_a_chart_without_script_or_sty
 
     html = admin_client().get(PATH).content.decode()
 
-    counts = re.findall(r'<td class="numeric">(\d+)</td>', html)
+    counts = re.findall(r'<td class="numeric"[^>]*>(\d+)</td>', html)
     assert sum(map(int, counts)) == int(_tiles(html)["Appointments"]) == 3
     assert "style=" not in html and "<script" not in html
     assert 'class="bar__value" x="0" y="0" width="100"' in html

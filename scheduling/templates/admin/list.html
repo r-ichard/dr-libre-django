@@ -10,20 +10,20 @@
 <p class="hint list-count">{{ total_text }}{% if query %} for this search{% endif %}</p>
 <p><a class="button button--primary" href="{{ view.base_path }}/new">{{ view.new_text }}</a></p>
 {% if rows %}
-<div class="table-wrap" tabindex="0" role="region" aria-label="{{ view.plural|capfirst }} table">
-  <table class="table">
-    <caption>{{ view.plural|capfirst }}</caption>
-    <thead><tr><th scope="col">Name</th><th scope="col">{{ view.identifier_label }}</th>{% for label, accessor in view.columns %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-caption-list">
+  <table class="table" role="table">
+    <caption id="table-caption-list">{{ view.plural|capfirst }}</caption>
+    <thead><tr role="row"><th scope="col" role="columnheader">Name</th><th scope="col" role="columnheader">{{ view.identifier_label }}</th>{% for label, accessor in view.columns %}<th scope="col" role="columnheader">{{ label }}</th>{% endfor %}</tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr><th scope="row"><a href="{{ row.href }}">{{ row.name }}</a></th><td>{{ row.code }}</td>{% for cell in row.cells %}<td>{{ cell }}</td>{% endfor %}</tr>
+      <tr role="row"><th scope="row" role="rowheader" data-label="Name"><a href="{{ row.href }}">{{ row.name }}</a></th><td role="cell" data-label="{{ view.identifier_label }}">{{ row.code }}</td>{% for label, cell in row.cells %}<td role="cell" data-label="{{ label }}">{{ cell }}</td>{% endfor %}</tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
 {% include "components/pagination.html" %}
 {% elif query %}
-{% include "components/empty_state.html" with title="Nothing matches" text="Try fewer letters of the name or {{ view.identifier_label|lower }}." %}
+{% include "components/empty_state.html" with title="Nothing matches" text=empty_search_text %}
 {% else %}
 {% include "components/empty_state.html" with title="Nothing here yet" text="Add the first one to start." action_href=view.base_path|add:"/new" action_text=view.new_text %}
 {% endif %}

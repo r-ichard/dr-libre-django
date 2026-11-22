@@ -1,0 +1,16 @@
+<fieldset class="conflict-fields">
+  <legend>What differs</legend>
+  {% for row in conflicts %}
+    <h2 class="conflict-fields__label">{{ row.label }}</h2>
+    <dl class="conflict-fields__values">
+      <dt>You read</dt>
+      <dd>{% if row.read_is_known %}{% if row.read %}{{ row.read }}{% else %}Empty{% endif %}{% else %}Not known: this form did not keep it{% endif %}</dd>
+      <dt>Now stored</dt>
+      <dd>{% if row.stored %}{{ row.stored }}{% else %}Empty{% endif %}</dd>
+      <dt>You typed</dt>
+      <dd>{% if row.typed %}{{ row.typed }}{% else %}Empty{% endif %}</dd>
+    </dl>
+  {% empty %}
+    <p>No field differs; saving again changes nothing.</p>
+  {% endfor %}
+</fieldset>

@@ -8,18 +8,18 @@
   <a class="button button--primary" href="{{ new_href }}">Add availability</a>
 </div>
 {% if rows %}
-<div class="table-wrap">
-  <table class="table">
-    <caption>Weekly availability</caption>
-    <thead><tr><th scope="col">Day</th><th scope="col">Hours</th><th scope="col">Slot step</th><th scope="col">Room</th><th scope="col">Actions</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-caption-availability">
+  <table class="table" role="table">
+    <caption id="table-caption-availability">Weekly availability</caption>
+    <thead><tr role="row"><th role="columnheader" scope="col">Day</th><th role="columnheader" scope="col">Hours</th><th role="columnheader" scope="col">Slot step</th><th role="columnheader" scope="col">Room</th><th role="columnheader" scope="col">Actions</th></tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr>
-        <th scope="row">{{ row.weekday }}</th>
-        <td>{{ row.times }}</td>
-        <td>{{ row.step }} minutes</td>
-        <td>{{ row.room }}</td>
-        <td><a href="{{ row.edit_href }}">Edit<span class="visually-hidden"> {{ row.weekday }} {{ row.times }}</span></a> · <a href="{{ row.delete_href }}">Delete<span class="visually-hidden"> {{ row.weekday }} {{ row.times }}</span></a></td>
+      <tr role="row">
+        <th scope="row" role="rowheader" data-label="Day">{{ row.weekday }}</th>
+        <td role="cell" data-label="Hours">{{ row.times }}</td>
+        <td role="cell" data-label="Slot step">{{ row.step }} minutes</td>
+        <td role="cell" data-label="Room">{{ row.room }}</td>
+        <td role="cell" data-label="Actions"><a href="{{ row.edit_href }}">Edit<span class="visually-hidden"> {{ row.weekday }} {{ row.times }}</span></a> · <a href="{{ row.delete_href }}">Delete<span class="visually-hidden"> {{ row.weekday }} {{ row.times }}</span></a></td>
       </tr>
       {% endfor %}
     </tbody>

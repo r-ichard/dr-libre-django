@@ -16,13 +16,13 @@
 </form>
 <p class="hint list-count">{{ total_text }}</p>
 {% if rows %}
-<div class="table-wrap" tabindex="0" role="region" aria-label="Audit log table">
-  <table class="table">
-    <caption>Audit log, newest first</caption>
-    <thead><tr><th scope="col">Time</th><th scope="col">Who</th><th scope="col">What happened</th><th scope="col">Record</th><th scope="col">Correlation id</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-caption-audit">
+  <table class="table" role="table">
+    <caption id="table-caption-audit">Audit log, newest first</caption>
+    <thead><tr role="row"><th role="columnheader" scope="col">Time</th><th role="columnheader" scope="col">Who</th><th role="columnheader" scope="col">What happened</th><th role="columnheader" scope="col">Record</th><th role="columnheader" scope="col">Correlation id</th></tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr><th scope="row">{{ row.time }}</th><td>{{ row.actor }}</td><td>{{ row.action }}</td><td>{{ row.entity }}</td><td>{{ row.correlation_id }}</td></tr>
+      <tr role="row"><th scope="row" role="rowheader" data-label="Time">{{ row.time }}</th><td role="cell" data-label="Who">{{ row.actor }}</td><td role="cell" data-label="What happened">{{ row.action }}</td><td role="cell" data-label="Record">{{ row.entity }}</td><td role="cell" data-label="Correlation id">{{ row.correlation_id }}</td></tr>
       {% endfor %}
     </tbody>
   </table>

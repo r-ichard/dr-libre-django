@@ -4,11 +4,13 @@
 {% include "components/admin_nav.html" %}
 <h1>{{ title }}</h1>
 {% if problem %}{% include "components/notice.html" with kind="warning" text=problem %}{% endif %}
-{% if is_stale %}<p><a href="{{ back_path }}">See the current values</a></p>{% endif %}
+{% if is_stale %}<p><a href="{{ back_path }}">Open the record again to start over</a></p>
+{% include "components/conflict_fields.html" %}{% endif %}
 {% if time_zone_note %}{% include "components/notice.html" with kind="information" text=time_zone_note %}{% endif %}
 <form class="form" method="post" novalidate>
   {% csrf_token %}
   {% if version %}<input type="hidden" name="version" value="{{ version }}">{% endif %}
+  {% for name, text in read_texts.items %}<input type="hidden" name="read_{{ name }}" value="{{ text }}">{% endfor %}
   {% if summary %}{% include "components/error_summary.html" with errors=summary %}{% endif %}
   {% for field in fields %}
     {% if field.widget == "select" %}{% include "components/select.html" with name=field.name label=field.label options=field.options selected=field.value hint=field.hint error=field.error %}

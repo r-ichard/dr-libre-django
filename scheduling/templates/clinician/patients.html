@@ -9,13 +9,13 @@
   <button class="button button--secondary" type="submit">Search</button>
 </form>
 {% if rows %}
-<div class="table-wrap">
-  <table class="table">
-    <caption>Your patients</caption>
-    <thead><tr><th scope="col">Name</th><th scope="col">Phone</th><th scope="col">Last visit</th><th scope="col">Next visit</th></tr></thead>
+<div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-caption-patients">
+  <table class="table" role="table">
+    <caption id="table-caption-patients">Your patients</caption>
+    <thead><tr role="row"><th role="columnheader" scope="col">Name</th><th role="columnheader" scope="col">Phone</th><th role="columnheader" scope="col">Last visit</th><th role="columnheader" scope="col">Next visit</th></tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr><th scope="row">{{ row.name }}</th><td>{{ row.phone }}</td><td>{{ row.last_visit }}</td><td>{{ row.next_visit }}</td></tr>
+      <tr role="row"><th scope="row" role="rowheader" data-label="Name">{{ row.name }}</th><td role="cell" data-label="Phone">{{ row.phone }}</td><td role="cell" data-label="Last visit">{{ row.last_visit }}</td><td role="cell" data-label="Next visit">{{ row.next_visit }}</td></tr>
       {% endfor %}
     </tbody>
   </table>

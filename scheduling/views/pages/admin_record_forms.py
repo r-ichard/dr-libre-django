@@ -10,6 +10,7 @@ from django.http import QueryDict
 
 from scheduling.domain import clinician_rules, record_fields, user_rules
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.record_conflict import ReadKnown, ReadUnknown, ReadValue
 from scheduling.domain.vocabulary import Role
 from scheduling.use_cases import admin_record_reads
 from scheduling.views.pages.admin_record_kinds import (
@@ -218,3 +219,14 @@ def _choices(kind: str, name: str) -> list[tuple[str, str]]:
             return admin_record_reads.room_choices()
         case _:
             return admin_record_reads.parent_choices(kind)
+
+
+def read_texts(fields: Sequence[FormField], post: QueryDict) -> dict[str, ReadValue]:
+    """What the admin read when the form was opened: a `read_<field>` key is known text, a missing
+    key (older tab, hand-made post) is unknown. Display only; never written, never authorization."""
+    return {
+        field.name: ReadKnown(post.get(f"read_{field.name}", ""))
+        if f"read_{field.name}" in post
+        else ReadUnknown()
+        for field in fields
+    }

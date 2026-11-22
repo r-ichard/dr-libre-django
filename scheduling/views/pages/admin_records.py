@@ -11,6 +11,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 
 from scheduling.domain.failure import Failure, FailureCode, Result
+from scheduling.domain.record_conflict import ReadKnown, conflicting_fields
 from scheduling.domain.specialty_icons import FALLBACK_ICON, icon_file_for
 from scheduling.domain.vocabulary import Role
 from scheduling.models.base import Versioned
@@ -26,6 +27,7 @@ from scheduling.views.pages.admin_record_forms import (
     initial_text,
     kept_text,
     parse_form,
+    read_texts,
     typed_text,
 )
 from scheduling.views.pages.admin_record_kinds import (
@@ -42,7 +44,7 @@ from scheduling.views.pages.page_view import PageView, render_page
 
 STALE_TEXT = (
     "Another admin saved this record first. Your changes are not saved. "
-    "Saving again replaces theirs."
+    "Save again to replace the stored values with yours, or open the record again to start over."
 )
 UNREADABLE_VERSION = "This form is out of date or damaged. Open the record again to edit it."
 
@@ -96,18 +98,25 @@ class RecordListPage(RecordPage):
                 "href": f"{view.base_path}/{record.pk}",
                 "code": _cell(record, view.identifier_accessor),
                 "cells": [
-                    extras.get(record.pk, "") if accessor == "extra" else _cell(record, accessor)
-                    for _, accessor in view.columns
+                    (
+                        label,
+                        extras.get(record.pk, "")
+                        if accessor == "extra"
+                        else _cell(record, accessor),
+                    )
+                    for label, accessor in view.columns
                 ],
             }
             for record in found.items
         ]
         word = view.singular if found.total == 1 else view.plural
+        identifier = view.identifier_label.lower()
         context = {
             "view": view,
             "rows": rows,
             "query": query,
             "total_text": f"{found.total} {word}",
+            "empty_search_text": f"Try fewer letters of the name or {identifier}.",
             "current": view.path_name,
             "page": found.page,
             "page_count": found.page_count,
@@ -273,11 +282,46 @@ class RecordFormPage(RecordPage):
             "version": version,
             "problem": problem,
             "is_stale": status == 409,
+            "conflicts": self._conflicts(request, record, typed) if status == 409 else [],
+            "read_texts": self._read_inputs(request, record, status),
             "time_zone_note": self._time_zone_note(editing),
             "current": view.path_name,
             "back_path": self._back_path(editing),
         }
         return self.page(request, context, status)
+
+    def _conflicts(
+        self, request: HttpRequest, record: Model | None, typed: dict[str, str]
+    ) -> list[dict[str, object]]:
+        fields = self._fields(record)
+        rows = conflicting_fields(
+            {field.name: field.label for field in fields},
+            read_texts(fields, request.POST),
+            initial_text(fields, record),
+            kept_text(typed),
+        )
+        return [
+            {
+                "label": row.label,
+                "read": row.read.text if isinstance(row.read, ReadKnown) else "",
+                "read_is_known": isinstance(row.read, ReadKnown),
+                "stored": row.stored,
+                "typed": row.typed,
+            }
+            for row in rows
+        ]
+
+    def _read_inputs(
+        self, request: HttpRequest, record: Model | None, status: int
+    ) -> dict[str, str]:
+        """Hidden `read_` inputs: what the page now shows, so a second save compares with it."""
+        if record is None:
+            return {}
+        fields = self._fields(record)
+        if request.method == "GET" or status == 409:
+            return initial_text(fields, record)
+        posted = read_texts(fields, request.POST)
+        return {name: value.text for name, value in posted.items() if isinstance(value, ReadKnown)}
 
     def _back_path(self, editing: bool) -> str:
         return (

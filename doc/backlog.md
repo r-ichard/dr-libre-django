@@ -67,10 +67,10 @@ tasks.
 | 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
 | 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | merged `a6609fc` |
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | merged `e412ecb` |
-| 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | running `01M804C63PMX` |
+| 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | running `01M809JSVRXD` |
 | 17c | QA round 2, clinician: time grid alignment, multi-day time off, five smaller (#25 to #31) | 9, 16 | todo |
 | 17d | Demo seed books through the use cases (#32) | 16 | run `01M803CR8PEP` passed, not merged: branch `task/17d-demo-seed`, continued by 17e |
-| 17e | Demo seed survives a person using the demo; merges 17d with it | 16 | todo |
+| 17e | Demo seed survives a person using the demo; merges 17d with it | 16 | running `01M809HZ6B4J` |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |

@@ -498,3 +498,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - Task 17e continues on the branch `task/17d-demo-seed` and merges both.
 - To verify a run that finished behind a moved `main`: squash it locally, clone the local
   repository into the container (`-v "$PWD":/src:ro`, `git clone /src`), push only after.
+
+## 2026-11-22 task 17b, run 01M804C63PMX stopped by the subscription limit
+
+- Green failed after 8 minutes: "You've hit your 5-hour limit, resets 12:10am (UTC)".
+  Not the task. Since the evening the subscription had carried four task runs and five
+  QA runs, up to three at once.
+- `fabro resume` does nothing for a failed run. `fabro rewind <id> verify_red` makes a
+  new run from the checkpoint before the failed stage and starts it: 01M809JSVRXD. Plan
+  and red tests kept, 8 minutes not paid twice.
+- Runs beside each other are fast and each costs its share of one five-hour window. Two
+  at a time from now on; QA rounds start when no more than one task run is going. If the
+  limit hits again, the stage line reads "Error: ?" and the reason is in the last event
+  of `fabro events <id> --json`.

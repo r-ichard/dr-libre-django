@@ -84,7 +84,8 @@ tasks.
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
 | 24 | AppointmentResponse, Communication, AuditEvent: read side, accept an offer, mark as read | 15.2, 15.4 | merged with 24a `f39603f` |
 | 24a | Valid AuditEvent, samples for every FHIR type, the two failing gates | 15 | merged `f39603f` |
-| 24b | FHIR admin writes: Organization, Location, HealthcareService, CodeSystem, ValueSet | 15.4 | running `01M81C01MEPV` |
+| 24b | FHIR admin writes: Organization, Location, HealthcareService | 15.4 | merged `e80622c` |
+| 24b2 | FHIR admin writes: the specialty list through CodeSystem and ValueSet | 15.4 | running |
 | 24c | FHIR writes: Practitioner, PractitionerRole, time off through `notAvailable` | 15.2, 15.4 | todo |
 | 24d | Section 15 closed: tables as a test, one journey through FHIR, ADRs, README section | 15 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |

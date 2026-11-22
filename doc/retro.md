@@ -850,3 +850,19 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   cross-site token. My task 21 check fetched the page and read its body. The page
   quality test checks that a title exists. Task 25d, with the rule that a title is
   plain text.
+
+## 2026-11-22 task 24b, run 01M81C01MEPV (26 minutes, merged e80622c)
+
+- Sliced by its own plan: Organization, Location and HealthcareService now, the
+  specialty list next (task 24b2). One pass, no bounce.
+- With a token per role: a hospital is created through the Location of its site and its
+  Organization answers 405 to a write; a taken code in another letter case is refused
+  naming `identifier`; a delete with a department left answers 409 "Still used by: 1
+  department"; stale `If-Match` 412 on update and on delete; a PUT that changes nothing
+  keeps the version. 100 validator samples, 0 errors; 4156 tests.
+- My gate command ended its validator step with a `grep` for errors; with none to find
+  it exits 1, and under `pipefail` that skipped the mutation gate. I ran it again alone.
+  The command now prints each gate's exit code and chains nothing.
+- The mutation run counts 1165 of 6221 mutants as "no tests": domain code that only
+  view tests reach. The gate lets them through. So "pure functions under the mutation
+  gate" has been half true for the FHIR write modules. Task 26.

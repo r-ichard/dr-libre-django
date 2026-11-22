@@ -79,8 +79,8 @@ tasks.
 | 21 | Dashboard, reporting, CSV export | 13 | todo |
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
-| 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | running `01M80G2TSWY5` |
-| 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | todo |
+| 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
+| 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | running |
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries | 15.2 to 15.6 | todo |
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
@@ -172,3 +172,6 @@ Small findings waiting for the next task that touches the same file.
 - `make test`: 3298 tests, 53 seconds on a loaded machine. Measure it alone, list the
   slowest tests, and decide a budget that is checked by a gate, not by a sentence in a
   task. Task 26.
+- Review of 22a, small: `scripts/fhir_validate.sh` never drops its throwaway database;
+  FHIR search sorts by the database collation where it sorted by code point; the
+  `fhir_samples` command imports from the view layer. Task 24.

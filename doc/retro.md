@@ -639,3 +639,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   rail of a time off band the end time still ends in an ellipsis. Task 25.
 - 3298 tests in 53 seconds on my machine while a sandbox ran. The "30 seconds" I wrote
   into four tasks was never checked by anything. A budget is a gate or it is a wish.
+
+## 2026-11-22 task 22a, run 01M80G2TSWY5 (21 minutes, merged)
+
+- Review bounced once, on the four things the task was about: the validate target, the
+  sample walk, the page cut in the database, the ADR. The second reader holds a run to
+  the task when the task says "done when `make fhir-validate` passes".
+- From a fresh clone: `make fhir-validate` fetches Java and the pinned validator and
+  validates 34 samples with 0 errors. With curl: writes answer 405 as FHIR JSON, two
+  `_include` work, `Vary` and `no-store` are set, 25 bad tokens do not lock out the
+  valid one.
+- Every API test now goes through a client that enforces the cross-site check, 30 test
+  files changed for it, and a guard test refuses the bare client. The hole of task 13a
+  is closed for the third and, by construction, last time.
+- The sync prompt tells its agent to take `scripts/**` from `main`; this run added a
+  product script there. Narrowed the rule to the files the orchestrator wrote.

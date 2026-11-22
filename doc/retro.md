@@ -878,3 +878,10 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   with an icon. 4190 tests.
 - The UX pass is done except one test over every form. Five runs for what I had written
   as one task.
+
+## 2026-11-22 QA round 3 starts
+
+- Seven areas this time: access, booking, public, journeys, clinician, admin, and fhir
+  once task 24d is in. One QA run at a time, beside the FHIR task run, so the
+  subscription's window carries two runs and not five. First: admin (01M81DW85Z1D), the
+  largest surface no QA run has seen.

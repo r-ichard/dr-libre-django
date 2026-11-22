@@ -75,7 +75,12 @@ in its review (`doc/reviews/`): write that rest as a new task file before moving
 
 ## Run it
 
+From a clone of its own, not from the working tree an orchestrator switches branches
+in: the compose file mounts the source into the container, so a checkout changes the
+code under a running server.
+
 ```sh
+git clone https://github.com/r-ichard/dr-libre-django.git drlibre-try && cd drlibre-try
 docker compose up --wait                                   # app, database, mail inbox
 docker compose exec web python manage.py seed_demo         # demo data, repeatable
 open http://127.0.0.1:8000                                 # the product
@@ -86,6 +91,16 @@ docker compose down -v                                     # stop and forget
 Demo accounts, all with the password in `.env.example` (`DEMO_PASSWORD`):
 `admin@example.test`, `clinician@example.test`, `patient@example.test`. A visitor needs
 no account: search, pick a time, type an email address, read the code in the inbox.
+
+From an empty hospital to a booking, walked on `6d98501` (2026-11-22), every step
+answered as expected. As the admin, in the admin console, in this order: a hospital
+(with its time zone), a specialty, a department of the hospital, a room of the
+department, an appointment type of the department (the colour is typed, like `#2f6f6a`;
+tick "Bookable online"), a user with the role Clinician and a temporary password, then
+"Clinicians": attach a profile to that user (department, specialty, room). Sign out,
+sign in as the clinician, "Availability": one rule per weekday. Sign out: the start
+page finds the clinician, the hospital and the specialty; pick a time, fill in the
+details, take the code from the inbox, confirm. The clinician's calendar shows it.
 
 ## The pipeline
 
@@ -139,13 +154,23 @@ docker run --rm -v "$PWD":/src:ro node:22-bookworm bash -c "git config --global 
   make lint; echo lint=\$?; make test; echo test=\$?; make gate; echo gate=\$?; \
   make fhir-validate; echo fhir=\$?; make mutate; echo mutate=\$?"
 
-# 2. the product itself, from the same branch
+# 2. the product itself, from the same branch, on ports of its own (8100, mail 8125)
 git clone -q -b verify/<task> . /tmp/drlibre-fresh && cd /tmp/drlibre-fresh
-docker compose -p drlibre-verify up -d --build --wait
-docker compose -p drlibre-verify exec -T web python manage.py seed_demo
+cat > /tmp/verify-ports.yaml <<'YAML'
+services:
+  web:
+    ports: !override ["127.0.0.1:8100:8000"]
+  mail:
+    ports: !override ["127.0.0.1:8125:80"]
+YAML
+alias stack='docker compose -p drlibre-verify -f compose.yaml -f /tmp/verify-ports.yaml'
+stack up -d --build --wait
+stack exec -T web python manage.py seed_demo
 #    ... do what the task's last paragraph says "the orchestrator" does ...
-docker compose -p drlibre-verify down -v --rmi local --remove-orphans
+stack down -v --rmi local --remove-orphans
 ```
+
+The ports differ from a try-out stack's (8000, 8025) so both can be up at once.
 
 What to do by hand, learned the hard way:
 

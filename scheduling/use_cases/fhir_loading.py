@@ -129,22 +129,32 @@ def healthcare_services(ids: list[UUID]) -> list[Resource]:
     ]
 
 
-def specialty_list() -> SpecialtyList:
-    rows = list(Specialty.objects.filter(is_active=True).order_by("code"))
+def specialty_revision() -> int:
     with connection.cursor() as cursor:
         cursor.execute("SELECT last_value FROM scheduling_specialty_revision")
         revision = cursor.fetchone()
-    version = int(revision[0]) if revision else 1
-    updated = max((row.updated_at for row in rows), default=EPOCH)
-    return SpecialtyList(version, updated, tuple((row.code, row.name) for row in rows))
+    return int(revision[0]) if revision else 1
 
 
-def specialty_code_system_resource() -> Resource:
-    return specialty_code_system(specialty_list())
+def specialty_list(*, include_inactive: bool) -> SpecialtyList:
+    """Staff read every specialty with the inactive ones flagged, so a client that reads the list
+    and writes it back does not delete what is switched off; the public reads active ones."""
+    rows = Specialty.objects.order_by("code")
+    if not include_inactive:
+        rows = rows.filter(is_active=True)
+    listed = list(rows)
+    updated = max((row.updated_at for row in listed), default=EPOCH)
+    inactive = frozenset(row.code for row in listed if not row.is_active)
+    concepts = tuple((row.code, row.name) for row in listed)
+    return SpecialtyList(specialty_revision(), updated, concepts, inactive)
+
+
+def specialty_code_system_resource(*, include_inactive: bool) -> Resource:
+    return specialty_code_system(specialty_list(include_inactive=include_inactive))
 
 
 def specialty_value_set_resource() -> Resource:
-    return specialty_value_set(specialty_list())
+    return specialty_value_set(specialty_list(include_inactive=False))
 
 
 def practitioners(user_ids: list[UUID]) -> list[Resource]:

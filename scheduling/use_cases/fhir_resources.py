@@ -37,6 +37,9 @@ from scheduling.use_cases.fhir_schedule_writes import (
     update_schedule,
 )
 from scheduling.use_cases.fhir_slot_reads import read_slot, search_slots
+from scheduling.use_cases.fhir_specialty_writes import (
+    specialty_write_refusal,
+)
 
 
 def read(resource_type: str, identifier: str, caller: Caller) -> Result[Resource]:
@@ -119,4 +122,6 @@ def is_read_only_here(resource_type: str, identifier: UUID) -> bool:
 
 
 def refusal_before_body(resource_type: str, caller: Caller) -> Failure | None:
+    if resource_type == "CodeSystem":
+        return specialty_write_refusal(caller)
     return write_refusal(resource_type, caller)

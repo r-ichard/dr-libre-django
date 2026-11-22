@@ -46,14 +46,14 @@ def write_refusal(resource_type: str, caller: Caller) -> Failure | None:
     with a body they had no right to send."""
     if resource_type not in RECORD_TYPES:
         return None
-    admin = _admin(caller)
+    admin = admin_of(caller)
     return admin if isinstance(admin, Failure) else None
 
 
 def create_record_resource(
     resource_type: str, body: dict[str, object], caller: Caller
 ) -> Result[Resource]:
-    admin = _admin(caller)
+    admin = admin_of(caller)
     if isinstance(admin, Failure):
         return admin
     kind = location_kind(body) if resource_type == "Location" else KIND_OF_TYPE[resource_type]
@@ -78,7 +78,7 @@ def update_record_resource(
     caller: Caller,
     expected_version: int | None,
 ) -> Result[Resource]:
-    admin = _admin(caller)
+    admin = admin_of(caller)
     if isinstance(admin, Failure):
         return admin
     found = _stored(resource_type, identifier)
@@ -100,7 +100,7 @@ def update_record_resource(
 def delete_record_resource(
     resource_type: str, identifier: UUID, caller: Caller, expected_version: int | None
 ) -> Result[None]:
-    admin = _admin(caller)
+    admin = admin_of(caller)
     if isinstance(admin, Failure):
         return admin
     found = _stored(resource_type, identifier)
@@ -109,7 +109,7 @@ def delete_record_resource(
     return delete_record(found[0], identifier, admin, expected_version)
 
 
-def _admin(caller: Caller) -> User | Failure:
+def admin_of(caller: Caller) -> User | Failure:
     if caller.user is None:
         return Failure.unauthenticated()
     return caller.user if caller.role is Role.ADMIN else Failure.forbidden()

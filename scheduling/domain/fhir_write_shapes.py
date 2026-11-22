@@ -11,6 +11,7 @@ from scheduling.domain.fhir_record_write import (
     SERVICE_SHAPE,
 )
 from scheduling.domain.fhir_schedule import SCHEDULE_SHAPE
+from scheduling.domain.fhir_specialty_write import CODE_SYSTEM_SHAPE
 
 WRITE_SHAPES: dict[str, Shape] = {
     "Schedule": SCHEDULE_SHAPE,
@@ -21,4 +22,5 @@ WRITE_SHAPES: dict[str, Shape] = {
     "Organization": ORGANIZATION_SHAPE,
     "Location": LOCATION_SHAPE,
     "HealthcareService": SERVICE_SHAPE,
+    "CodeSystem": CODE_SYSTEM_SHAPE,
 }

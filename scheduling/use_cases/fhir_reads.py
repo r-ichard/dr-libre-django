@@ -228,9 +228,11 @@ PARTS: dict[str, tuple[Part, ...]] = {
     "PractitionerRole": (ROLE,),
     "Schedule": (SCHEDULE,),
 }
-SINGLE_BUILDERS: dict[str, Callable[[], Resource]] = {
-    "CodeSystem": loading.specialty_code_system_resource,
-    "ValueSet": loading.specialty_value_set_resource,
+SINGLE_BUILDERS: dict[str, Callable[[Viewer], Resource]] = {
+    "CodeSystem": lambda viewer: loading.specialty_code_system_resource(
+        include_inactive=viewer is Viewer.STAFF
+    ),
+    "ValueSet": lambda _viewer: loading.specialty_value_set_resource(),
 }
 
 
@@ -241,7 +243,7 @@ def read_resource(resource_type: str, identifier: str, viewer: Viewer) -> Result
     if declaration.single_id:
         if identifier != declaration.single_id:
             return Failure.not_found()
-        return Success(SINGLE_BUILDERS[resource_type]())
+        return Success(SINGLE_BUILDERS[resource_type](viewer))
     for part in PARTS[resource_type]:
         if part.rows(viewer).filter(**{part.id_column: identifier}).exists():
             return Success(part.built([UUID(identifier)], viewer)[0])
@@ -253,7 +255,9 @@ def search_resource(resource_type: str, query: SearchQuery, viewer: Viewer) -> R
     if declaration is None:
         return Failure.not_found()
     if declaration.single_id:
-        single = [SINGLE_BUILDERS[resource_type]()] if query.offset == 0 and query.count else []
+        single = (
+            [SINGLE_BUILDERS[resource_type](viewer)] if query.offset == 0 and query.count else []
+        )
         return Success(SearchPage(1, single, []))
     candidates = _candidates(PARTS[resource_type], query, viewer)
     page = [

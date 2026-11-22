@@ -17,6 +17,22 @@ class SpecialtyList:
     version: int
     updated_at: datetime
     concepts: tuple[tuple[str, str], ...]
+    inactive_codes: frozenset[str] = frozenset()
+
+
+INACTIVE_CODE = "inactive"
+INACTIVE_DECLARATION: Resource = {
+    "code": INACTIVE_CODE,
+    "uri": "http://hl7.org/fhir/concept-properties#inactive",
+    "type": "boolean",
+}
+
+
+def _concept(source: SpecialtyList, code: str, display: str) -> Resource:
+    listed: Resource = {"code": code, "display": display}
+    if code in source.inactive_codes:
+        listed["property"] = [{"code": INACTIVE_CODE, "valueBoolean": True}]
+    return listed
 
 
 def specialty_code_system(source: SpecialtyList) -> Resource:
@@ -29,8 +45,9 @@ def specialty_code_system(source: SpecialtyList) -> Resource:
         "status": "active",
         "content": "complete",
         "caseSensitive": False,
+        "property": [INACTIVE_DECLARATION],
         "count": len(source.concepts),
-        "concept": [{"code": code, "display": display} for code, display in source.concepts],
+        "concept": [_concept(source, code, display) for code, display in source.concepts],
     }
 
 

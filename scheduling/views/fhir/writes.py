@@ -8,12 +8,13 @@ from django.http import HttpRequest, HttpResponse
 
 from scheduling.domain.failure import Failure, FieldMessage
 from scheduling.domain.fhir_body import exact_elements, identity_problem, if_match_version
-from scheduling.domain.fhir_common import Resource
+from scheduling.domain.fhir_common import SPECIALTY_ID, Resource
 from scheduling.domain.fhir_outcome import information_outcome
 from scheduling.domain.fhir_search import parse_id
 from scheduling.domain.fhir_write_shapes import WRITE_SHAPES
 from scheduling.use_cases import fhir_resources
 from scheduling.use_cases.fhir_caller import Caller
+from scheduling.use_cases.fhir_specialty_writes import update_specialty_list
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.fhir.responses import (
     failure_response,
@@ -34,6 +35,8 @@ def write(
     refusal = fhir_resources.refusal_before_body(resource_type, caller)
     if refusal is not None:
         return failure_response(refusal)
+    if resource_type == "CodeSystem":
+        return _specialty_list_written(request, raw_identifier, caller)
     identifier = parse_id(raw_identifier) if raw_identifier is not None else None
     if raw_identifier is not None and identifier is None:
         return failure_response(Failure.not_found())
@@ -54,6 +57,24 @@ def write(
     if identifier is None:
         return _created(request, resource_type, body, caller)
     result = fhir_resources.update(resource_type, UUID(identifier), body, caller, version.value)
+    if isinstance(result, Failure):
+        return failure_response(result)
+    return _with_etag(resource_response(result.value), result.value)
+
+
+def _specialty_list_written(
+    request: HttpRequest, raw_identifier: str | None, caller: Caller
+) -> HttpResponse:
+    """The one CodeSystem has the id `specialty`, not a UUID, so it skips the UUID routing."""
+    if raw_identifier != SPECIALTY_ID:
+        return failure_response(Failure.not_found())
+    version = if_match_version(request.headers.get("If-Match"))
+    if isinstance(version, Failure):
+        return failure_response(version)
+    body = _checked_body(request, "CodeSystem", SPECIALTY_ID)
+    if isinstance(body, Failure):
+        return failure_response(body)
+    result = update_specialty_list(body, caller, version.value)
     if isinstance(result, Failure):
         return failure_response(result)
     return _with_etag(resource_response(result.value), result.value)

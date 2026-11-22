@@ -209,6 +209,13 @@ def returns_code_system_and_value_set_of_all_specialties_when_list_mapped() -> N
         "status": "active",
         "content": "complete",
         "caseSensitive": False,
+        "property": [
+            {
+                "code": "inactive",
+                "uri": "http://hl7.org/fhir/concept-properties#inactive",
+                "type": "boolean",
+            }
+        ],
         "count": 2,
         "concept": [
             {"code": "cardio", "display": "Cardiology"},
@@ -334,3 +341,23 @@ def returns_email_only_when_practitioner_has_no_phone() -> None:
     source = PractitionerSource(FIRST, "Dr Ada Hart", "Cardiologist", 7, MOMENT, True, contact)
 
     assert practitioner(source)["telecom"] == [{"system": "email", "value": "ada@example.org"}]
+
+
+def returns_inactive_property_only_on_listed_inactive_codes_when_code_system_mapped() -> None:
+    source = SpecialtyList(
+        7,
+        MOMENT,
+        (("cardio", "Cardiology"), ("derm", "Dermatology")),
+        frozenset({"derm"}),
+    )
+
+    concepts = specialty_code_system(source)["concept"]
+
+    assert concepts == [
+        {"code": "cardio", "display": "Cardiology"},
+        {
+            "code": "derm",
+            "display": "Dermatology",
+            "property": [{"code": "inactive", "valueBoolean": True}],
+        },
+    ]

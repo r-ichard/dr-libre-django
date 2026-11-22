@@ -353,6 +353,18 @@ FHIR_WRITE_BODIES = [
     json.dumps({"resourceType": "Location", "physicalType": {"coding": "si"}, "extension": [1]}),
     json.dumps({"resourceType": "HealthcareService", "extension": [{"url": 1}], "active": "y"}),
     json.dumps({"resourceType": "HealthcareService", "providedBy": {"reference": "x" * 9_999}}),
+    json.dumps({"resourceType": "CodeSystem", "concept": [1, None, "text", []]}),
+    json.dumps({"resourceType": "CodeSystem", "concept": {"code": "a"}}),
+    json.dumps({"resourceType": "CodeSystem",
+                "concept": [{"code": "x" * 100_000, "display": "y" * 100_000}]}),
+    json.dumps({"resourceType": "CodeSystem", "concept": [{"code": "a", "property": "inactive"}]}),
+    json.dumps({"resourceType": "CodeSystem",
+                "concept": [{"code": "a", "property": [1, {"code": 5}]}]}),
+    json.dumps({"resourceType": "CodeSystem",
+                "concept": [{"code": "Cardio", "display": "A"},
+                            {"code": "cardio", "display": "B"}]}),
+    json.dumps({"resourceType": "CodeSystem", "count": 99,
+                "concept": [{"code": "a", "display": "A"}]}),
 ]  # fmt: skip
 
 
@@ -384,6 +396,7 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
         ("put", f"/fhir/Patient/{clinic.patient.pk}"),
         ("post", f"/fhir/Patient/{clinic.patient.pk}"),
         ("put", "/fhir/Slot/abc"),
+        ("put", "/fhir/CodeSystem/specialty"),
         ("post", "/fhir/Appointment"),
         ("put", f"/fhir/Appointment/{uuid.uuid4()}"),
         *_record_paths(clinic.department.pk),
@@ -404,6 +417,7 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
                 "Organization",
                 "Location",
                 "HealthcareService",
+                "CodeSystem",
             ):
                 failures.append((method, path, response.status_code))
     assert failures == []

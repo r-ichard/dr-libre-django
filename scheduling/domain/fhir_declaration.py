@@ -98,7 +98,9 @@ FHIR_RESOURCES = (
         ),
         interactions=(*READ_ONLY, "create", "update", "delete"),
     ),
-    ResourceDeclaration("CodeSystem", (), single_id="specialty"),
+    ResourceDeclaration(
+        "CodeSystem", (), single_id="specialty", interactions=(*READ_ONLY, "update")
+    ),
     ResourceDeclaration("ValueSet", (), single_id="specialty"),
     ResourceDeclaration("Practitioner", _parameters(("name", _TEXT), ("active", _FLAG))),
     ResourceDeclaration(

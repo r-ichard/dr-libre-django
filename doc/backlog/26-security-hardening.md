@@ -85,7 +85,7 @@ Hygiene the gates should hold:
 15. The report has no test with hospital zones on both sides of UTC (review of 21): add
     it for the day an appointment is counted on.
 
-Decided in writing, `doc/adr/0010-security-review.md` and `doc/security-review.md`:
+Decided in writing, `doc/adr/0011-security-review.md` and `doc/security-review.md`:
 
 16. Encryption at rest for clinical notes and for a visitor's details in a booking hold:
     what protects them today, what a deployment must add, and the choice left to the

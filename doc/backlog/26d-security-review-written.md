@@ -4,7 +4,7 @@ Last part of the hardening (`doc/backlog/26-security-hardening.md` holds the who
 after tasks 26a to 26c: decisions and the review document. Prose, and a test only where
 an item says so. No product behaviour changes unless the plan shows it is small.
 
-Decided in writing, `doc/adr/0010-security-review.md` and `doc/security-review.md`:
+Decided in writing, `doc/adr/0011-security-review.md` and `doc/security-review.md`:
 
 16. Encryption at rest for clinical notes and for a visitor's details in a booking hold:
     what protects them today, what a deployment must add, and the choice left to the

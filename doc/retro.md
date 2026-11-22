@@ -1023,3 +1023,26 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   would pass after it added a search parameter. The review saw the new parameter and
   let it by; nobody was told the specification is not a run's to edit. Now the card and
   the review prompt say so, and 27d2 puts the file back.
+
+## 2026-11-22 task 27a, run 01M827VEA5HB (verified, held)
+
+- Slice of four items: #33, #38, #45, #41, each confirmed on the pages, `/api/v1` and
+  `/fhir`, and the waitlist window at hospitals in Berlin, Sydney and New York.
+- The one text rule the task asked for was applied with `single_line=True` to every
+  field of the admin forms. A bio or a description of two paragraphs, which `main`
+  saves, is refused. 5002 tests pass: none posts a line break to a textarea. Found by
+  posting two paragraphs to every textarea of every admin form.
+- Held as `task/27a-qa-round-3-inputs`; 27a2 runs on it. Its first run stopped at the
+  plan on the subscription's limit (fourth time); launched again after the reset.
+
+## 2026-11-22 task 27d2, run 01M827VES12W (merged)
+
+- Six of seven items in one run, two passes of review. The review prompt's new sentence
+  worked on its first day: the reviewer blocked the specification edit of 27d, the run
+  put the file back and moved the additions to a list that names their ADR.
+- The gap of 26a2 is closed for good: I sent the bytes myself over a socket, a request
+  line, `Host` and a cookie, and `auth/logout` answers 204. Three runs for one
+  condition, because each test sent what its library adds and not what curl sends.
+- By hand: 415 for `text/plain`, XML, a form type and no type on a FHIR write;
+  reschedule by `start` alone; `_sort` both ways on four types and paging under it to
+  the last of 81 entries.

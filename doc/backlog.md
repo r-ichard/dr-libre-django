@@ -104,11 +104,12 @@ tasks.
 | 26c | Gates that hold: per-test time gate, mutants without a test, the flaky test, `make audit`, docstrings | process | todo |
 | 26d | Security review written: encryption at rest, the server, the review document, the owner's questions | all | todo |
 | 27a | QA round 3, inputs: column bounds (#33), control characters (#38), text that is a number (#45), the waitlist window's last day (#41), hostile-input test derived from forms and schemas | 4, 8 | verified (items 1 to 3, 6), held on `task/27a-qa-round-3-inputs` until 27a2 |
-| 27a2 | The one text rule as a person fills a form: textareas take line breaks again, a page shows the rule's message, hostile-input test derived from forms and schemas, refused forms keep input | 4, 16 | running |
+| 27a2 | The one text rule as a person fills a form: textareas take line breaks again, a page shows the rule's message, hostile-input test derived from forms and schemas, refused forms keep input | 4, 16 | stopped by the subscription limit at the plan, launched again |
 | 27b | QA round 3, pages: rule sentences (#34), status refusals (#35), messages (#37, #40, #43), ways on (#42, #44, #49), a reschedule that moves nothing (#39), time zone change confirmed (#36) | 5, 10, 16 | todo |
 | 27c | README, smoke test, hand-over document, what QA of the public and FHIR areas adds | all | todo |
 | 27d | QA round 3, FHIR: date searches that leave records out (#51), NUL byte in a search (#50), what a write must declare (#52, and `curl -X POST` without a length), comma lists, what a 400 says, `_sort` by date | 15 | merged `069fd46` (items 1 to 3: #50, #51) |
-| 27d2 | FHIR: what a write must declare (#52, `curl -X POST` without a length), what every 400 says, reschedule by `start` alone, `_sort` by date, the specification put back | 15 | next |
+| 27d2 | FHIR: what a write must declare (#52, `curl -X POST` without a length), what every 400 says, reschedule by `start` alone, `_sort` by date, the specification put back | 15 | merged `cbf05a6` (all but item 3: #52) |
+| 27d3 | FHIR: a message of its own on every 400, never echoing what the client sent | 15 | todo |
 
 ## Carried items
 
@@ -166,6 +167,9 @@ Small findings waiting for the next task that touches the same file.
 - A day without a time in a FHIR date search (`date=2026-11-24`) is that day in UTC, not
   in a hospital's zone (ADR 0005, task 27d): a search crosses hospitals. An appointment
   at 00:30 in Berlin is found under the day before. Owner to confirm.
+- ADR 0010 is "proposed": `_sort` on every date parameter (section 15.1 lists none
+  of them), 415 for a FHIR write that does not say JSON, and the search-value rules of
+  task 27d. Owner to accept or amend.
 - A wrong method on a route of `/api/v1` answers 404 `not_found`, never 405 (QA round 3,
   public area): section 4 has no failure code for a method. Owner to confirm whether the
   contract gains one. Listed with the owner's questions of task 26d.

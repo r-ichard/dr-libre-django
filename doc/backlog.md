@@ -82,9 +82,9 @@ tasks.
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
 | 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | merged `ca45d88` |
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
-| 24 | AppointmentResponse, Communication, AuditEvent: read side, accept an offer, mark as read | 15.2, 15.4 | run `01M8184D89GV` did the read side; held on branch `task/24-fhir-rest` (two gates fail), continued by 24a |
-| 24a | Valid AuditEvent, samples for every FHIR type, the two failing gates; merges 24 with it | 15 | running `01M819SMCY56` |
-| 24b | FHIR admin writes: Organization, Location, HealthcareService, CodeSystem, ValueSet | 15.4 | todo |
+| 24 | AppointmentResponse, Communication, AuditEvent: read side, accept an offer, mark as read | 15.2, 15.4 | merged with 24a `f39603f` |
+| 24a | Valid AuditEvent, samples for every FHIR type, the two failing gates | 15 | merged `f39603f` |
+| 24b | FHIR admin writes: Organization, Location, HealthcareService, CodeSystem, ValueSet | 15.4 | running |
 | 24c | FHIR writes: Practitioner, PractitionerRole, time off through `notAvailable` | 15.2, 15.4 | todo |
 | 24d | Section 15 closed: tables as a test, one journey through FHIR, ADRs, README section | 15 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
@@ -170,3 +170,6 @@ Small findings waiting for the next task that touches the same file.
 - Review of 25b, small: the no-ISO-date test covers the three text builders, not each
   notification kind through its use case; the date group names only the first missing
   part. With the QA round.
+- Review of 24a, small: `notification.read` maps to `R` though it changes a record; the
+  `E` bucket and the `user.*` choices are not in ADR 0007; no test that an absent
+  waitlist entry and another patient's are refused alike. Task 24d.

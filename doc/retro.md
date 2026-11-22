@@ -823,3 +823,13 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   contradicted itself; an undefined "unknown" value), so they went into the task and the
   task was launched again. A plan gate that fails is the cheapest failure the pipeline
   has; a review gate that fails after 25 minutes is the dearest.
+
+## 2026-11-22 task 24a, run 01M819SMCY56 (35 minutes, merged with 24)
+
+- One review bounce, for the ADR and the small items; then clean. The task opened with
+  "two gates fail on this branch, run them yourself before you reply", and the run did.
+- From a fresh clone of `verify/24`: 4096 tests, 88 validator samples with 0 errors,
+  mutation gate clean. On the stack the same script as before the revert gives the same
+  answers, and `AuditEvent.action` is now C, R, U, D or E with the product's action as
+  the type.
+- The work of the reverted commit is back on `main`, verified this time.

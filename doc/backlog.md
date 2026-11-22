@@ -106,7 +106,7 @@ tasks.
 | 27a | QA round 3, inputs: column bounds (#33), control characters (#38), text that is a number (#45), the waitlist window's last day (#41), hostile-input test derived from forms and schemas | 4, 8 | merged `4078bbd` with 27a2 and 27a3 (items 1 to 3, 6) |
 | 27a2 | The one text rule as a person fills a form: textareas take line breaks again, a page shows the rule's message, hostile-input test derived from forms and schemas, refused forms keep input | 4, 16 | merged `4078bbd` |
 | 27a3 | The mutation gate on the held branch: 17 survivors to kill or explain, tests only | process | merged `4078bbd` (repair run) |
-| 27b | QA round 3, pages: rule sentences (#34), status refusals (#35), messages (#37, #40, #43), ways on (#42, #44, #49), a reschedule that moves nothing (#39), time zone change confirmed (#36) | 5, 10, 16 | todo |
+| 27b | QA round 3, pages: rule sentences (#34), status refusals (#35), messages (#37, #40, #43), ways on (#42, #44, #49), a reschedule that moves nothing (#39), time zone change confirmed (#36) | 5, 10, 16 | one finding per run: #34, #35 `738e563`, #49 `64e6bf1` merged; #42 in a sync run; #39, #40, #43 running; #36, #37, #44 todo |
 | 27c | README, smoke test, hand-over document, what QA of the public and FHIR areas adds | all | todo |
 | 27d | QA round 3, FHIR: date searches that leave records out (#51), NUL byte in a search (#50), what a write must declare (#52, and `curl -X POST` without a length), comma lists, what a 400 says, `_sort` by date | 15 | merged `069fd46` (items 1 to 3: #50, #51) |
 | 27d2 | FHIR: what a write must declare (#52, `curl -X POST` without a length), what every 400 says, reschedule by `start` alone, `_sort` by date, the specification put back | 15 | merged `cbf05a6` (all but item 3: #52) |

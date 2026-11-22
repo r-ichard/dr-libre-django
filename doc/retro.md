@@ -909,3 +909,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   fhir-validate`; a failure routes to the `address` stage with the output. A gate a
   stage may skip was a gate only I ran, and I run it last, after 30 minutes of work.
 - Not merged: `main` did not see this one. The verify branch did what it is for.
+
+## 2026-11-22 task 24c2, run 01M81HWAZKBK0 (30 minutes, merged with 24c)
+
+- First run with the scripted last gate: after the review approved, "Mutation and FHIR
+  gates" ran for a minute and passed. My fresh-clone gates agree: 4364 tests, 112
+  validator samples with 0 errors, mutation gate clean.
+- With the clinician's own token and the R4 name `during`: a period is added and comes
+  back with its id, the clinician's free slots in that window drop from 15 to 6 and 9
+  show as `busy-unavailable`, removing the period brings back 15; the old name, an
+  identical period, an end before its start and an edit in place are each refused.
+- The run sliced away the Practitioner writes a second time. A slice rule lets a run
+  postpone the same item forever. Task 24c3 holds only that item, so there is nothing
+  left to slice.

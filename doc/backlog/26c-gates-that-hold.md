@@ -8,6 +8,15 @@ was found untrue or unchecked. No product behaviour changes.
     once. A single test that takes longer than a stated number of seconds fails the
     suite, with the number in one place; say it in the plan after measuring the ten
     slowest tests. Bring those under it without dropping a case.
+    Measured by the orchestrator after task 26a2 (`pytest --durations=25`, eight
+    workers, fresh clone): 4591 tests take 95 seconds where 4531 took 45. The slowest
+    entries are not tests but teardowns: 28, 24, 22, 10, 7 and 6 seconds, charged to
+    tests that do nothing slow (`scheduling/domain/test_audit_metadata.py`,
+    `drlibre/test_parallel_run.py`, `scripts/test_size_cap.py`). Something waits at the
+    end of a worker's session, most likely for the live server of
+    `test_api_live_server.py` or for database connections a race test left open. Find
+    what waits and remove the wait; the gate counts setup and teardown as well as the
+    call. Then the hostile-input test: 14 and 11 seconds for its two slowest cases.
 11a. `make mutate` passes a mutant no test reaches: of 6221 mutants in
     `scheduling/domain`, 1165 are "no tests", most of them in the FHIR write modules,
     which only tests of the views layer exercise. The card says pure domain logic is

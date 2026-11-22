@@ -22,6 +22,20 @@ Start-up and settings:
 
 Abuse:
 
+3a. #46 (QA round 3, `doc/qa/2026-11-22-round-3.md`): the sign-in lockout is bypassed
+   by requests in parallel. One hundred wrong passwords for one address, fifty at a
+   time, had 23 to 29 evaluated before the lockout answered; specification 12.1 allows
+   ten in fifteen minutes. The count is read and the failure written without
+   serialising per address. At most ten wrong passwords are evaluated per window,
+   however the requests arrive: test it with parallel transactions, as the booking
+   races are tested. The same for the other counters of the product (booking codes,
+   sign-in links, bearer tokens): show for each that it is serialised, or fix it.
+3b. #47: answers of `/api/v1` to a signed-in caller carry no `Cache-Control` and no
+   `Vary: Cookie`. An answer that depends on who asks is never stored and says what it
+   varies on, as `/fhir` does since task 22a.
+3c. #48: state-changing routes of `/api/v1` accept a `text/plain` body. A browser can
+   send that across sites without a preflight. Refuse any content type but JSON on a
+   write, before the body is read.
 4. A locked address writes one `auth.lockout` audit entry per attempt, so an attacker
    can flood the append-only log. Audit the crossing of the threshold once per window.
 5. The public search loads the whole catalogue and 90 days of schedules for each request

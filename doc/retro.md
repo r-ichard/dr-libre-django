@@ -964,3 +964,32 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   left three log files and no finding. Its session log holds five progress lines.
 - Process: the tester prompt now says to create the file first, add a finding when it is
   reproduced, and stop testing after 40 minutes. Launched the area again.
+
+## 2026-11-22 tasks 26a and 26a2, runs 01M81Z7VKCDH and 01M82120M3V5 (merged together)
+
+- 26a passed every gate and its review, and in the container stack every write of
+  `/api/v1` without a body answered 400: `wsgiref` names the type `text/plain` when the
+  client sent no header, the test client does not. The same class as tasks 13a and 22
+  (a test client that does not send what the real client sends), on a third layer: the
+  server between them.
+- Held the branch and ran 26a2 on it. Its fix holds for a client that sends
+  `Content-Length: 0`, and its "live server" test used `urllib`, which adds that header.
+  `curl -X POST` sends none; `wsgiref` then hands over an empty `CONTENT_LENGTH`, and
+  the run's new code reads that as a malformed body. My task text said "as curl sends
+  it" and did not say "no `Content-Length`". Merged with the gap named in the commit;
+  task 27d sends the bytes over a socket.
+- What held, by hand: 100 wrong passwords, 50 at a time: 10 evaluated, one
+  `auth.lockout`. Twelve holds for one address, six at a time: five 201, seven 429.
+  Search: 120, then the search page itself with 429 and `Retry-After`. Two holds in two
+  tabs of one browser, both completed; another browser gets the missing-hold page.
+- `make test` went from 45 seconds to 95 on a fresh clone with 60 more tests. Measured
+  for task 26c.
+
+## 2026-11-22 QA round 3 closed: 20 issues, six P1, no P0
+
+- Seven areas. The FHIR area found the worst of the round: a date search that leaves
+  out records near its bound (#51). I reproduced it: `Appointment?date=2026-11-24`
+  answers 0 while two booked appointments start that day. It is filed P1; a clinician's
+  FHIR client would show an empty day, so 27d runs before the backlog moves on.
+- I verified tasks 23a and 24 with a token per role and never searched by date across
+  a bound. The mutation gate and 4500 tests did not see it either: 27d has to say why.

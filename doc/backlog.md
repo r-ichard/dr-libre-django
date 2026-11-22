@@ -96,14 +96,15 @@ tasks.
 | 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | merged `1e10ea1` |
 | 25c | UX pass: admin lists at 375 px, the conflict page, confirmations | 10, 16 | merged `e128f6f` |
 | 25d | UX pass: page titles are plain text, status words, empty states, refused forms keep input | 16 | merged `9785b36` (titles, status words, empty states) |
-| 26a | Security: lockout race and every counter, cache headers, content type, audit flood, search limit, code page, email rule (#46 to #48) | 4, 11, 12 | verified, held on `task/26a-security-abuse-limits` until 26a2 |
-| 26a2 | Abuse limits as the real server and a limited visitor meet them: writes without a body, the 429 page, `Retry-After`, counters' race tests, two holds in one browser | 11, 12 | todo |
+| 26a | Security: lockout race and every counter, cache headers, content type, audit flood, search limit, code page, email rule (#46 to #48) | 4, 11, 12 | merged `0cb030b` |
+| 26a2 | Abuse limits as the real server and a limited visitor meet them: writes without a body, the 429 page, `Retry-After`, counters' race tests, two holds in one browser | 11, 12 | merged `0cb030b` |
 | 26b | Security: start-up checks, cookie flags, trusted proxy, logs without personal data, the access table | 11, 12 | todo |
 | 26c | Gates that hold: per-test time gate, mutants without a test, the flaky test, `make audit`, docstrings | process | todo |
 | 26d | Security review written: encryption at rest, the server, the review document, the owner's questions | all | todo |
 | 27a | QA round 3, inputs: column bounds (#33), control characters (#38), text that is a number (#45), the waitlist window's last day (#41), hostile-input test derived from forms and schemas | 4, 8 | todo |
 | 27b | QA round 3, pages: rule sentences (#34), status refusals (#35), messages (#37, #40, #43), ways on (#42, #44, #49), a reschedule that moves nothing (#39), time zone change confirmed (#36) | 5, 10, 16 | todo |
 | 27c | README, smoke test, hand-over document, what QA of the public and FHIR areas adds | all | todo |
+| 27d | QA round 3, FHIR: date searches that leave records out (#51), NUL byte in a search (#50), what a write must declare (#52, and `curl -X POST` without a length), comma lists, what a 400 says, `_sort` by date | 15 | next |
 
 ## Carried items
 

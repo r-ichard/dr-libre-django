@@ -15,7 +15,8 @@ Read `CLAUDE.md` first. Foreground commands only.
    your reply, and leave the conflict unresolved. Do not choose a winner.
 3. Process documents are the orchestrator's: for `doc/backlog.md`, `doc/retro.md`,
    `doc/backlog/**`, `doc/qa/**`, `CLAUDE.md`, `.fabro/**`, `.claude/**`,
-   `scripts/no_background.sh` and `scripts/qa_stack.sh` take the version of `main`,
+   `scripts/no_background.sh`, `scripts/qa_stack.sh` and `scripts/final_gates.sh` take the
+   version of `main`,
    always. Every other file under `scripts/` is product code: both sides stay.
 4. Generated files are generated again, not merged by hand: `doc/data-model.md` with its
    management command. If both sides added a migration with the same number, renumber

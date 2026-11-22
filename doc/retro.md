@@ -894,3 +894,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - With an admin's token: add, rename and deactivate in one body; a removal of a
   specialty two clinicians have is refused and takes the rest of the body with it; two
   writes at once with the same version give 200 and 412 and the list holds one of them.
+
+## 2026-11-22 task 24c, run 01M81FKGPT5R9 (36 minutes, held), and a scripted last gate
+
+- Sliced by its plan (PractitionerRole and time off now, Practitioner next) and approved
+  in one review pass. Then, on the verify branch: `make fhir-validate` fails on 3 of 112
+  samples and `make mutate` on two survivors. The reviewer wrote "I did not run `make
+  mutate` or `make fhir-validate` myself", as the one of task 24 had.
+- The validation failure is a wrong element name: time off is served and accepted as
+  `notAvailable.period`; R4 says `during`. I met it first with curl: my standard body
+  was refused naming the correct element as unknown.
+- Second task where the two slow gates were skipped by everyone but me. They are a
+  script node now, `final_gates`, after the review gate: `make mutate`, then `make
+  fhir-validate`; a failure routes to the `address` stage with the output. A gate a
+  stage may skip was a gate only I ran, and I run it last, after 30 minutes of work.
+- Not merged: `main` did not see this one. The verify branch did what it is for.

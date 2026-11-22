@@ -134,7 +134,8 @@ BookingHold (slot reserved while an email is verified), VerificationCode, SignIn
 
 Process = `conventions-auto`; task = goal, one run per `doc/backlog/` file: toolchain,
 plan, architect gate, red, red proven, green, green proven, prove tests guard, refactor,
-lint + tests + gate, reviewer gate, address findings. Orchestrator writes tasks and
+lint + tests + gate, reviewer gate, address findings, then `make mutate` and
+`make fhir-validate` as a last scripted gate. Orchestrator writes tasks and
 process files, never product code; host defect = new task. Orchestrator verifies on host,
 squash-merges with Conventional Commit, updates `doc/backlog.md`, logs `doc/retro.md`,
 fixes process on repeat patterns.

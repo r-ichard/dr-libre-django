@@ -37,6 +37,7 @@ digraph ConventionsAuto {
     verify_green [label="Suite passes?", script="make test", on_failure="route"]
     check        [label="Lint, tests, comment gate", script="make lint && make test && make gate", on_failure="route"]
     review_gate  [label="Review approved?", script="sh scripts/verdict.sh scratch/review.verdict", on_failure="route"]
+    final_gates  [label="Mutation and FHIR gates", script="sh scripts/final_gates.sh", on_failure="route"]
 
     start -> setup -> understand -> plan_review -> plan_gate
     plan_gate -> red        [label="Approved", condition="outcome=succeeded"]
@@ -55,7 +56,9 @@ digraph ConventionsAuto {
     check -> refactor [label="Fix"]
 
     review -> review_gate
-    review_gate -> exit    [label="Approved", condition="outcome=succeeded"]
-    review_gate -> address [label="Blocking findings"]
+    review_gate -> final_gates [label="Approved", condition="outcome=succeeded"]
+    review_gate -> address     [label="Blocking findings"]
+    final_gates -> exit    [label="Clean", condition="outcome=succeeded"]
+    final_gates -> address [label="A gate failed"]
     address -> check
 }

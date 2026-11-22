@@ -885,3 +885,12 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   once task 24d is in. One QA run at a time, beside the FHIR task run, so the
   subscription's window carries two runs and not five. First: admin (01M81DW85Z1D), the
   largest surface no QA run has seen.
+
+## 2026-11-22 task 24b2, run 01M81DRVRKYHJ (29 minutes, merged)
+
+- Whole task in one run, two review bounces (the last for a hostile-input case the task
+  had asked for). From a fresh clone: 4266 tests, 107 validator samples with 0 errors,
+  mutation gate clean, each gate's exit code printed on its own line.
+- With an admin's token: add, rename and deactivate in one body; a removal of a
+  specialty two clinicians have is refused and takes the rest of the body with it; two
+  writes at once with the same version give 200 and 412 and the list holds one of them.

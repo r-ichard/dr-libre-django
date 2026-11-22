@@ -85,8 +85,8 @@ tasks.
 | 24 | AppointmentResponse, Communication, AuditEvent: read side, accept an offer, mark as read | 15.2, 15.4 | merged with 24a `f39603f` |
 | 24a | Valid AuditEvent, samples for every FHIR type, the two failing gates | 15 | merged `f39603f` |
 | 24b | FHIR admin writes: Organization, Location, HealthcareService | 15.4 | merged `e80622c` |
-| 24b2 | FHIR admin writes: the specialty list through CodeSystem and ValueSet | 15.4 | running `01M81DRVRKYHJ` |
-| 24c | FHIR writes: Practitioner, PractitionerRole, time off through `notAvailable` | 15.2, 15.4 | todo |
+| 24b2 | FHIR admin writes: the specialty list through CodeSystem and ValueSet | 15.4 | merged `65d5628` |
+| 24c | FHIR writes: Practitioner, PractitionerRole, time off through `notAvailable` | 15.2, 15.4 | running |
 | 24d | Section 15 closed: tables as a test, one journey through FHIR, ADRs, README section | 15 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | merged with 25a `4f6dbec` (8 of 17 items; rest in 25b, 25c) |
@@ -170,3 +170,7 @@ Small findings waiting for the next task that touches the same file.
   waitlist entry and another patient's are refused alike. Task 24d.
 - Left by task 25d: a test that posts a refused value to every form of the product and
   checks that what was typed is kept, a password excepted. Task 27, with the QA round.
+- Review of 24b2, small: the FHIR specialty write takes an advisory lock the console's
+  writes do not take; a FHIR write and a console write at the same moment are ordered
+  only by the revision row's trigger. Lock the revision row, or say in ADR 0008 why the
+  trigger suffices. Task 24d.

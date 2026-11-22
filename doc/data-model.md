@@ -374,14 +374,14 @@ FHIR: not exposed, rate limit bookkeeping, never served; holds the keyed hash of
 | `created_at` | DateTimeField | no |  |
 | `updated_at` | DateTimeField | no |  |
 | `created_by` | ForeignKey | yes | refers to User, protected |
-| `scope` | CharField | no | at most 20 characters; one of hold, code, link, token, search |
+| `scope` | CharField | no | at most 20 characters; one of hold, code, link, token, search, schedule, fhir |
 | `key_hash` | CharField | no | at most 64 characters |
 | `hit_at` | DateTimeField | no |  |
 
 Constraints:
 
 - `ratelimithit_key_hash_64_characters` (check): key_hash must be exactly 64 characters
-- `ratelimithit_scope_listed` (check): scope must be one of hold, code, link, token, search
+- `ratelimithit_scope_listed` (check): scope must be one of hold, code, link, token, search, schedule, fhir
 
 ## Room
 

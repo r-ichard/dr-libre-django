@@ -11,10 +11,13 @@ from django.utils.cache import add_never_cache_headers
 from django.views import View
 
 from scheduling.domain.failure import Failure
+from scheduling.domain.rate_limit_rules import RateLimitScope, wait_sentence
 from scheduling.domain.vocabulary import Role
 from scheduling.models import User
+from scheduling.use_cases.read_limits import take_read_hit
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.session import ResolvedSession, resolve_session
+from scheduling.views.network_address import network_address
 from scheduling.views.pages.admin_notices import forget_admin_notice, take_admin_notice
 from scheduling.views.session_cookie import SESSION_COOKIE, set_session_cookie
 
@@ -51,6 +54,7 @@ class PageView(View):
     allowed_roles: frozenset[Role] | None = None
     user: User | None = None
     resolved: ResolvedSession | None = None
+    read_scope: RateLimitScope | None = None
 
     def dispatch(self, request: HttpRequest, *args: object, **kwargs: object) -> HttpResponseBase:
         response = self._guarded_dispatch(request, *args, **kwargs)
@@ -73,9 +77,27 @@ class PageView(View):
                 return HttpResponseRedirect(f"{SIGN_IN_PATH}?{query}")
             if Role(self.user.role) not in self.allowed_roles:
                 return render_page(request, "errors/403.html", status=403, signed_in_user=self.user)
+        if request.method == "GET" and self.read_scope is not None:
+            wait = take_read_hit(self.read_scope, self.user, network_address(request))
+            if wait is not None:
+                return self._limited_page(request, wait)
         if request.method == "GET" and type(self).get is PageView.get and not self.template_name:
             return self.http_method_not_allowed(request)
         return super().dispatch(request, *args, **kwargs)
+
+    def _limited_page(self, request: HttpRequest, wait: int) -> HttpResponse:
+        """Keeps the layout and a way on: the same address, to try again."""
+        context = {
+            "heading": "Too many requests",
+            "message": f"You looked at too many pages. {wait_sentence(wait)}",
+            "action_href": request.get_full_path(),
+            "action_text": "Try again",
+        }
+        response = render_page(
+            request, "booking/refused.html", context, status=429, signed_in_user=self.user
+        )
+        response["Retry-After"] = str(wait)
+        return response
 
     def get(self, request: HttpRequest) -> HttpResponse:
         return self.page(request)

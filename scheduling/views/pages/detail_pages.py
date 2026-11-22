@@ -6,6 +6,7 @@ from uuid import UUID
 from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.domain.failure import Failure
+from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.domain.search_query import parse_search_query
 from scheduling.use_cases.booking_page_data import week_of_slots
 from scheduling.use_cases.public_details import (
@@ -25,6 +26,7 @@ from scheduling.views.pages.page_view import PageView
 
 
 class ProviderPage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "details/provider.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
@@ -46,6 +48,7 @@ class ProviderPage(PageView):
 
 
 class HospitalPage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "details/hospital.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
@@ -57,6 +60,7 @@ class HospitalPage(PageView):
 
 
 class SpecialtyPage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "details/specialty.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:

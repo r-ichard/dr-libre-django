@@ -93,3 +93,14 @@ def returns_one_second_singular_when_wait_is_one_second() -> None:
 
 def returns_rounded_up_minutes_when_wait_is_61_seconds() -> None:
     assert _rules().wait_sentence(61) == "Try again in 2 minutes."
+
+
+def returns_1200_an_hour_for_schedule_and_600_for_fhir_per_address_and_no_email_limit() -> None:
+    rules = _rules()
+
+    assert rules.RATE_LIMITS[rules.RateLimitScope("schedule")] == rules.RateLimit(
+        per_email=None, per_address=1200
+    )
+    assert rules.RATE_LIMITS[rules.RateLimitScope("fhir")] == rules.RateLimit(
+        per_email=None, per_address=600
+    )

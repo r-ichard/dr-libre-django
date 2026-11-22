@@ -65,3 +65,23 @@ $ curl -s -w ' %{http_code}\n' -H "Authorization: Bearer $TOKEN" 127.0.0.1:8000/
 **Validate.** `make fhir-validate` seeds a throwaway database, samples every resource type and
 interaction `/fhir` answers, and runs the HL7 validator on them. It fetches Java and the pinned
 validator jar the first time.
+
+## Running with DEBUG off
+
+With `DEBUG` off, start-up refuses, naming the variable:
+
+- `SECRET_KEY` equal to the published development key from `.env.example`;
+- an empty `ALLOWED_HOSTS`;
+- `DEMO_PASSWORD` equal to the published demo password;
+- a `TRUSTED_PROXY_COUNT` that is negative or not a whole number (refused with `DEBUG` on too).
+
+`.env.example` alone therefore fails. To run this way locally, set a private `SECRET_KEY`, set
+`ALLOWED_HOSTS` (for example `localhost,127.0.0.1`) and leave `DEMO_PASSWORD` empty. Cookies are
+`Secure` with `DEBUG` off, so a browser on plain http does not keep the session: put the product
+behind TLS and set `HTTPS_ONLY=true` with a `HSTS_SECONDS` value. `seed_demo` refuses to run.
+
+`TRUSTED_PROXY_COUNT` is the number of proxies in front of the product that each append the
+address they saw to `X-Forwarded-For`. `0` (the default) ignores the header and uses the
+connection address, which is right with no proxy. `n` takes the n-th entry from the right as the
+caller's address, which the rate limits count, and trusts `X-Forwarded-Proto`. A value larger
+than the real number of proxies lets a caller choose its own address.

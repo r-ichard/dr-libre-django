@@ -13,6 +13,7 @@ from collections.abc import Iterator
 from datetime import date
 
 import pytest
+from django.contrib.auth.hashers import make_password
 from django.core import mail
 
 from scheduling.models import User
@@ -30,6 +31,8 @@ BOOKING_EMAIL = "planted.booker@example.test"
 BOOKING_NAME = "Vera Plantedbooker"
 BOOKING_PHONE = "+49 30 7770042"
 BOOKING_BIRTH_DATE = "1985-03-14"
+SIGN_IN_EMAIL = "planted.signin@example.test"
+PLANTED_PASSWORD = "planted-password-correct-horse-9271"  # noqa: S105
 LINK_EMAIL = "planted.linker@example.test"
 LINK_TOKEN = "planted-link-token-0123456789abcdefghijk"  # noqa: S105
 EDIT_EMAIL = "planted.edited@example.test"
@@ -102,6 +105,17 @@ def _sign_in_by_link(monkeypatch: pytest.MonkeyPatch) -> list[str]:
     return [LINK_TOKEN]
 
 
+def _sign_in_by_password() -> list[str]:
+    make("User", email=SIGN_IN_EMAIL, password=make_password(PLANTED_PASSWORD))
+    signed_in = browser_api_client().post(
+        "/api/v1/auth/login",
+        {"email": SIGN_IN_EMAIL, "password": PLANTED_PASSWORD},
+        content_type="application/json",
+    )
+    assert signed_in.status_code == 200
+    return [PLANTED_PASSWORD]
+
+
 def _edit_user() -> list[str]:
     target = make_user(role="PATIENT")
     form = {
@@ -130,16 +144,18 @@ def _read_patient() -> list[str]:
 
 
 def returns_no_personal_value_in_any_log_line_when_the_four_flows_run(
-    written: io.StringIO, monkeypatch: pytest.MonkeyPatch, settings: object
+    written: io.StringIO, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     secrets_planted = [
         *_book(),
         *_sign_in_by_link(monkeypatch),
+        *_sign_in_by_password(),
         *_edit_user(),
         *_read_patient(),
     ]
     planted = [
-        BOOKING_EMAIL, BOOKING_NAME, BOOKING_PHONE, BOOKING_BIRTH_DATE, LINK_EMAIL, EDIT_EMAIL,
+        BOOKING_EMAIL, BOOKING_NAME, BOOKING_PHONE, BOOKING_BIRTH_DATE, LINK_EMAIL,
+        SIGN_IN_EMAIL, EDIT_EMAIL,
         EDIT_NAME, PATIENT_NAME, PATIENT_PHONE, PATIENT_BIRTH_DATE.isoformat(), *secrets_planted,
     ]  # fmt: skip
     lines = written.getvalue().splitlines()

@@ -5,6 +5,7 @@ from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.booking_refusals import refusal_for
 from scheduling.domain.failure import Failure, FailureCode
+from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.domain.vocabulary import Role
 from scheduling.models import User
 from scheduling.use_cases.booking_holds import create_hold
@@ -40,6 +41,7 @@ def _way_back(slot: SlotRequest) -> WayBack:
 
 
 class DetailsPage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "booking/details.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:

@@ -19,6 +19,7 @@ from scheduling.views.booking_schemas import (
     uuid_of,
 )
 from scheduling.views.failure_response import failure_response
+from scheduling.views.read_limit import api_read_refusal
 from scheduling.views.schemas import validate_body
 
 
@@ -26,6 +27,9 @@ class SlotsView(ApiView):
     permission_classes = public()
 
     def get(self, request: Request) -> Response:
+        refused = api_read_refusal(request)
+        if refused is not None:
+            return failure_response(refused)
         query = validate_body(SlotsQuery, request.query_params)
         if isinstance(query, Failure):
             return failure_response(query)

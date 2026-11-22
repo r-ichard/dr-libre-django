@@ -12,6 +12,7 @@ from scheduling.domain.fhir_bundle import search_bundle
 from scheduling.domain.fhir_capability import capability_statement
 from scheduling.domain.fhir_declaration import FHIR_RESOURCES, ResourceDeclaration, declaration_for
 from scheduling.domain.fhir_search import parse_id, parse_search
+from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.domain.request_limits import (
     MAXIMUM_BODY_BYTES,
     MAXIMUM_FIELDS,
@@ -23,6 +24,7 @@ from scheduling.use_cases import fhir_resources
 from scheduling.use_cases.api_tokens import resolve_token
 from scheduling.use_cases.fhir_caller import PUBLIC_CALLER, Caller
 from scheduling.use_cases.fhir_reads import Viewer
+from scheduling.use_cases.read_limits import take_read_hit
 from scheduling.views.fhir.responses import (
     failure_response,
     internal_error_response,
@@ -86,6 +88,9 @@ def _answer(request: HttpRequest, rest: str) -> HttpResponse:
         return resource_response(capability_statement(FHIR_RESOURCES))
     if request.method != "GET":
         return write(request, parts[0], parts[1] if len(parts) == 2 else None, caller)
+    wait = take_read_hit(RateLimitScope.FHIR, caller.user, network_address(request))
+    if wait is not None:
+        return failure_response(Failure.rate_limited(wait))
     if len(parts) == 1:
         return _search(request, parts[0], caller)
     return _read(parts[0], parts[1], caller)

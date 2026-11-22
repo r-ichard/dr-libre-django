@@ -41,3 +41,30 @@ def returns_trimmed_items_when_list_variable_is_comma_separated(
     monkeypatch.setenv("DRLIBRE_LIST_EXAMPLE", "localhost, web ,,127.0.0.1")
 
     assert require_env_list("DRLIBRE_LIST_EXAMPLE") == ["localhost", "web", "127.0.0.1"]
+
+
+def returns_default_when_optional_variable_is_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    from drlibre import environment
+
+    monkeypatch.delenv("DRLIBRE_OPTIONAL_EXAMPLE", raising=False)
+
+    assert environment.optional_env("DRLIBRE_OPTIONAL_EXAMPLE", "fallback") == "fallback"
+
+
+def returns_value_when_optional_variable_is_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    from drlibre import environment
+
+    monkeypatch.setenv("DRLIBRE_OPTIONAL_EXAMPLE", "given")
+
+    assert environment.optional_env("DRLIBRE_OPTIONAL_EXAMPLE", "fallback") == "given"
+
+
+def raises_improperly_configured_naming_variable_when_count_is_negative(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from drlibre import environment
+
+    monkeypatch.setenv("DRLIBRE_COUNT_EXAMPLE", "-1")
+
+    with pytest.raises(ImproperlyConfigured, match="DRLIBRE_COUNT_EXAMPLE"):
+        environment.env_whole_count("DRLIBRE_COUNT_EXAMPLE", 0)

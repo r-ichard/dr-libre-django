@@ -2,6 +2,7 @@
 
 from django.http import Http404, HttpRequest, HttpResponse
 
+from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.use_cases.booking_page_data import bookable_services, type_providers
 from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.pages.booking_links import path_uuid, times_href
@@ -10,6 +11,7 @@ from scheduling.views.pages.page_view import PageView
 
 
 class ServicePage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "booking/service.html"
 
     def get(self, request: HttpRequest) -> HttpResponse:
@@ -37,6 +39,7 @@ class ServicePage(PageView):
 
 
 class ProviderChoicePage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "booking/provider.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:

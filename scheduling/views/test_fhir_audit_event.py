@@ -22,7 +22,8 @@ __all__ = ["seed_environment"]
 
 BULK_ENTRIES = 50_000
 PAGE_SIZE = 20
-MAX_PAGE_QUERIES = 6
+# Six for the page itself and three for the read counter, fixed whatever the log holds.
+MAX_PAGE_QUERIES = 9
 MAX_PAGE_SECONDS = 1.0
 
 

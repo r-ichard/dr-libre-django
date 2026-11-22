@@ -11,6 +11,7 @@ from scheduling.views.access import public
 from scheduling.views.api_view import ApiView
 from scheduling.views.failure_response import failure_response
 from scheduling.views.network_address import network_address
+from scheduling.views.read_limit import signed_in
 from scheduling.views.search_schemas import search_body
 
 
@@ -20,7 +21,7 @@ class SearchView(ApiView):
 
     def get(self, request: Request) -> Response:
         query = parse_search_query(request.query_params)
-        found = search_for_visitor(self.kind, query, network_address(request))
+        found = search_for_visitor(self.kind, query, network_address(request), signed_in(request))
         if isinstance(found, Failure):
             return failure_response(found)
         return Response(search_body(found.value))

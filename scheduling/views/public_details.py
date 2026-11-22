@@ -17,6 +17,7 @@ from scheduling.views.access import public
 from scheduling.views.api_view import ApiView
 from scheduling.views.detail_schemas import hospital_detail_body, provider_detail_body
 from scheduling.views.failure_response import failure_response
+from scheduling.views.read_limit import api_read_refusal
 from scheduling.views.search_schemas import specialty_body
 
 
@@ -24,6 +25,9 @@ class ProviderDetailView(ApiView):
     permission_classes = public()
 
     def get(self, request: Request, provider_id: UUID) -> Response:
+        refused = api_read_refusal(request)
+        if refused is not None:
+            return failure_response(refused)
         loaded = load_provider_detail(provider_id, None, current_request_context().now)
         if isinstance(loaded, Failure):
             return failure_response(loaded)
@@ -34,6 +38,9 @@ class HospitalDetailView(ApiView):
     permission_classes = public()
 
     def get(self, request: Request, hospital_id: UUID) -> Response:
+        refused = api_read_refusal(request)
+        if refused is not None:
+            return failure_response(refused)
         loaded = load_hospital_detail(hospital_id, current_request_context().now)
         if isinstance(loaded, Failure):
             return failure_response(loaded)
@@ -44,6 +51,9 @@ class SpecialtyDetailView(ApiView):
     permission_classes = public()
 
     def get(self, request: Request, specialty_id: UUID) -> Response:
+        refused = api_read_refusal(request)
+        if refused is not None:
+            return failure_response(refused)
         loaded = load_specialty_detail(specialty_id, 1, current_request_context().now)
         if isinstance(loaded, Failure):
             return failure_response(loaded)

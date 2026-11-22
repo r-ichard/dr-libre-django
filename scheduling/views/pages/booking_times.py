@@ -7,6 +7,7 @@ from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.domain.booking_week import next_week_start, previous_week_start
 from scheduling.domain.failure import Failure
+from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.use_cases.booking_page_data import WeekOfSlots, week_of_slots
 from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.pages.booking_links import (
@@ -25,6 +26,7 @@ DAYS_PER_WEEK = 7
 
 
 class TimesPage(PageView):
+    read_scope = RateLimitScope.SCHEDULE
     template_name = "booking/times.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:

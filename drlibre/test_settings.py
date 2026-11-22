@@ -69,3 +69,14 @@ def raises_improperly_configured_naming_trusted_proxy_count_when_not_a_number(
 
     with pytest.raises(ImproperlyConfigured, match="TRUSTED_PROXY_COUNT"):
         importlib.reload(settings)
+
+
+def raises_improperly_configured_naming_trusted_proxy_count_when_negative(
+    monkeypatch: pytest.MonkeyPatch, reloaded_settings: None
+) -> None:
+    from django.core.exceptions import ImproperlyConfigured
+
+    monkeypatch.setenv("TRUSTED_PROXY_COUNT", "-1")
+
+    with pytest.raises(ImproperlyConfigured, match="TRUSTED_PROXY_COUNT"):
+        importlib.reload(settings)

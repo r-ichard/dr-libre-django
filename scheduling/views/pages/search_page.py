@@ -23,7 +23,7 @@ class SearchPage(PageView):
     def get(self, request: HttpRequest) -> HttpResponse:
         kind = parse_list_kind(request.GET.get("list", ""))
         query = parse_search_query(request.GET.dict())
-        found = search_for_visitor(kind, query, network_address(request))
+        found = search_for_visitor(kind, query, network_address(request), self.user)
         options = load_filter_options()
         if isinstance(found, Failure):
             return self._limited(request, kind, query, options, found)

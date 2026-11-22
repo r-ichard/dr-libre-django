@@ -16,6 +16,8 @@ class RateLimitScope(StrEnum):
     LINK = "link"
     TOKEN = "token"  # noqa: S105 - a scope name, not a secret
     SEARCH = "search"
+    SCHEDULE = "schedule"
+    FHIR = "fhir"
 
 
 @dataclass(frozen=True)
@@ -32,6 +34,9 @@ RATE_LIMITS: dict[RateLimitScope, RateLimit] = {
     RateLimitScope.TOKEN: RateLimit(per_email=5, per_address=20),
     # Public search has no email; callers behind one proxy share an address until task 26 item 3.
     RateLimitScope.SEARCH: RateLimit(per_email=None, per_address=120),
+    # Reads that compute schedules share one counter; anonymous FHIR reads have their own.
+    RateLimitScope.SCHEDULE: RateLimit(per_email=None, per_address=1200),
+    RateLimitScope.FHIR: RateLimit(per_email=None, per_address=600),
 }
 
 

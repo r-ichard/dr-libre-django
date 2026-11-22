@@ -318,7 +318,7 @@ def returns_issue_with_fixed_text_and_expression_when_outcome_built() -> None:
         (Failure.forbidden(), "forbidden"),
         (Failure.rate_limited(), "throttled"),
         (Failure.invalid_input([]), "invalid"),
-        (Failure.conflict(["x"]), "processing"),
+        (Failure.conflict(["x"]), "conflict"),
     ],
 )
 def returns_issue_code_of_failure_when_failure_is_an_outcome(failure: Failure, code: str) -> None:
@@ -418,10 +418,10 @@ def returns_capability_header_fields_when_statement_built() -> None:
         "resourceType": "CapabilityStatement",
         "status": "active",
         "date": "2026-11-22",
-        "description": "DrLibre appointment scheduling, read-only FHIR R4 API.",
+        "description": "DrLibre appointment scheduling, FHIR R4 API.",
         "kind": "instance",
         "implementation": {
-            "description": "DrLibre appointment scheduling, read-only FHIR R4 API.",
+            "description": "DrLibre appointment scheduling, FHIR R4 API.",
             "url": "https://drlibre.example/fhir",
         },
         "fhirVersion": "4.0.1",

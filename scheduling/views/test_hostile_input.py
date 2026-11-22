@@ -17,7 +17,7 @@ from hypothesis import given, settings, strategies
 
 from scheduling.domain.request_context import RequestContext
 from scheduling.domain.vocabulary import SessionKind
-from scheduling.models import User
+from scheduling.models import AvailabilityRule, User
 from scheduling.models.builders import Clinic, make, make_clinic, make_user
 from scheduling.use_cases.api_tokens import issue_token
 from scheduling.use_cases.request_context import bind_request_context
@@ -300,7 +300,9 @@ def returns_no_500_when_actor_sends_generated_json_to_any_route(actor: str) -> N
 
 
 FHIR_TYPES = ["Organization", "Location", "HealthcareService", "CodeSystem", "ValueSet",
-              "Practitioner", "PractitionerRole", "metadata", "Nothing"]  # fmt: skip
+              "Practitioner", "PractitionerRole", "Schedule", "Slot", "Patient", "metadata",
+              "Nothing"]  # fmt: skip
+SLOT_BAD_TYPE_QUERY = "?service-type=not-a-uuid&start=ge2026-12-01&start=lt2026-12-03"
 FHIR_AUTHORIZATIONS = [
     "", "Bearer", "Bearer ", "Basic abc", "Bearer \x00", "Bearer " + "x" * 100_000, "bearer x",
     "Bearer dlk_unknown", "Bearer " + "é" * 50,
@@ -325,7 +327,7 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_authorization(actor: str) 
     failures = []
     for headers in headers_to_try:
         for path in paths:
-            for query in ("", "?_count=x&name=%00&_include=%00&near=%00"):
+            for query in ("", "?_count=x&name=%00&_include=%00&near=%00", SLOT_BAD_TYPE_QUERY):
                 response = client.get(path + query, headers=headers)
                 body = response.json()
                 if (
@@ -334,4 +336,50 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_authorization(actor: str) 
                     or (response.status_code >= 400 and body["resourceType"] != "OperationOutcome")
                 ):
                     failures.append((path, query, response.status_code))
+    assert failures == []
+
+
+FHIR_WRITE_BODIES = [
+    NESTED_DEEP, "null", "[]", "1", '"text"', "{}", "not json", "\x00",
+    json.dumps({"resourceType": "Schedule", "id": "x" * 100_000}),
+    json.dumps({"resourceType": "Schedule", "actor": "x", "extension": [1, None, []]}),
+    json.dumps({"resourceType": "Schedule", "planningHorizon": {"start": ["x"]}}),
+    json.dumps({"resourceType": "Patient", "name": [{"text": "x" * 100_000}], "birthDate": 5}),
+    json.dumps({"resourceType": "Patient", "telecom": [{"system": "phone", "value": None}]}),
+    json.dumps({"resourceType": "Patient", "active": "yes", "telecom": {"a": "b"}}),
+]  # fmt: skip
+
+
+@pytest.mark.parametrize("actor", ACTORS)
+def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -> None:
+    """Every write method on every writable type, with each hostile body (task 23, point 13)."""
+    clinic = make_clinic()
+    token = None
+    if actor != "ANONYMOUS":
+        with bind_request_context(RequestContext("hostile", clock.now_utc())):
+            owner = clinic.clinician.user if actor == "CLINICIAN" else make_user(role=actor)
+            token = issue_token(owner, "Hostile").token
+    rule_id = AvailabilityRule.objects.values_list("pk", flat=True).get(clinician=clinic.clinician)
+    paths = [
+        ("post", "/fhir/Schedule"),
+        ("put", f"/fhir/Schedule/{rule_id}"),
+        ("delete", f"/fhir/Schedule/{rule_id}x"),
+        ("put", f"/fhir/Patient/{clinic.patient.pk}"),
+        ("post", f"/fhir/Patient/{clinic.patient.pk}"),
+        ("put", "/fhir/Slot/abc"),
+    ]
+    client = fhir_client(token)
+
+    failures = []
+    for method, path in paths:
+        for body in FHIR_WRITE_BODIES:
+            response = getattr(client, method)(
+                path, data=body, content_type="application/fhir+json"
+            )
+            if response.status_code >= 500 or response.json()["resourceType"] not in (
+                "OperationOutcome",
+                "Schedule",
+                "Patient",
+            ):
+                failures.append((method, path, response.status_code))
     assert failures == []

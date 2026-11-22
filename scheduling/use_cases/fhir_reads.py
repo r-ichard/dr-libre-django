@@ -7,15 +7,23 @@ from dataclasses import dataclass
 from enum import StrEnum
 from uuid import UUID
 
-from django.db.models import IntegerField, Model, QuerySet, TextField, UUIDField, Value
+from django.db.models import IntegerField, Model, Q, QuerySet, TextField, UUIDField, Value
 from django.db.models.functions import Cast, Lower
 
 from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.fhir_common import Resource
+from scheduling.domain.fhir_dates import day_bounds
 from scheduling.domain.fhir_declaration import declaration_for
 from scheduling.domain.fhir_near import is_within, parse_near
 from scheduling.domain.fhir_search import SearchQuery
-from scheduling.models import AppointmentType, ClinicianProfile, Department, Hospital, Room
+from scheduling.models import (
+    AppointmentType,
+    AvailabilityRule,
+    ClinicianProfile,
+    Department,
+    Hospital,
+    Room,
+)
 from scheduling.use_cases import fhir_loading as loading
 from scheduling.use_cases.search_catalog import bookable_types, listable_profiles
 
@@ -185,12 +193,39 @@ ROLE = Part(
     staff_build=loading.practitioner_roles_with_all_services,
 )
 
+
+def _horizon_covers(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
+    """Rules whose planning horizon overlaps the days the `date` value names."""
+    first, last = day_bounds([value])
+    if first is not None:
+        rows = rows.filter(Q(valid_to__isnull=True) | Q(valid_to__gte=first))
+    return rows if last is None else rows.filter(valid_from__lte=last)
+
+
+def _acts_as(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
+    return rows.filter(Q(clinician__user_id=value) | Q(room_id=value))
+
+
+SCHEDULE = Part(
+    visible=lambda: AvailabilityRule.objects.filter(clinician__in=_listable()),
+    everything=lambda: AvailabilityRule.objects.all(),
+    id_column="pk",
+    sort_columns={"active": "clinician__user__is_active"},
+    filters={
+        "actor": _acts_as,
+        "date": _horizon_covers,
+        "active": _flag("clinician__user__is_active"),
+    },
+    build=loading.schedules,
+)
+
 PARTS: dict[str, tuple[Part, ...]] = {
     "Organization": (HOSPITAL, DEPARTMENT),
     "Location": (SITE, ROOM),
     "HealthcareService": (SERVICE,),
     "Practitioner": (PRACTITIONER,),
     "PractitionerRole": (ROLE,),
+    "Schedule": (SCHEDULE,),
 }
 SINGLE_BUILDERS: dict[str, Callable[[], Resource]] = {
     "CodeSystem": loading.specialty_code_system_resource,
@@ -226,6 +261,16 @@ def search_resource(resource_type: str, query: SearchQuery, viewer: Viewer) -> R
     ]
     matches = _build_page(PARTS[resource_type], page, viewer)
     return Success(SearchPage(candidates.count(), matches, _included(query, page, viewer)))
+
+
+def search_part(part: Part, query: SearchQuery) -> SearchPage:
+    """One part whose rows the caller has already narrowed to what it may read."""
+    candidates = _candidates((part,), query, Viewer.STAFF)
+    page = [
+        Candidate(identifier, 0)
+        for _, identifier, _ in candidates[query.offset : query.offset + query.count]
+    ]
+    return SearchPage(candidates.count(), _build_page((part,), page, Viewer.STAFF), [])
 
 
 @dataclass(frozen=True)

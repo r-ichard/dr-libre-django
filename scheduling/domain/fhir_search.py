@@ -6,13 +6,14 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_dates import normalised_date
 from scheduling.domain.fhir_declaration import (
     COMMON_PARAMETERS,
     ParameterKind,
     ResourceDeclaration,
 )
 from scheduling.domain.fhir_near import parse_near
-from scheduling.domain.request_limits import MAXIMUM_PAGE
+from scheduling.domain.request_limits import MAXIMUM_FIELDS, MAXIMUM_PAGE
 
 DEFAULT_COUNT = 20
 MAXIMUM_COUNT = 100
@@ -37,7 +38,7 @@ def parse_search(
     count, offset, sort = DEFAULT_COUNT, 0, "name"
     include: list[str] = []
     for name, values in params.items():
-        if len(values) != 1 and name != "_include":
+        if not values or len(values) > _repeats_allowed(declaration, name):
             return _refuse(name, "A parameter may be given once.")
         value = values[0]
         if name == "_count":
@@ -58,13 +59,34 @@ def parse_search(
             parameter = declaration.parameter(name)
             if parameter is None or name in COMMON_PARAMETERS:
                 return _refuse(name, "This search parameter is not supported.")
-            normalised = _read_value(parameter.kind, value)
-            problem = normalised is None
-            filters.append((name, normalised or ""))
+            normalised = [_read_value(parameter.kind, item) for item in values]
+            problem = None in normalised
+            filters += [(name, item) for item in normalised if item is not None]
         if problem:
             return _refuse(name, "The value cannot be read.")
+    missing = _missing_required(declaration, filters)
+    if missing is not None:
+        return _refuse(missing, "This search parameter is required.")
     descending = params.get("_sort", [""])[0].startswith("-")
     return Success(SearchQuery(tuple(filters), count, offset, sort, descending, tuple(include)))
+
+
+def _repeats_allowed(declaration: ResourceDeclaration, name: str) -> int:
+    """`_include` repeats freely; any other parameter repeats as often as it is declared."""
+    parameter = declaration.parameter(name)
+    if name == "_include":
+        return MAXIMUM_FIELDS
+    return parameter.maximum_repeats if parameter is not None else 1
+
+
+def _missing_required(
+    declaration: ResourceDeclaration, filters: list[tuple[str, str]]
+) -> str | None:
+    given = {name for name, _ in filters}
+    return next(
+        (item.name for item in declaration.parameters if item.required and item.name not in given),
+        None,
+    )
 
 
 def parse_id(text: str) -> str | None:
@@ -86,6 +108,8 @@ def _read_value(kind: ParameterKind, value: str) -> str | None:
         return value if value in ("true", "false") else None
     if kind is ParameterKind.REFERENCE:
         return parse_id(value.rsplit("/", 1)[-1])
+    if kind is ParameterKind.DATE:
+        return normalised_date(value)
     if kind is ParameterKind.NEAR:
         return value if parse_near(value) is not None else None
     code = (value if kind is ParameterKind.TEXT else value.rsplit("|", 1)[-1]).strip()

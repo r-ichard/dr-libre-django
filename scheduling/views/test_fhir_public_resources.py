@@ -141,10 +141,13 @@ def returns_zero_entries_but_total_when_count_is_zero() -> None:
     assert "entry" not in body
 
 
+NEEDS_MORE = ("Slot", "Patient")  # a start range and a type; a token
+
+
 def returns_bounded_queries_whatever_the_number_of_rows() -> None:
     for index in range(12):
         _plant_hospital(index)
-    paths = [f"/fhir/{item.type}" for item in FHIR_RESOURCES]
+    paths = [f"/fhir/{item.type}" for item in FHIR_RESOURCES if item.type not in NEEDS_MORE]
     counts: list[int] = []
     for path in paths:
         with CaptureQueriesContext(connection) as captured:
@@ -167,15 +170,18 @@ def returns_every_declared_route_and_declares_every_answering_one() -> None:
 
     assert {item["type"] for item in statement} == declared
     for item in statement:
-        assert _get(f"/fhir/{item['type']}").status_code == 200
+        if item["type"] not in NEEDS_MORE:
+            assert _get(f"/fhir/{item['type']}").status_code == 200
         for parameter in item.get("searchParam", []):
             assert parameter["name"]
-    assert _get("/fhir/Patient").status_code == 404
-    assert _get("/fhir/Schedule").status_code == 404
+    assert _get("/fhir/Patient").status_code == 401
+    assert _get("/fhir/Slot").status_code == 400
 
 
 def returns_500_outcome_with_correlation_id_and_no_internals_when_use_case_breaks() -> None:
-    with patch("scheduling.views.fhir.views.search_resource", side_effect=RuntimeError("secret")):
+    with patch(
+        "scheduling.use_cases.fhir_resources.search_resource", side_effect=RuntimeError("secret")
+    ):
         response = CLIENT.get("/fhir/Organization", headers={"X-Correlation-Id": "cid-500"})
 
     assert response.status_code == 500

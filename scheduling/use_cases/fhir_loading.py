@@ -14,12 +14,14 @@ from scheduling.domain.fhir_organization import (
     department_organization,
     hospital_organization,
 )
+from scheduling.domain.fhir_patient import PatientSource, patient_resource
 from scheduling.domain.fhir_practitioner import (
     PractitionerContact,
     PractitionerSource,
     practitioner,
 )
 from scheduling.domain.fhir_practitioner_role import RoleSource, RuleHours, practitioner_role
+from scheduling.domain.fhir_schedule import ScheduleSource, schedule_resource
 from scheduling.domain.fhir_service import ServiceSource, healthcare_service
 from scheduling.domain.fhir_specialty import (
     SpecialtyList,
@@ -34,6 +36,7 @@ from scheduling.models import (
     Hospital,
     Room,
     Specialty,
+    User,
 )
 from scheduling.use_cases.search_catalog import bookable_types
 
@@ -213,3 +216,28 @@ def _roles(profile_ids: list[UUID], service_types: QuerySet[AppointmentType]) ->
         )
         for row in profiles
     ]
+
+
+def schedules(rule_ids: list[UUID]) -> list[Resource]:
+    rows = AvailabilityRule.objects.filter(pk__in=rule_ids).values_list(
+        "id",
+        "version",
+        "updated_at",
+        "clinician__user_id",
+        "room_id",
+        "valid_from",
+        "valid_to",
+        "weekday",
+        "start_time",
+        "end_time",
+        "slot_step_minutes",
+        "clinician__user__is_active",
+    )
+    return [schedule_resource(ScheduleSource(*row)) for row in rows]
+
+
+def patients(user_ids: list[UUID]) -> list[Resource]:
+    rows = User.objects.filter(pk__in=user_ids).values_list(
+        "id", "full_name", "email", "phone", "date_of_birth", "is_active", "version", "updated_at"
+    )
+    return [patient_resource(PatientSource(*row)) for row in rows]

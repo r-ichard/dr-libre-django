@@ -4,7 +4,7 @@ CapabilityStatement all read, so none of them can name what another does not."""
 from dataclasses import dataclass
 from enum import StrEnum
 
-INTERACTIONS = ("read", "search-type")
+READ_ONLY = ("read", "search-type")
 COMMON_PARAMETERS = ("_count", "_offset", "_sort", "_format", "_include")
 SORTABLE_PARAMETERS = ("name", "address-city", "active")
 
@@ -15,6 +15,7 @@ class ParameterKind(StrEnum):
     REFERENCE = "reference"
     CODE = "code"
     NEAR = "near"
+    DATE = "date"
 
 
 # FHIR search parameter type of each kind, for the CapabilityStatement.
@@ -24,6 +25,7 @@ FHIR_TYPE_OF_KIND = {
     ParameterKind.REFERENCE: "reference",
     ParameterKind.CODE: "token",
     ParameterKind.NEAR: "special",
+    ParameterKind.DATE: "date",
 }
 
 
@@ -31,6 +33,8 @@ FHIR_TYPE_OF_KIND = {
 class SearchParameter:
     name: str
     kind: ParameterKind
+    maximum_repeats: int = 1
+    required: bool = False
 
 
 @dataclass(frozen=True)
@@ -39,6 +43,7 @@ class ResourceDeclaration:
     parameters: tuple[SearchParameter, ...]
     includes: tuple[str, ...] = ()
     single_id: str = ""
+    interactions: tuple[str, ...] = READ_ONLY
 
     @property
     def sortable(self) -> tuple[str, ...]:
@@ -57,6 +62,7 @@ _TEXT = ParameterKind.TEXT
 _FLAG = ParameterKind.FLAG
 _REFERENCE = ParameterKind.REFERENCE
 _CODE = ParameterKind.CODE
+_DATE = ParameterKind.DATE
 
 FHIR_RESOURCES = (
     ResourceDeclaration(
@@ -103,6 +109,28 @@ FHIR_RESOURCES = (
             ("active", _FLAG),
         ),
         includes=("PractitionerRole:practitioner", "PractitionerRole:organization"),
+    ),
+    ResourceDeclaration(
+        "Schedule",
+        _parameters(("actor", _REFERENCE), ("date", _DATE), ("active", _FLAG)),
+        interactions=(*READ_ONLY, "create", "update", "delete"),
+    ),
+    ResourceDeclaration(
+        "Slot",
+        (
+            SearchParameter("schedule", ParameterKind.REFERENCE),
+            SearchParameter("schedule.actor", ParameterKind.REFERENCE),
+            SearchParameter("service-type", ParameterKind.CODE, required=True),
+            SearchParameter("start", ParameterKind.DATE, maximum_repeats=2, required=True),
+            SearchParameter("status", ParameterKind.CODE, maximum_repeats=4),
+        ),
+        includes=("Slot:schedule",),
+        interactions=READ_ONLY,
+    ),
+    ResourceDeclaration(
+        "Patient",
+        _parameters(("name", _TEXT), ("email", _TEXT), ("phone", _TEXT), ("birthdate", _DATE)),
+        interactions=(*READ_ONLY, "update"),
     ),
 )
 

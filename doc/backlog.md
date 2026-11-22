@@ -73,7 +73,7 @@ tasks.
 | 17d | Demo seed books through the use cases (#32) | 16 | merged with 17e `3df1aa8` |
 | 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
 | | **M7 Admin console and reporting (#7)** | | |
-| 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | running `01M80BHGNBMQ` |
+| 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | run `01M80BHGNBMQ` passed; sync with `main` running `01M80DN7M194` |
 | 19 | Users and clinicians | 10 | todo |
 | 20 | Appointments, waitlist, audit log, settings | 10 | todo |
 | 21 | Dashboard, reporting, CSV export | 13 | todo |

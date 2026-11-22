@@ -561,3 +561,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   run choose the numbers; none could see the result. Task 17f asks for the numbers in
   the plan and names the three measurements I will take, so the plan can be checked
   against arithmetic before any code.
+
+## 2026-11-22 task 18, run 01M80BHGNBMQ (35 minutes), first sync run
+
+- Clean pass beside task 17c. The squash onto `main` conflicted in one product file,
+  `scheduling/domain/audit_labels.py`: both tasks add entries to the same dictionary. I
+  had told task 18 about the rule and it kept it; the text still collides.
+- Keeping both sides is mechanical, and still product code. New workflow `sync`: setup,
+  one agent that merges `main` into the branch keeping both sides, then lint, tests and
+  gate. Launched with `--target owner/repo@branch` from `main`, because a branch cut
+  before the workflow existed cannot name it.
+- Two runs side by side pay for their speed here. A sync run is cheap if it stays at
+  five minutes; if it does not, side by side is only for tasks that share no file.
+- The reviewer measured `make test` at 38 to 43 seconds in the sandbox for a tree that
+  takes 22 alone: two sandboxes share the machine. A time budget read under load is
+  noise; I read it from my own fresh-clone run, one at a time.

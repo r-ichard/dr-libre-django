@@ -38,7 +38,7 @@ Two runs of the build pipeline (`fabro`, see "The pipeline"). Check them with
 
 | Run | Task | Base | When it ends |
 |---|---|---|---|
-| see `fabro ps -a`, task 27a3 | `doc/backlog/27a3-mutation-gate-on-the-held-branch.md` | branch `task/27a-qa-round-3-inputs` (holds 27a and 27a2, approved; only `make mutate` fails) | Verify, then land 27a, 27a2 and 27a3 as one squash. Closes #33, #38, #41, #45. |
+| `01M82KTF43JN8TVNKCMBXVRQA7` (workflow `repair`) | `doc/backlog/27a3-mutation-gate-on-the-held-branch.md` | branch `task/27a-qa-round-3-inputs` (27a and 27a2, approved, plus the tests of a first 27a3 run; only `make mutate` fails) | Read its diff (tests and `mutation-equivalents.txt` only), verify, then land 27a, 27a2 and 27a3 as one squash. Closes #33, #38, #41, #45. |
 | `01M82GCRX3TWJRH62BZJ8HJRH1` | `doc/backlog/26b2-limits-on-public-reads.md` | `main` | Verify, land. |
 
 If a run shows `Error: ?` on an agent stage, the reason is the last event of
@@ -117,6 +117,7 @@ fabro run conventions-auto --target r-ichard/dr-libre-django@task/<branch> --goa
 caffeinate -i -s fabro wait <id>                                      # blocks until it ends
 fabro attach <id>                                                     # stage lines, only after wait returned
 fabro run qa --goal-file .fabro/workflows/qa/areas/<area>.md -d       # a QA run: tests, then files issues
+fabro run repair --target r-ichard/dr-libre-django@task/<branch> --goal-file doc/backlog/<task>.md -d   # approved branch, a last gate fails: tests only, no red stage
 ```
 
 Two runs side by side is the most the subscription carried. Push before launching: the

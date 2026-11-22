@@ -1046,3 +1046,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - By hand: 415 for `text/plain`, XML, a form type and no type on a FHIR write;
   reschedule by `start` alone; `_sort` both ways on four types and paging under it to
   the last of 81 entries.
+
+## 2026-11-22 the held branch of 27a: three runs to get past one gate
+
+- 27a2 (run 01M82GCRE3JK) was right in the product and approved on its third review;
+  `make mutate` then named 17 survivors and the run had no repair pass left: the repair
+  stage had `max_visits=2` and the two were spent on review findings. Now 4.
+- `fabro rewind` to the approved review failed in six seconds: a rewind keeps the visit
+  counts, and the scripted gate ran in a sandbox where the toolchain stage never ran.
+- 27a3, a tests-only task on the task workflow (run 01M82K10H7F6), failed at the red
+  gate three times: a test that kills a mutant passes on the real code, and the gate
+  asks for a failing suite. I wrote a task the process could not run.
+- New workflow `repair`: toolchain, the last gates, one agent that fixes what they name,
+  lint and tests, the gates again. For an approved branch only; the orchestrator reads
+  its diff, which holds tests and `mutation-equivalents.txt` and nothing else.

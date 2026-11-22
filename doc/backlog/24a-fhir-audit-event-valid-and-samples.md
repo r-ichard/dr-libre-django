@@ -1,12 +1,21 @@
 Task 24a: FHIR API, a valid AuditEvent, samples for every type, and what task 24 left.
 
-Task 24 (`doc/backlog/24-fhir-responses-communication-audit-admin-writes.md`) delivered
-the read side of `AppointmentResponse`, `Communication` and `AuditEvent`, the acceptance
-of a waitlist offer and "mark as read". Its review is in `doc/reviews/`. This task closes
-what the orchestrator found on the running stack and what that run did not reach for
-those three resources. The admin writes are tasks 24b and 24c; the closing of section 15
-is task 24d. Reproduce each finding with a failing test before the fix.
+This branch holds what the run of task 24
+(`doc/backlog/24-fhir-responses-communication-audit-admin-writes.md`) finished: the read
+side of `AppointmentResponse`, `Communication` and `AuditEvent`, the acceptance of a
+waitlist offer and "mark as read". Its review is in `doc/reviews/`. It is not merged,
+because two gates fail on it, neither of which its run or its reviewer ran:
+`make fhir-validate` and `make mutate`. This task makes both pass and closes what that
+run did not reach for those three resources. The admin writes are tasks 24b and 24c; the
+closing of section 15 is task 24d. Reproduce each finding with a failing test before the
+fix, and run `make fhir-validate` and `make mutate` yourself before you reply: both are
+in "Done when".
 
+0. `make mutate` fails: `unlisted survivor:
+   scheduling.domain.fhir_communication.x_decode_update__mutmut_21` and
+   `...x__is_date_time__mutmut_4`. Kill both with tests; a line in
+   `mutation-equivalents.txt` only for a mutant that truly cannot change behaviour, with
+   the reason.
 1. Every `AuditEvent` is invalid FHIR R4. `AuditEvent.action` carries the product's
    action name (`appointment.book`, `time_off.create`), and R4 requires a code of the
    value set AuditEventAction there: `C`, `R`, `U`, `D` or `E`. The HL7 validator

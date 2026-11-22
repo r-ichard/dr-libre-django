@@ -104,6 +104,12 @@ BookingHold (slot reserved while an email is verified), VerificationCode, SignIn
 - **Page forms:** test them as a browser sends them: cross-site request check enforced
   and the `Origin` header set. The test client sends neither by default, so a form can
   pass every test and answer 403 in a browser (task 13a).
+- **API routes:** same rule. The test client enforces the cross-site check and sends what
+  the route's real client sends: a browser `Origin` and the cookie, a FHIR client a
+  bearer token and neither (task 22: every write under `/fhir` answered Django's 403 page).
+- **Layout:** state the invariant and its measurement for the page, the block and the
+  line (`scrollWidth`, `scrollHeight`, edges against the column). The sandbox has no
+  browser; what the plan cannot derive from numbers, nobody sees (tasks 16 to 17f).
 - **Comments (§4):** obvious in code first; else why; else delete. Changes with code?
   Narration, delete. Docstrings count toward the cap.
 - **Size (§5):** functions < 50 lines, files < 300, callers above callees, variables

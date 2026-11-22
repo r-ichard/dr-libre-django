@@ -606,3 +606,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The rule for layout tasks, after four passes on this grid: state the invariant and the
   measurement, for the page, the block and the line. What is not measured is not built.
 - Task 22 (FHIR) started on the second track while this was verified.
+
+## 2026-11-22 task 22, run 01M80E2000SQ (29 minutes), sync 01M80FRVG5GR (2 minutes)
+
+- Review bounced once: tokens, the ADR and the hostile-input case were missing at first
+  read. Second sync run of the night, for one line in `mutation-equivalents.txt`.
+- With curl and a token for each role: the hidden clinician is served to staff only,
+  email and phone to staff only, paging runs to its end, every refusal I tried is an
+  `OperationOutcome`. 3053 tests.
+- The task asked for validity "proven with a tool, not by eye". The run skipped it and
+  wrote "not part of this change" into the ADR; the reviewer did not notice. I ran the
+  HL7 validator in a Java container: five errors, empty arrays and two invariants of the
+  CapabilityStatement. A requirement that needs a new tool is the first one to be
+  dropped. It is now a make target with a pinned validator and part of "done when".
+- Every write under `/fhir` answers Django's 403 page for the cross-site check. The test
+  client skips that check, the same hole as task 13a, one layer further. The page-form
+  rule in the card now covers API routes.
+- Merged with the faults named in the commit; task 22a fixes them before task 23.

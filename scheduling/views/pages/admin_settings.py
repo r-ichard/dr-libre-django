@@ -42,8 +42,7 @@ class RemindersPage(PageView):
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         created = send_reminders(self.user)
-        word = "reminder" if created == 1 else "reminders"
-        return admin_redirect(SETTINGS_PATH, f"{created} {word} created.")
+        return admin_redirect(SETTINGS_PATH, f"reminders:{created}")
 
 
 def admin_settings_routes() -> list[URLPattern]:

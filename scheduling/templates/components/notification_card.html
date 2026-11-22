@@ -1,8 +1,8 @@
-{% comment %}Parameters: item (a Notification), return_to_page. Unread shows a word, never colour alone.{% endcomment %}
+{% comment %}Parameters: item (a Notification), shown_at (its time in the hospital zone), return_to_page. Unread shows a word, never colour alone.{% endcomment %}
 <article class="card notification">
-  <h3>{{ item.title }}{% if not item.read_at %} {% include "components/badge.html" with kind="information" text="Unread" %}{% endif %}</h3>
+  <h2>{{ item.title }}{% if not item.read_at %} {% include "components/badge.html" with kind="information" text="Unread" %}{% endif %}</h2>
   {% if item.body %}<p>{{ item.body }}</p>{% endif %}
-  <p class="hint">{{ item.created_at|date:"j F Y, H:i" }} UTC</p>
+  <p class="hint">{{ shown_at }}</p>
   <div class="button-row">
     {% if item.waitlist_entry_id %}<a class="button button--secondary" href="/patient/waitlist">Open your waitlist</a>{% elif item.appointment_id %}<a class="button button--secondary" href="/patient/appointments">Open your appointments</a>{% endif %}
     {% if not item.read_at %}

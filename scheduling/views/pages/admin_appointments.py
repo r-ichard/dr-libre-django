@@ -2,7 +2,6 @@
 cancel step. Status changes and cancel are the use cases of task 08; an admin sees the
 appointment and its history, never a clinical note."""
 
-from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from django.http import Http404, HttpRequest, HttpResponse
@@ -182,7 +181,7 @@ class AppointmentShowPage(AdminAppointmentPage):
 class StatusActionPage(AdminAppointmentPage):
     http_method_names = ["post"]
     target = AppointmentStatus.CHECKED_IN
-    done_words = "Checked in"
+    done_code = "checked_in"
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
@@ -193,28 +192,24 @@ class StatusActionPage(AdminAppointmentPage):
             return admin_refused_page(request, self.user, changed, back)
         return admin_redirect(
             appointment_path(appointment_id),
-            f"{self.done_words} the appointment of {_patient_name(appointment_id)}.",
+            self.done_code,
+            appointment_id,
         )
 
 
 class CheckInPage(StatusActionPage):
     target = AppointmentStatus.CHECKED_IN
-    done_words = "Checked in"
+    done_code = "checked_in"
 
 
 class CompletePage(StatusActionPage):
     target = AppointmentStatus.COMPLETED
-    done_words = "Completed"
+    done_code = "completed"
 
 
 class NoShowPage(StatusActionPage):
     target = AppointmentStatus.NO_SHOW
-    done_words = "Marked as no-show"
-
-
-def _patient_name(appointment_id: UUID) -> str:
-    found = appointment_for_admin(appointment_id)
-    return found.patient.full_name if found else "the patient"
+    done_code = "no_show"
 
 
 class CancelPage(AdminAppointmentPage):
@@ -234,10 +229,7 @@ class CancelPage(AdminAppointmentPage):
         back = (appointment_path(appointment.pk), BACK_TO_APPOINTMENT)
         if isinstance(cancelled, Failure):
             return admin_refused_page(request, self.user, cancelled, back)
-        return admin_redirect(
-            appointment_path(appointment.pk),
-            f"Cancelled the appointment of {appointment.patient.full_name}.",
-        )
+        return admin_redirect(appointment_path(appointment.pk), "cancelled", appointment.pk)
 
     def _form(
         self,

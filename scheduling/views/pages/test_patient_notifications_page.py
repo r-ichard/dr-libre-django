@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import timedelta
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 
 from scheduling.models import AuditLogEntry, Notification, User
-from scheduling.models.builders import make
+from scheduling.models.builders import make, make_clinic
 from scheduling.views import clock
 from scheduling.views.pages.booking_pages_support import NOW, no_inline_code, signed_in_patient
 from scheduling.views.pages.browser_support import OTHER_SITE_ORIGIN, browser_post
@@ -139,3 +142,59 @@ def returns_unread_count_linked_to_the_list_on_the_home_page() -> None:
     html = signed_in_patient(patient).get("/patient/").content.decode()
 
     assert f'<a href="{PATH}">2 unread notifications</a>' in html
+
+
+def returns_the_hospital_zone_and_local_time_when_the_notice_belongs_to_an_appointment() -> None:
+    clinic = make_clinic()
+    clinic.department.hospital.time_zone = "Asia/Tokyo"
+    clinic.department.hospital.save()
+    appointment = make(
+        "Appointment",
+        patient=clinic.patient,
+        clinician=clinic.clinician,
+        appointment_type=clinic.appointment_type,
+    )
+    _notification(clinic.patient, "Booked", 0, appointment=appointment)
+
+    html = signed_in_patient(clinic.patient).get(PATH).content.decode()
+
+    assert "7 January 2030, 15:00 (Asia/Tokyo)" in html
+    assert " UTC" not in html
+
+
+def _notification_about_appointment(patient: User) -> None:
+    appointment = make("Appointment")
+    _notification(patient, "Reminder", appointment=appointment)
+
+
+def _notification_about_waitlist_entry(patient: User) -> None:
+    entry = make("WaitlistEntry", patient=patient)
+    _notification(patient, "Offer", waitlist_entry=entry)
+
+
+def _queries_for(
+    row_count: int, about: Callable[[User], None] = _notification_about_appointment
+) -> int:
+    patient = _patient()
+    for _ in range(row_count):
+        about(patient)
+    client = signed_in_patient(patient)
+    with CaptureQueriesContext(connection) as captured:
+        assert client.get(PATH).status_code == 200
+    return len(captured)
+
+
+def returns_constant_query_count_when_page_has_one_or_five_rows_with_appointments() -> None:
+    one_row = _queries_for(1)
+
+    five_rows = _queries_for(5)
+
+    assert five_rows == one_row
+
+
+def returns_constant_query_count_when_page_has_one_or_five_rows_with_waitlist_entries() -> None:
+    one_row = _queries_for(1, _notification_about_waitlist_entry)
+
+    five_rows = _queries_for(5, _notification_about_waitlist_entry)
+
+    assert five_rows == one_row

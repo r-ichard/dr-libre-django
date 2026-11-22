@@ -59,7 +59,7 @@ class LinkContinuePage(PageView):
         token = request.POST.get("token") or request.GET.get("token", "")
         used = use_link(token, request.headers.get("User-Agent", ""))
         if isinstance(used, Failure):
-            invalid = render_page(request, INVALID_TEMPLATE, status=400)
+            invalid = render_page(request, INVALID_TEMPLATE, status=400, signed_in_user=self.user)
             return _origin_only_referrer(invalid)
         response = HttpResponseRedirect(PATIENT_HOME, status=303)
         set_session_cookie(response, used.value.token, used.value.session.expires_at)

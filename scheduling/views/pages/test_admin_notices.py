@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import pytest
+from django.core import signing
 from django.test import Client
 from django.urls import URLPattern, URLResolver, get_resolver
 
@@ -18,7 +19,7 @@ from scheduling.use_cases.test_waitlist_support import (
     _offered_entry,
 )
 from scheduling.views import clock
-from scheduling.views.pages.admin_notices import ADMIN_NOTICE_COOKIE
+from scheduling.views.pages.admin_notices import ADMIN_NOTICE_COOKIE, NOTICE_SALT
 from scheduling.views.pages.admin_support import admin_client, admin_post
 
 if TYPE_CHECKING:
@@ -168,7 +169,7 @@ CASES: dict[str, tuple[Action, str]] = {
     "reminders": (_reminders, "0 reminders created."),
     "record_create": (_specialty_new, "Created the specialty Neurology."),
     "record_update": (_specialty_edit, "Saved the specialty Neurology."),
-    "record_delete": (_specialty_delete, "Deleted the specialty Cardiology."),
+    "record_delete": (_specialty_delete, "Deleted the specialty."),
     "user_deactivate": (_deactivate, f"Deactivated {PATIENT_NAME}."),
 }
 
@@ -213,3 +214,13 @@ def returns_every_admin_post_route_in_the_notice_list_or_the_download_list() -> 
     posted = _post_view_classes(list(get_resolver().url_patterns))
 
     assert posted - COVERED - NO_REDIRECT == set()
+
+
+def returns_a_cookie_without_the_patient_name_when_the_admin_acts() -> None:
+    client = admin_client()
+
+    response = _status("check-in")(client)
+
+    cookie = response.cookies[ADMIN_NOTICE_COOKIE].value
+    assert PATIENT_NAME not in cookie
+    assert PATIENT_NAME not in str(signing.loads(cookie, salt=NOTICE_SALT))

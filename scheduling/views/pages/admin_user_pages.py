@@ -42,8 +42,9 @@ class DeactivatePage(RecordPage):
             return self._confirmation(request, [], UNREADABLE_VERSION, 422)
         result = deactivate_user(path_uuid(self, "record_id"), int(version), self.user)
         if not isinstance(result, Failure):
-            name = str(getattr(self.record_or_404(), "full_name", ""))
-            return admin_redirect(f"{self.view.base_path}/{result.value}", f"Deactivated {name}.")
+            return admin_redirect(
+                f"{self.view.base_path}/{result.value}", "user_deactivated", result.value
+            )
         if result.code == FailureCode.RULE_VIOLATION:
             reasons = result.details["violated_rules"]
             return self._confirmation(

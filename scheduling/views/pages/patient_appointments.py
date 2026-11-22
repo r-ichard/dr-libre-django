@@ -28,6 +28,7 @@ PAGE_SIZE = 10
 MAXIMUM_PAGE_DIGITS = 6
 NOTICES = {
     "cancelled": "Your appointment is cancelled.",
+    "booked": "Your waitlist slot is booked.",
     "rescheduled": "Your appointment has a new time.",
 }
 REASON_REQUIRED = "Enter a reason for cancelling."

@@ -101,8 +101,7 @@ class WaitlistAddPage(AdminWaitlistPage):
         joined = join_waitlist(command, self.user)
         if isinstance(joined, Failure):
             return admin_refused_page(request, self.user, joined, BACK_TO_LIST)
-        name = joined.value.patient.full_name
-        return admin_redirect(LIST_PATH, f"Added {name} to the waitlist.")
+        return admin_redirect(LIST_PATH, "waitlist_added", joined.value.pk)
 
     def _render(
         self,
@@ -189,7 +188,7 @@ class OfferPage(AdminWaitlistPage):
             return admin_refused_page(
                 request, self.user, offered, BACK_TO_LIST, waitlist_offer=True
             )
-        return admin_redirect(LIST_PATH, f"Offered a time to {offered.value.patient.full_name}.")
+        return admin_redirect(LIST_PATH, "waitlist_offered", offered.value.pk)
 
 
 class AcceptPage(AdminWaitlistPage):
@@ -200,9 +199,7 @@ class AcceptPage(AdminWaitlistPage):
         accepted = accept_offer(path_uuid(self, "entry_id"), self.user)
         if isinstance(accepted, Failure):
             return admin_refused_page(request, self.user, accepted, BACK_TO_LIST)
-        return admin_redirect(
-            LIST_PATH, f"Accepted the offer for {accepted.value.patient.full_name}."
-        )
+        return admin_redirect(LIST_PATH, "waitlist_accepted", accepted.value.pk)
 
 
 def admin_waitlist_routes() -> list[URLPattern]:

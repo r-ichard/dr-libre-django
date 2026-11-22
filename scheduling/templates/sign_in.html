@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Sign in · DrLibre{% endblock %}
 {% block content %}
+<div class="single-form">
 <h1>Sign in</h1>
+<p>Patients can sign in with the email link. If you have a password, use it below.</p>
+<form class="form" method="post" action="/sign-in/email-link" novalidate>
+  {% csrf_token %}
+  {% if link_form.summary %}{% include "components/error_summary.html" with errors=link_form.summary %}{% endif %}
+  {% include "components/field.html" with name="link_email" label="Email address" type="email" value=link_form.email autocomplete="email" error=link_form.error hint=link_hint %}
+  <button class="button button--primary" type="submit">Email me a sign-in link</button>
+</form>
+<h2>Or sign in with a password</h2>
 <form class="form" method="post" action="/sign-in" novalidate>
   {% csrf_token %}
   {% if form.next_path %}<input type="hidden" name="next" value="{{ form.next_path }}">{% endif %}
   {% if form.summary %}{% include "components/error_summary.html" with errors=form.summary %}{% endif %}
   {% include "components/field.html" with name="email" label="Email address" type="email" value=form.email autocomplete="email" error=form.field_errors.email invalid=form.form_error error_id=form_error_id autofocus=form.focus_email %}
   {% include "components/field.html" with name="password" label="Password" type="password" autocomplete="current-password" error=form.field_errors.password invalid=form.form_error error_id=form_error_id autofocus=form.focus_password %}
-  <button class="button button--primary" type="submit">Sign in</button>
+  <button class="button button--secondary" type="submit">Sign in</button>
 </form>
-<h2>Or sign in without a password</h2>
-<form class="form" method="post" action="/sign-in/email-link" novalidate>
-  {% csrf_token %}
-  {% if link_form.summary %}{% include "components/error_summary.html" with errors=link_form.summary %}{% endif %}
-  {% include "components/field.html" with name="link_email" label="Email address" type="email" value=link_form.email autocomplete="email" error=link_form.error hint="We send a link that works for 15 minutes and only once." %}
-  <button class="button button--secondary" type="submit">Email me a sign-in link</button>
-</form>
+</div>
 {% endblock %}
 {% block scripts %}{% load static %}<script src="{% static 'js/focus_first_error.js' %}" defer></script>{% endblock %}

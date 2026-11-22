@@ -103,10 +103,7 @@ class RescheduleReviewPage(AdminAppointmentPage):
         )
         if isinstance(moved, Failure):
             return self._refused(request, found, moved)
-        return admin_redirect(
-            appointment_path(found.pk),
-            f"Rescheduled the appointment of {found.patient.full_name}.",
-        )
+        return admin_redirect(appointment_path(found.pk), "rescheduled", found.pk)
 
     def _refused(self, request: HttpRequest, found: Appointment, failure: Failure) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user

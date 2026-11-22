@@ -197,3 +197,53 @@ def returns_status_icon_no_taller_than_the_time_line_when_the_first_line_is_draw
 def returns_count_spaced_with_the_token_when_it_follows_the_search_form() -> None:
     sheet = (STYLE_SHEET.parent / "components.css").read_text()
     assert re.search(r"\.list-count\s*\{\s*margin-top:\s*var\(--space-4\)", sheet)
+
+
+PAGE_PIXELS_AT_1440 = 1088
+SEVEN_DAYS = 7
+TIME_LINE_PIXELS = 114
+BORDER_PIXELS = 6 + 1
+
+
+def _column_minimum_pixels() -> float:
+    columns = _declarations_of(".time-grid__columns")["grid-auto-columns"]
+    found = re.fullmatch(r"minmax\((\d+(?:\.\d+)?rem), 1fr\)", columns)
+    assert found is not None, columns
+    return _pixels(found.group(1))
+
+
+def _space_pixels(value: str) -> float:
+    token = re.fullmatch(r"var\((--space-\d)\)", value)
+    assert token is not None, value
+    tokens = (STYLE_SHEET.parent / "tokens.css").read_text()
+    declared = re.search(rf"{token.group(1)}:\s*([\d.]+rem)", tokens)
+    assert declared is not None, value
+    return _pixels(declared.group(1))
+
+
+def _item_padding_pixels() -> float:
+    return _space_pixels(_declarations_of(".time-grid-item")["padding"].split()[1])
+
+
+def returns_seven_columns_that_fit_1088_pixels_when_axis_and_gaps_are_counted() -> None:
+    wide_grid = next(d for s, d in _rules() if s == ".time-grid" and "grid-template-columns" in d)
+    axis_pixels = _pixels(wide_grid["grid-template-columns"].split()[0])
+    gap = _space_pixels(_declarations_of(".time-grid__columns")["gap"])
+    gaps_total = gap * (SEVEN_DAYS - 1)
+
+    used = axis_pixels + SEVEN_DAYS * _column_minimum_pixels() + gaps_total
+
+    assert used <= PAGE_PIXELS_AT_1440
+
+
+def returns_a_time_line_of_at_least_114_pixels_when_a_block_sits_beside_a_time_off_rail() -> None:
+    rail = _pixels(_declarations_of(".time-grid")["--rail"])
+    frame = rail + 2 * _item_padding_pixels() + BORDER_PIXELS
+
+    assert _column_minimum_pixels() - frame >= TIME_LINE_PIXELS
+
+
+def returns_a_time_line_of_at_least_114_pixels_when_a_block_is_alone_in_its_column() -> None:
+    frame = 2 * _item_padding_pixels() + BORDER_PIXELS
+
+    assert _column_minimum_pixels() - frame >= TIME_LINE_PIXELS

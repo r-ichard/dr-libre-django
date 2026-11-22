@@ -209,9 +209,7 @@ class ReviewStepPage(AdminBookingPage):
         placed = place_appointment(command, self.user)
         if isinstance(placed, Failure):
             return self._refused(request, placed)
-        return admin_redirect(
-            appointment_path(placed.value.pk), f"Booked an appointment for {patient.full_name}."
-        )
+        return admin_redirect(appointment_path(placed.value.pk), "booked", placed.value.pk)
 
     def _refused(self, request: HttpRequest, failure: Failure) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user

@@ -2,11 +2,13 @@
 touch only the patient's own rows; the record rule answers 404 or 403 for a foreign id."""
 
 from math import ceil
+from zoneinfo import ZoneInfo
 
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure, FailureCode
 from scheduling.domain.vocabulary import Role
+from scheduling.models import Notification
 from scheduling.use_cases.notification_inbox import (
     mark_all_read,
     mark_read,
@@ -31,7 +33,7 @@ class NotificationsPage(PageView):
         found = notifications_page(self.user, page, PAGE_SIZE)
         page_count = max(1, ceil(found.total / PAGE_SIZE))
         context = {
-            "rows": found.rows,
+            "rows": [{"item": row, "shown_at": _shown_at(row)} for row in found.rows],
             "unread": unread_count(self.user),
             "page": page,
             "page_count": page_count,
@@ -41,6 +43,14 @@ class NotificationsPage(PageView):
             "now": current_request_context().now,
         }
         return self.page(request, context)
+
+
+def _shown_at(row: Notification) -> str:
+    """The time in the zone of the hospital the notice is about, named; UTC when it has none."""
+    linked = row.appointment or row.waitlist_entry
+    zone_name = linked.appointment_type.department.hospital.time_zone if linked else "UTC"
+    local = row.created_at.astimezone(ZoneInfo(zone_name))
+    return f"{local.day} {local:%B %Y, %H:%M} ({zone_name})"
 
 
 class MarkReadPage(PageView):

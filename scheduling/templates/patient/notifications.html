@@ -13,7 +13,7 @@
 </form>
 {% endif %}
 <ul class="card-list">
-  {% for item in rows %}<li>{% include "components/notification_card.html" with return_to_page=page %}</li>{% endfor %}
+  {% for row in rows %}<li>{% include "components/notification_card.html" with item=row.item shown_at=row.shown_at return_to_page=page %}</li>{% endfor %}
 </ul>
 {% if page_count > 1 %}{% include "components/pagination.html" %}{% endif %}
 {% else %}{% include "components/empty_state.html" with title="No notifications" text="Reminders and waitlist offers appear here." %}{% endif %}

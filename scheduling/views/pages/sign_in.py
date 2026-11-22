@@ -1,11 +1,13 @@
 """Section 12.1: the sign-in screen, a plain form that works without JavaScript."""
 
 from dataclasses import dataclass, field
+from datetime import timedelta
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
+from scheduling.domain import lockout_rules, sign_in_link_rules
 from scheduling.domain.failure import Failure
 from scheduling.domain.sign_in_rules import home_for
 from scheduling.domain.vocabulary import Role
@@ -16,10 +18,11 @@ from scheduling.views.pages.safe_redirect import local_path_or_home
 from scheduling.views.session_cookie import set_session_cookie
 
 WRONG_CREDENTIALS = "Email or password is not correct."
-LOCKED_OUT = "Too many attempts. Try again in 15 minutes."
+LOCKED_OUT = "Too many attempts. Try again in {minutes} minutes."
 MISSING_MESSAGES = {"email": "Enter your email address.", "password": "Enter your password."}
 EMAIL_INVALID = "Enter a valid email address."
 FORM_ERROR_ID = "form-error"
+LINK_HINT = "We send a link that works for {minutes} minutes and only once."
 
 
 @dataclass(frozen=True)
@@ -92,7 +95,7 @@ class SignInPage(PageView):
             return self._form(request, form, status=400)
         result = sign_in_with_password(email, password, request.headers.get("User-Agent", ""))
         if isinstance(result, Failure):
-            form.form_error = LOCKED_OUT if is_locked_out(email) else WRONG_CREDENTIALS
+            form.form_error = _locked_out_message() if is_locked_out(email) else WRONG_CREDENTIALS
             form.focus = "email"
             return self._form(request, form)
         opened = result.value.opened
@@ -112,5 +115,18 @@ class SignInPage(PageView):
             "form": form,
             "link_form": link_form or LinkForm(),
             "form_error_id": FORM_ERROR_ID,
+            "link_hint": _link_hint(),
         }
         return self.page(request, context, status)
+
+
+def _locked_out_message() -> str:
+    return LOCKED_OUT.format(minutes=_whole_minutes(lockout_rules.LOCKOUT_WINDOW))
+
+
+def _link_hint() -> str:
+    return LINK_HINT.format(minutes=_whole_minutes(sign_in_link_rules.LINK_LIFETIME))
+
+
+def _whole_minutes(span: timedelta) -> int:
+    return int(span.total_seconds() // 60)

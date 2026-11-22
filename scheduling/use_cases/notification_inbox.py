@@ -22,7 +22,11 @@ class NotificationPage:
 def notifications_page(patient: User, page: int, size: int) -> NotificationPage:
     own = Notification.objects.filter(recipient=patient)
     offset = (page - 1) * size
-    rows = own.order_by("-created_at", "-id")[offset : offset + size]
+    newest = own.select_related(
+        "appointment__appointment_type__department__hospital",
+        "waitlist_entry__appointment_type__department__hospital",
+    ).order_by("-created_at", "-id")
+    rows = newest[offset : offset + size]
     return NotificationPage(list(rows), own.count())
 
 

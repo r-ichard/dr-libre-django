@@ -149,3 +149,31 @@ def returns_message_quoting_only_the_last_twenty_characters_when_text_before_is_
     assert result == Failure.invalid_input(
         [FieldMessage("clinical_notes", 'Remove the character after "0123456789abcdefghij".')]
     )
+
+
+def returns_generic_message_without_text_when_field_is_secret() -> None:
+    from scheduling.domain.text_rules import check_storable_text
+
+    result = check_storable_text("password", "Pl4nted-Secret-9x\x0c", single_line=True, secret=True)
+
+    assert result == _refused("password", "Remove the character that cannot be saved.")
+
+
+def returns_context_message_when_field_is_not_secret() -> None:
+    from scheduling.domain.text_rules import check_storable_text
+
+    result = check_storable_text("password", "Pl4nted-Secret-9x\x0c", single_line=True)
+
+    assert result == _refused("password", 'Remove the character after "Pl4nted-Secret-9x".')
+
+
+def returns_trimmed_text_when_search_text_is_storable() -> None:
+    from scheduling.domain.text_rules import storable_search
+
+    assert storable_search("  Saint Mary\t") == "Saint Mary"
+
+
+def returns_empty_search_when_search_text_holds_control_character() -> None:
+    from scheduling.domain.text_rules import storable_search
+
+    assert storable_search("Saint\x00Mary") == ""

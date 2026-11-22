@@ -16,11 +16,14 @@ class StrictTextRules(serializers.CharField):
     one text rule of the domain. Mixed into every text field type a request schema uses."""
 
     single_line = False
+    secret = False
 
     def to_internal_value(self, data: object) -> str:
         if not isinstance(data, str):
             self.fail("invalid")
-        checked = check_storable_text(self.field_name or "", data, single_line=self.single_line)
+        checked = check_storable_text(
+            self.field_name or "", data, single_line=self.single_line, secret=self.secret
+        )
         if isinstance(checked, Failure):
             raise ValidationError(checked.field_messages[0].message)
         return super().to_internal_value(data)
@@ -40,6 +43,18 @@ class StrictEmail(StrictTextRules, serializers.EmailField):
 
 class StrictCode(StrictTextRules, serializers.RegexField):
     single_line = True
+
+
+class StrictSecretText(StrictText):
+    secret = True
+
+
+class StrictSecretLine(StrictLine):
+    secret = True
+
+
+class StrictSecretCode(StrictCode):
+    secret = True
 
 
 class StrictSerializer(serializers.Serializer[Mapping[str, object]]):

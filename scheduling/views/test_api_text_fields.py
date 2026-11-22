@@ -1,11 +1,20 @@
 """Task 27a, finding #45: a text field of `/api/v1` refuses a number, as it refuses a boolean."""
 
+from datetime import UTC, datetime
+
 import pytest
 from rest_framework import serializers
 
-from scheduling.views import auth_schemas, booking_schemas, hold_schemas, waitlist_schemas
+from scheduling.models.builders import STARTS_AT, make_clinic
+from scheduling.views import auth_schemas, booking_schemas, clock, hold_schemas, waitlist_schemas
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.pages import booking_forms
 from scheduling.views.schemas import StrictLine, StrictSerializer, StrictText
+
+SECRET = "Pl4nted-Secret-9x"  # noqa: S105 - a planted test value
+CONTROL_AFTER_SECRET = f"{SECRET}\x0c"
+NOW = datetime(2030, 1, 7, 6, 0, tzinfo=UTC)
+HOLDS = "/api/v1/booking/holds"
 
 SCHEMA_MODULES = (auth_schemas, booking_schemas, hold_schemas, waitlist_schemas, booking_forms)
 
@@ -96,3 +105,59 @@ def returns_the_rules_message_when_single_line_field_holds_a_line_break() -> Non
     assert [str(item) for item in refused.value.detail] == [
         'This field takes one line. Remove the line break after "Saint".'
     ]
+
+
+@pytest.mark.django_db
+def returns_400_without_password_when_login_password_holds_control_character() -> None:
+    response = browser_api_client().post(
+        "/api/v1/auth/login",
+        {"email": "pat.secret@example.test", "password": CONTROL_AFTER_SECRET},
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    assert '"Remove the character that cannot be saved."' in response.content.decode()
+    assert SECRET not in response.content.decode()
+
+
+@pytest.mark.django_db
+def returns_400_without_token_when_link_token_holds_control_character() -> None:
+    response = browser_api_client().post(
+        "/api/v1/auth/link/verify",
+        {"token": CONTROL_AFTER_SECRET},
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    assert '"Remove the character that cannot be saved."' in response.content.decode()
+    assert SECRET not in response.content.decode()
+
+
+@pytest.mark.django_db
+def returns_400_without_code_when_hold_code_holds_control_character(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(clock, "now_utc", lambda: NOW)
+    clinic = make_clinic()
+    client = browser_api_client()
+    hold = client.post(
+        HOLDS,
+        {
+            "appointment_type_id": str(clinic.appointment_type.pk),
+            "clinician_id": str(clinic.clinician.pk),
+            "starts_at": STARTS_AT.isoformat(),
+            "full_name": "Vera Visitor",
+            "date_of_birth": "1985-03-14",
+            "email": "vera.secret@example.test",
+            "terms_accepted": True,
+        },
+        content_type="application/json",
+    ).json()
+
+    response = client.post(
+        f"{HOLDS}/{hold['id']}/verify", {"code": "482913\x0c"}, content_type="application/json"
+    )
+
+    assert response.status_code == 400
+    assert '"Remove the character that cannot be saved."' in response.content.decode()
+    assert "482913" not in response.content.decode()

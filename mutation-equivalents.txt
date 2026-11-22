@@ -81,3 +81,7 @@ scheduling.domain.waitlist_window.x_window_words__mutmut_11: any subtrahend from
 scheduling.domain.record_fields.x_check_equipment__mutmut_4: None is falsy like False, so the free-text rule runs unchanged
 scheduling.domain.clinical_note_rules.x_validate_clinical_note__mutmut_5: None is falsy like False, so the free-text rule runs unchanged
 scheduling.domain.time_off_rules.x_time_off_failures__mutmut_16: None is falsy like False, so the free-text rule runs unchanged
+scheduling.domain.text_rules.x_storable_search__mutmut_2: storable_search drops the FieldMessage, so the field name it passes is never returned
+scheduling.domain.text_rules.x_storable_search__mutmut_8: storable_search drops the FieldMessage, so the field name it passes is never returned
+scheduling.domain.text_rules.x_storable_search__mutmut_9: storable_search drops the FieldMessage, so the field name it passes is never returned
+scheduling.domain.text_rules.x_storable_search__mutmut_4: single_line None is falsy like False, and the line-break branch returns it unchanged for a non-break character

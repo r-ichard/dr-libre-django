@@ -14,6 +14,7 @@ from scheduling.models import Session, SignInLink, User
 from scheduling.models.builders import make
 from scheduling.use_cases.session import hash_token
 from scheduling.views import clock
+from scheduling.views.pages.browser_support import browser_post
 
 pytestmark = pytest.mark.django_db
 
@@ -25,6 +26,7 @@ EMAIL = "pat.pages@example.test"
 TOKEN = "planted-token-abcdefghijklmnopqrstuvwxyz"  # noqa: S105 - a planted test value
 NOW = datetime(2030, 1, 7, 6, 0, tzinfo=UTC)
 MESSAGE = "This sign-in link has expired or was already used."
+SECRET = "Pl4nted-Secret-9x"  # noqa: S105 - a planted test value
 
 
 @pytest.fixture(autouse=True)
@@ -220,3 +222,23 @@ def returns_mail_with_link_to_the_continue_page_when_a_patient_asks(
         r"http://127\.0\.0\.1:8000/sign-in/link\?token=[\w-]{43}", str(mail.outbox[0].body)
     )
     assert User.objects.count() == 1
+
+
+def returns_wrong_credentials_without_password_when_password_holds_control_character() -> None:
+    make("User", email=EMAIL)
+
+    response = browser_post(Client(), SIGN_IN, {"email": EMAIL, "password": f"{SECRET}\x0c"})
+
+    page = response.content.decode()
+    assert response.status_code == 200
+    assert "Email or password is not correct." in page
+    assert SECRET not in page
+
+
+def returns_invalid_link_page_without_token_when_token_holds_control_character() -> None:
+    response = browser_post(Client(), LINK, {"token": f"{SECRET}\x0c"})
+
+    page = response.content.decode()
+    assert response.status_code == 400
+    assert MESSAGE in page
+    assert SECRET not in page

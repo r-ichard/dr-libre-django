@@ -64,7 +64,7 @@ def cleaned_values(
 
 def _clean_field(key: str, value: object) -> Result[object]:
     text = value if isinstance(value, str) else ""
-    unstorable = check_storable_text(key, text, single_line=True)
+    unstorable = check_storable_text(key, text, single_line=True, secret=key == "password")
     if isinstance(unstorable, Failure):
         return unstorable
     match key:

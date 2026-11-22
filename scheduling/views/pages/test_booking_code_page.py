@@ -69,15 +69,15 @@ def returns_message_with_tries_left_when_code_is_wrong() -> None:
     assert "That code is not right. You have 4 tries left." in response.content.decode()
 
 
-def returns_the_rules_message_when_the_code_holds_a_form_feed() -> None:
+def returns_422_without_code_when_code_holds_control_character() -> None:
     client, code_path = _hold_page()
 
-    response = browser_post(client, code_path, {"code": "12\x0c456"})  # type: ignore[arg-type]
+    response = browser_post(client, code_path, {"code": "4829\x0c13"})  # type: ignore[arg-type]
 
-    assert response.status_code == 422
     page = response.content.decode()
-    assert "Remove the character after &quot;12&quot;." in page
-    assert "Enter the 6 digit code." not in page
+    assert response.status_code == 422
+    assert "Remove the character that cannot be saved.</span>" in page
+    assert "4829" not in page
 
 
 def returns_send_new_code_message_when_attempts_are_used_up() -> None:

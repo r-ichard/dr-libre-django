@@ -18,9 +18,9 @@ from scheduling.views.booking_schemas import (
     uuid_of,
 )
 from scheduling.views.schemas import (
-    StrictCode,
     StrictEmail,
     StrictLine,
+    StrictSecretCode,
     StrictSerializer,
     StrictText,
 )
@@ -47,7 +47,8 @@ class ResendRequest(StrictSerializer):
 
 
 class VerifyRequest(StrictSerializer):
-    code = StrictCode(
+    # Secret: a refusal never quotes it.
+    code = StrictSecretCode(
         rf"^\d{{{CODE_LENGTH}}}$", error_messages={"invalid": "Enter the 6 digit code."}
     )
 

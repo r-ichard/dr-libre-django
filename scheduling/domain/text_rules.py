@@ -8,14 +8,15 @@ SURROGATES = range(0xD800, 0xE000)
 WORDS_SHOWN = 20
 
 
-def check_storable_text(field: str, raw: str, *, single_line: bool) -> Result[str]:
-    """Refuses what PostgreSQL or a page cannot carry: NUL, other controls, lone surrogates.
+def check_storable_text(
+    field: str, raw: str, *, single_line: bool, secret: bool = False
+) -> Result[str]:
+    """Refuses NUL, other controls and lone surrogates; a single line refuses tabs and breaks too.
 
-    Free text keeps tab and line breaks; a single line refuses them too. The message says where
-    the character is, by the words before it, and never echoes it."""
+    A message quotes the text before the character, never the character; a secret quotes nothing."""
     for position, character in enumerate(raw):
         if _is_refused(character, single_line):
-            message = _message(raw[:position], character in LINE_BREAK_AND_TAB)
+            message = _message(raw[:position], character in LINE_BREAK_AND_TAB, secret)
             return Failure.invalid_input([FieldMessage(field, message)])
     return Success(raw)
 
@@ -26,11 +27,13 @@ def storable_search(raw: str) -> str:
     return checked.value.strip() if isinstance(checked, Success) else ""
 
 
-def _message(before: str, is_line_break: bool) -> str:
+def _message(before: str, is_line_break: bool, secret: bool) -> str:
+    prefix = "This field takes one line. " if is_line_break else ""
+    if secret:
+        return f"{prefix}{NOT_STORABLE_MESSAGE}"
     context = before.strip()[-WORDS_SHOWN:].strip()
     what = "line break" if is_line_break else "character"
     where = f'after "{context}"' if context else "at the start of the text"
-    prefix = "This field takes one line. " if is_line_break else ""
     return f"{prefix}Remove the {what} {where}."
 
 

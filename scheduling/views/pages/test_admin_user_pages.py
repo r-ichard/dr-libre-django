@@ -79,6 +79,17 @@ def returns_422_with_typed_values_and_an_empty_password_when_the_form_is_refused
     assert 'id="id_email_error"' in html and 'autocomplete="new-password"' in html
 
 
+def returns_422_without_temporary_password_when_password_holds_control_character() -> None:
+    response = admin_post(
+        admin_client(), f"{CONSOLE}/users/new", {**NEW_USER, "password": f"{PLANTED}\x0c"}
+    )
+
+    page = response.content.decode()
+    assert response.status_code == 422
+    assert "Remove the character that cannot be saved.</span>" in page
+    assert PLANTED not in page
+
+
 def returns_403_when_a_user_form_is_posted_from_another_site() -> None:
     response = admin_post(
         admin_client(), f"{CONSOLE}/users/new", NEW_USER, origin=OTHER_SITE_ORIGIN

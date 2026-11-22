@@ -13,7 +13,7 @@ Read `CLAUDE.md` first. Foreground commands only.
    a line of either side to make the merge easy, and change nothing outside the conflict
    to make it fit. If the two sides cannot both hold, stop: say which lines and why in
    your reply, and leave the conflict unresolved. Do not choose a winner.
-3. Process documents are the orchestrator's: for `doc/backlog.md`, `doc/retro.md`,
+3. Process documents are the orchestrator's: for `doc/backlog.md`, `doc/retro.md`, `doc/handover.md`, `AGENTS.md`,
    `doc/backlog/**`, `doc/qa/**`, `CLAUDE.md`, `.fabro/**`, `.claude/**`,
    `scripts/no_background.sh`, `scripts/qa_stack.sh` and `scripts/final_gates.sh` take the
    version of `main`,

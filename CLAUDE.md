@@ -55,7 +55,8 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   CSS/JS in `static/`; `/style` lists every component, only with `DEBUG` on. Error pages: `DEBUG` off
   shows ours (403, 404, 500, with correlation id); `DEBUG` on shows Django's technical 404 and 500
   pages, ours only for 403.
-- **Docs:** tasks `doc/backlog/NN-slug.md`, plans `doc/plans/YYYY-MM-DD-slug.md`, reviews
+- **Docs:** state and recipes for whoever carries on `doc/handover.md` (kept current
+  in the commit that changes the state); tasks `doc/backlog/NN-slug.md`, plans `doc/plans/YYYY-MM-DD-slug.md`, reviews
   `doc/reviews/YYYY-MM-DD-slug.md`, decisions `doc/adr/NNNN-slug.md`, run log
   `doc/retro.md`.
 - **Comment gate (§4.1):** `scripts/comment_cap.py` as Claude Code `PreToolUse` hook

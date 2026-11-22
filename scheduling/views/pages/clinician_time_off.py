@@ -2,12 +2,13 @@
 says so. A period typed into the check form lists the appointments inside it before anything is
 recorded: two plain forms, no script."""
 
-from datetime import datetime
+from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 
 from scheduling.domain.failure import Failure, FailureCode
+from scheduling.domain.request_limits import day_in_range
 from scheduling.models import Appointment, ClinicianProfile, TimeOff
 from scheduling.use_cases.clinician_availability import appointments_in, own_time_off
 from scheduling.use_cases.time_off import TimeOffCommand, create_time_off, delete_time_off
@@ -22,7 +23,20 @@ from scheduling.views.pages.local_time import errors_by_field, utc_from_local
 NOT_A_TIME = (
     "Enter a date and time that exists in the hospital's time zone; clocks skip one hour in spring."
 )
+NOT_A_DATE = "That date does not exist"
 FORM_FIELDS = ("starts_at", "ends_at", "reason")
+
+
+def _unreadable_message(raw: str) -> str:
+    """A date that never exists is named as such; only a real date skipped by a clock change
+    gets the sentence about the clock."""
+    if not raw:
+        return NOT_A_TIME
+    try:
+        day = date.fromisoformat(raw[:10])
+    except ValueError:
+        return NOT_A_DATE
+    return NOT_A_TIME if day_in_range(day) else NOT_A_DATE
 
 
 def _stamp(moment: datetime, zone: ZoneInfo) -> str:
@@ -65,7 +79,7 @@ class TimeOffPage(ClinicianPage):
         starts_at = utc_from_local(values["starts_at"], zone)
         ends_at = utc_from_local(values["ends_at"], zone)
         errors = {
-            name: NOT_A_TIME
+            name: _unreadable_message(values[name])
             for name, moment in (("starts_at", starts_at), ("ends_at", ends_at))
             if moment is None
         }

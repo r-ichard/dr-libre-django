@@ -121,7 +121,7 @@ def _time_off_items(rows: list[TimeOff], day: date, time_zone: str) -> list[Grid
     for row in rows:
         for part in cut_into_days(row.starts_at, row.ends_at, [day], time_zone):
             whole = part.starts_at == row.starts_at and part.ends_at == row.ends_at
-            when = _span_text(part.starts_at, part.ends_at, zone)
+            when = "All day" if part.whole_day else _span_text(part.starts_at, part.ends_at, zone)
             real = (
                 ()
                 if whole

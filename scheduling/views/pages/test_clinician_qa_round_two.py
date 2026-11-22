@@ -104,6 +104,29 @@ def returns_first_day_to_the_end_of_the_grid_when_period_starts_before_seven() -
     assert "time-grid-at-1 time-grid-span-24" in _inside(_columns(html)[1])
 
 
+# --- #40 whole-day time off reads All day ---
+
+
+def returns_all_day_label_when_time_off_covers_a_whole_day() -> None:
+    clinic = make_clinic()
+    _time_off(clinic, _local(30, 11, 0), _local(1, 12, 0))
+
+    html = _clinician_client(clinic).get(WEEK_PATH).content.decode()
+
+    assert "All day" in _inside(_columns(html)[0])
+    assert "00:00 to 00:00" not in html
+
+
+def returns_clock_span_when_time_off_starts_mid_day() -> None:
+    clinic = make_clinic()
+    _time_off(clinic, _local(30, 11, 10), _local(30, 11, 12))
+
+    html = _clinician_client(clinic).get(WEEK_PATH).content.decode()
+
+    assert "10:00 to 12:00" in _inside(_columns(html)[0])
+    assert "All day" not in _inside(_columns(html)[0])
+
+
 # --- #30 overlaps, long words and the empty last column ---
 
 
@@ -188,6 +211,46 @@ def returns_422_and_no_row_when_time_off_starts_in_the_skipped_hour() -> None:
 
     assert response.status_code == 422
     assert "exists in the hospital" in response.content.decode()
+    assert not TimeOff.objects.filter(clinician=clinic.clinician).exists()
+
+
+def returns_422_and_date_message_and_no_clock_sentence_when_time_off_names_30_february() -> None:
+    clinic = make_clinic()
+    form = {"starts_at": "2027-02-30T10:00", "ends_at": "2027-02-30T11:00", "reason": "x"}
+
+    response = browser_post(_clinician_client(clinic), "/clinician/time-off", form)
+
+    body = response.content.decode()
+    assert response.status_code == 422
+    assert "That date does not exist" in body
+    assert "clocks skip" not in body
+    assert not TimeOff.objects.filter(clinician=clinic.clinician).exists()
+
+
+@pytest.mark.parametrize("year", ["0001", "9999", "10000"])
+def returns_422_and_date_message_when_time_off_year_is_outside_the_window(year: str) -> None:
+    clinic = make_clinic()
+    form = {"starts_at": f"{year}-01-01T10:00", "ends_at": f"{year}-01-01T11:00", "reason": "x"}
+
+    response = browser_post(_clinician_client(clinic), "/clinician/time-off", form)
+
+    body = response.content.decode()
+    assert response.status_code == 422
+    assert "That date does not exist" in body
+    assert "clocks skip" not in body
+    assert not TimeOff.objects.filter(clinician=clinic.clinician).exists()
+
+
+def returns_422_and_clock_message_when_time_off_start_is_left_empty() -> None:
+    clinic = make_clinic()
+    form = {"starts_at": "", "ends_at": "2027-02-01T11:00", "reason": "x"}
+
+    response = browser_post(_clinician_client(clinic), "/clinician/time-off", form)
+
+    body = response.content.decode()
+    assert response.status_code == 422
+    assert "exists in the hospital" in body
+    assert "That date does not exist" not in body
     assert not TimeOff.objects.filter(clinician=clinic.clinician).exists()
 
 

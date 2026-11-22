@@ -542,3 +542,22 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   the old date style. A task that names examples gets the examples fixed: name the rule.
 - Looking at the waitlist page for the focus check showed a type that is not bookable
   online offered to a patient. Within the letter of section 5.8; noted for the owner.
+
+## 2026-11-22 task 17c, run 01M80BGB54SD (17 minutes, merged 64d18a7, #30 left open)
+
+- Clean pass. In Chrome at 1440 px: the 12:00 block starts 1 px under the 12:00 line
+  (was 48), a time off from Wednesday to Saturday fills 07:00 to 19:00 on each day, the
+  two forms of the time off page have their own ids, the repeated hour of October is
+  accepted and the skipped hour of March refused with the reason, a reschedule into
+  2020 says "That time has already passed".
+- #30 is not fixed, and the fix made a new defect: overlapping blocks got a minimum
+  width of 128 px in a 144 px column, so the second is drawn over the next day. And
+  `overflow: hidden` cuts the patient's name through its letters in every 30 minute
+  block. The reviewer rated the clipping "low" and could not see the rest: the proof was
+  a test over the text of the style sheet.
+- Merged without #30 rather than held: the two P1 fixes are worth having on `main`, and
+  holding a branch cost a conflict last time. Task 17f takes the block layout.
+- Third layout task on this grid (16, 17, 17c). Each said what was wrong and let the
+  run choose the numbers; none could see the result. Task 17f asks for the numbers in
+  the plan and names the three measurements I will take, so the plan can be checked
+  against arithmetic before any code.

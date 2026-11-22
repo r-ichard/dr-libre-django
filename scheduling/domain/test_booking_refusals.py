@@ -43,6 +43,12 @@ def returns_slot_taken_when_the_slot_cannot_be_given(failure: Failure) -> None:
             BookingRule.TYPE_NOT_BOOKABLE_ONLINE,
             "This appointment type cannot be booked online.",
         ),
+        (
+            BookingRule.CANCELLATION_WINDOW_CLOSED,
+            "This appointment is too close to change online.",
+        ),
+        (BookingRule.START_IN_THE_PAST, "That time has already passed."),
+        (BookingRule.OUTSIDE_AVAILABILITY, "That time is not offered. Choose one from the week."),
     ],
 )
 def returns_plain_sentence_when_a_booking_rule_is_violated(
@@ -121,7 +127,7 @@ def returns_message_way_forward_and_status_when_a_failure_is_refused(
     assert (refusal.message, refusal.way_forward, refusal.status) == expected
 
 
-def returns_the_first_known_rule_sentence_when_unknown_rules_come_first() -> None:
+def returns_the_known_rule_sentence_when_unknown_rules_come_first() -> None:
     failure = Failure.rule_violation(
         [BookingRule.OUTSIDE_AVAILABILITY, BookingRule.LEAD_TIME_TOO_SHORT]
     )
@@ -157,3 +163,20 @@ def returns_passed_sentence_when_start_is_in_the_past() -> None:
         "times",
         422,
     )
+
+
+def returns_every_sentence_in_order_when_several_rules_are_violated() -> None:
+    failure = Failure.rule_violation(
+        [BookingRule.LEAD_TIME_TOO_SHORT, BookingRule.TYPE_NOT_BOOKABLE_ONLINE]
+    )
+
+    assert _refusal_for(failure).message == (
+        "Appointments must start at least 2 hours from now. "
+        "This appointment type cannot be booked online."
+    )
+
+
+def returns_slot_taken_when_no_violated_rule_is_known() -> None:
+    refusal = _refusal_for(Failure.rule_violation(["made_up_rule"]))
+
+    assert (refusal.message, refusal.status) == (TAKEN, 409)

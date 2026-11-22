@@ -10,7 +10,7 @@ from scheduling.domain.rate_limit_rules import wait_sentence
 type WayForward = Literal["times", "start", "retry", "wait"]
 
 SLOT_TAKEN = "That time was just taken."
-MINUTES_PER_HOUR = 60
+SECONDS_PER_HOUR = 3600
 
 
 @dataclass(frozen=True)
@@ -43,14 +43,13 @@ def refusal_for(failure: Failure) -> Refusal:
 def _rule_refusal(failure: Failure) -> Refusal:
     violated = failure.details.get("violated_rules")
     rules = violated if isinstance(violated, list) else []
-    for rule in rules:
-        sentence = _RULE_SENTENCES.get(rule)
-        if sentence is not None:
-            return Refusal(sentence, "times", 422)
-    return Refusal(SLOT_TAKEN, "times", 409)
+    sentences = [_RULE_SENTENCES[rule] for rule in rules if rule in _RULE_SENTENCES]
+    if not sentences:
+        return Refusal(SLOT_TAKEN, "times", 409)
+    return Refusal(" ".join(sentences), "times", 422)
 
 
-_LEAD_HOURS = int(LEAD_TIME.total_seconds() // (MINUTES_PER_HOUR * MINUTES_PER_HOUR))
+_LEAD_HOURS = int(LEAD_TIME.total_seconds() // SECONDS_PER_HOUR)
 _RULE_SENTENCES: dict[str, str] = {
     BookingRule.LEAD_TIME_TOO_SHORT: (
         f"Appointments must start at least {_LEAD_HOURS} hours from now."

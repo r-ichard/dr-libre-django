@@ -9,11 +9,11 @@ from django.views.decorators.cache import never_cache
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.vocabulary import Role
-from scheduling.use_cases.admin_appointment_export import export_appointments
+from scheduling.use_cases.admin_appointment_export import TOO_MANY_ROWS, export_appointments
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.pages.admin_appointments import EXPORT_PATH, LIST_PATH, asked_filters
-from scheduling.views.pages.admin_refusal import admin_refused_page
 from scheduling.views.pages.page_view import PageView
+from scheduling.views.pages.patient_refusal import message_page
 
 BACK_TO_LIST = (LIST_PATH, "Back to the appointments")
 
@@ -27,7 +27,8 @@ class AppointmentExportPage(PageView):
         filters, _asked = asked_filters(request)
         exported = export_appointments(filters, self.user)
         if isinstance(exported, Failure):
-            return admin_refused_page(request, self.user, exported, BACK_TO_LIST)
+            # The export's only refusal is the row limit; its words are the page's.
+            return message_page(request, self.user, TOO_MANY_ROWS, BACK_TO_LIST, 422)
         day = current_request_context().now.date().isoformat()
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = f'attachment; filename="appointments-{day}.csv"'

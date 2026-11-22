@@ -145,3 +145,39 @@ def returns_409_and_the_way_back_when_a_cancelled_appointment_is_rescheduled() -
 
     assert response.status_code == 409
     assert f"{LIST}/{appointment.pk}" in response.content.decode()
+
+
+def returns_422_and_the_not_offered_sentence_when_admin_reschedules_off_the_grid() -> None:
+    clinic = make_clinic()
+    start = datetime(2030, 1, 14, 9, 0, tzinfo=UTC)
+    appointment = make(
+        "Appointment", clinician=clinic.clinician, appointment_type=clinic.appointment_type,
+        starts_at=start, ends_at=start + timedelta(minutes=30),
+    )  # fmt: skip
+
+    response = admin_post(
+        admin_client(),
+        f"{LIST}/{appointment.pk}/reschedule/review?starts_at=2030-01-14T01:00:00Z",
+        {},
+    )
+
+    body = response.content.decode()
+    assert response.status_code == 422
+    assert "That time is not offered. Choose one from the week." in body
+    assert "outside_availability" not in body
+
+
+def returns_409_and_the_cancelled_sentence_when_rescheduled_by_post() -> None:
+    appointment = make(
+        "Appointment", status="CANCELLED", cancelled_at=NOW, cancellation_reason="Moved away"
+    )
+    assert isinstance(appointment, Appointment)
+
+    response = admin_post(
+        admin_client(), f"{LIST}/{appointment.pk}/reschedule/review?starts_at={OTHER_SLOT}", {}
+    )
+
+    assert response.status_code == 409
+    assert (
+        "This appointment is cancelled, so it cannot be rescheduled." in response.content.decode()
+    )

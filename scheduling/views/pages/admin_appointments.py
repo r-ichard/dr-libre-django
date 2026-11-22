@@ -183,6 +183,7 @@ class StatusActionPage(AdminAppointmentPage):
     http_method_names = ["post"]
     target = AppointmentStatus.CHECKED_IN
     done_code = "checked_in"
+    action_phrase = "checked in"
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
@@ -190,7 +191,9 @@ class StatusActionPage(AdminAppointmentPage):
         changed = change_status(appointment_id, self.target, self.user)
         if isinstance(changed, Failure):
             back = (appointment_path(appointment_id), BACK_TO_APPOINTMENT)
-            return admin_refused_page(request, self.user, changed, back)
+            return admin_refused_page(
+                request, self.user, changed, back, action_phrase=self.action_phrase
+            )
         return admin_redirect(
             appointment_path(appointment_id),
             self.done_code,
@@ -206,11 +209,13 @@ class CheckInPage(StatusActionPage):
 class CompletePage(StatusActionPage):
     target = AppointmentStatus.COMPLETED
     done_code = "completed"
+    action_phrase = "completed"
 
 
 class NoShowPage(StatusActionPage):
     target = AppointmentStatus.NO_SHOW
     done_code = "no_show"
+    action_phrase = "marked as no-show"
 
 
 class CancelPage(AdminAppointmentPage):
@@ -229,7 +234,9 @@ class CancelPage(AdminAppointmentPage):
         cancelled = cancel_appointment(appointment.pk, reason, self.user)
         back = (appointment_path(appointment.pk), BACK_TO_APPOINTMENT)
         if isinstance(cancelled, Failure):
-            return admin_refused_page(request, self.user, cancelled, back)
+            return admin_refused_page(
+                request, self.user, cancelled, back, action_phrase="cancelled"
+            )
         return admin_redirect(appointment_path(appointment.pk), "cancelled", appointment.pk)
 
     def _form(

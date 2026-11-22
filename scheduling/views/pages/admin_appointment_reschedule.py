@@ -110,7 +110,7 @@ class RescheduleReviewPage(AdminAppointmentPage):
         times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
         back = (appointment_path(found.pk), BACK_TO_APPOINTMENT)
         target = times if failure.code in TIMES_CODES else back
-        return admin_refused_page(request, self.user, failure, target)
+        return admin_refused_page(request, self.user, failure, target, action_phrase="rescheduled")
 
 
 def admin_reschedule_routes() -> list[URLPattern]:

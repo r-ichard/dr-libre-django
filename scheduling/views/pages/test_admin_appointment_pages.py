@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from scheduling.models import Appointment, AuditLogEntry
+from scheduling.models import Appointment, AuditLogEntry, Notification
 from scheduling.models.builders import make, make_clinic
 from scheduling.views import clock
 from scheduling.views.pages.admin_support import admin_client, admin_post, client_of_role
@@ -222,6 +222,7 @@ def returns_409_with_a_way_forward_when_a_completed_appointment_is_cancelled() -
     html = response.content.decode()
     assert response.status_code == 409
     assert f"{LIST}/{appointment.pk}" in html
+    assert "This appointment is completed, so it cannot be cancelled." in html
 
 
 def returns_403_page_to_a_patient_and_no_cancel_when_a_patient_posts_a_cancel() -> None:
@@ -233,3 +234,31 @@ def returns_403_page_to_a_patient_and_no_cancel_when_a_patient_posts_a_cancel() 
 
     appointment.refresh_from_db()
     assert response.status_code == 403 and appointment.status == "BOOKED"
+
+
+def returns_409_and_the_booked_sentence_when_an_admin_completes_a_booked_appointment() -> None:
+    appointment = _appointment()
+    audits, notices = AuditLogEntry.objects.count(), Notification.objects.count()
+
+    response = admin_post(admin_client(), f"{LIST}/{appointment.pk}/complete", {})
+
+    appointment.refresh_from_db()
+    assert response.status_code == 409
+    assert "This appointment is booked, so it cannot be completed." in response.content.decode()
+    assert appointment.status == "BOOKED"
+    assert (AuditLogEntry.objects.count(), Notification.objects.count()) == (audits, notices)
+
+
+def returns_409_and_the_checked_in_sentence_when_an_admin_checks_in_twice() -> None:
+    appointment = _appointment(status="CHECKED_IN")
+    audits, notices = AuditLogEntry.objects.count(), Notification.objects.count()
+
+    response = admin_post(admin_client(), f"{LIST}/{appointment.pk}/check-in", {})
+
+    appointment.refresh_from_db()
+    assert response.status_code == 409
+    assert "This appointment is checked in, so it cannot be checked in." in (
+        response.content.decode()
+    )
+    assert appointment.status == "CHECKED_IN"
+    assert (AuditLogEntry.objects.count(), Notification.objects.count()) == (audits, notices)

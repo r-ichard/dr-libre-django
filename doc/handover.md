@@ -27,8 +27,8 @@ describes.
   and hand-over, is open (GitHub issue #9).
 - From a fresh clone of `main`: `make lint`, `make test` (about 4900 tests, 40 to 65
   seconds), `make gate`, `make mutate` and `make fhir-validate` (115 samples) pass.
-- Three QA rounds ran. Round 3 filed 20 issues, no P0. Open: #33, #38, #41 (P1, fixed on
-  a held branch, see below) and #34 to #37, #39, #40, #42 to #45, #49 (P2).
+- Three QA rounds ran. Round 3 filed 20 issues, no P0. Open, all P2: #34 to #37, #39,
+  #40, #42 to #44, #49.
 - Try it: see "Run it" below.
 
 ## In flight when this was written
@@ -38,7 +38,6 @@ Two runs of the build pipeline (`fabro`, see "The pipeline"). Check them with
 
 | Run | Task | Base | When it ends |
 |---|---|---|---|
-| `01M82KTF43JN8TVNKCMBXVRQA7` (workflow `repair`) | `doc/backlog/27a3-mutation-gate-on-the-held-branch.md` | branch `task/27a-qa-round-3-inputs` (27a and 27a2, approved, plus the tests of a first 27a3 run; only `make mutate` fails) | Read its diff (tests and `mutation-equivalents.txt` only), verify, then land 27a, 27a2 and 27a3 as one squash. Closes #33, #38, #41, #45. |
 | `01M82M5WGW9E`, `01M82M5X750Q`, `01M82M5XTYZ3` | items 1+2, 6 and 7 of `doc/backlog/27b-qa-round-3-pages.md` (#34, #35, #42, #49), one run each, on Haiku | `main` | Review each diff, gates, land one by one. |
 
 If a run shows `Error: ?` on an agent stage, the reason is the last event of
@@ -46,19 +45,9 @@ If a run shows `Error: ?` on an agent stage, the reason is the last event of
 agent stages run on is spent: wait for the reset and launch the same task again (a run
 that died early), or `fabro rewind <id> <last good stage>` (a run that died late).
 
-### The held branch
-
-`task/27a-qa-round-3-inputs` (GitHub) is task 27a: verified, gates green, not merged.
-It fixes #33, #38, #41 and #45, and it broke one thing: a text of two paragraphs is
-refused in three admin forms (clinician bio, department description, hospital
-description), because the new text rule runs with `single_line=True` for every admin
-field. Task 27a2 repairs that on the same branch. The branch was cut before `cbf05a6`
-(task 27d2) reached `main`, so its squash may conflict: see "When a squash conflicts".
-
 ## What is left, in order
 
-1. `27a2` (running), then land 27a + 27a2.
-2. `26b2` (running): a rate limit on every public read that costs work.
+1. The findings of `27b-qa-round-3-pages.md`, one or two per run (three runs in flight).
 3. `27b-qa-round-3-pages.md`: the P2 findings about messages, dead ends and one write
    that should not happen (#34 to #37, #39, #40, #42 to #44, #49).
 4. `27d3-fhir-refusal-messages.md`: a message of its own on every FHIR 400.

@@ -74,8 +74,8 @@ tasks.
 | 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | merged `42600a0` |
-| 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | running `01M80E7BVMNV` |
-| 20 | Appointments, waitlist, audit log, settings | 10 | todo |
+| 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | merged `bc0bbac` |
+| 20 | Appointments, waitlist, audit log, settings | 10 | running |
 | 21 | Dashboard, reporting, CSV export | 13 | todo |
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
@@ -165,3 +165,10 @@ Small findings waiting for the next task that touches the same file.
   under 40rem would read better. Task 25.
 - Review of 18, small: the stale-save page offers "saving again replaces theirs" and
   shows no difference between the two versions. Task 25.
+- Time grid, an appointment inside a time off band: its time line needs 114 px and has
+  105 px beside the rail, so the end time ends in an ellipsis ("13:00–13…"). Alone in
+  its column it fits. Task 25.
+- Review of 19, small: the email pattern of `user_rules.py` accepts `a@b`. Task 26.
+- `make test`: 3298 tests, 53 seconds on a loaded machine. Measure it alone, list the
+  slowest tests, and decide a budget that is checked by a gate, not by a sentence in a
+  task. Task 26.

@@ -60,6 +60,22 @@ Everywhere:
     375 px to 1440 px. Test what the server can prove in the rendered HTML. Every form
     is tested as a browser sends it.
 
+Carried from the review and the browser check of task 19, to fix here:
+
+14. `delete_user` (`scheduling/use_cases/admin_users.py`): when the final delete of the
+    user is refused because a dependent appeared, the function returns a failure inside
+    the transaction, which commits, and the sessions, sign-in links and notifications it
+    had already deleted stay deleted. A refused delete changes nothing: test it with a
+    dependent inserted between the check and the delete.
+15. The seed's clean-up of old specialty codes (`_drop_unused_legacy_specialties`,
+    `_adopt_legacy_specialty` in `scheduling/demo_seed/writer.py`) deletes any specialty
+    whose code starts with `demo-` and has no clinician, one an admin made included, and
+    leaves two sets when both the old and the new code exist with clinicians. Touch only
+    the five codes the seed itself used, and move their clinicians before the drop.
+16. The clinician profile form reports its errors in rounds: a weight of 0 with a room of
+    another department names only the weight. One submission reports every error, on
+    this form and on the forms of this task.
+
 The sandbox has no browser. The orchestrator books for a patient as the demo admin in
 Chrome, cancels the appointment, offers the freed slot to a waiting entry, accepts it for
 the patient, and finds each step in the audit log.

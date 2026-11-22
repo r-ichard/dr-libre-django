@@ -623,3 +623,19 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   client skips that check, the same hole as task 13a, one layer further. The page-form
   rule in the card now covers API routes.
 - Merged with the faults named in the commit; task 22a fixes them before task 23.
+
+## 2026-11-22 task 19, run 01M80E7BVMNV (35 minutes, merged bc0bbac)
+
+- Review bounced once: its first pass had read a partial diff, before the pages existed.
+  The squash onto a `main` that had gained the FHIR task merged without a conflict.
+- In Chrome with two sessions: as admin I created a clinician user and attached a
+  profile; she signed in in a second window with the temporary password; I deactivated
+  her; her next request went to the sign-in page and her password was refused with the
+  same message as a wrong one. My own account offers no role and no active field, and a
+  forged post of both changed nothing. Moving a clinician with booked appointments to
+  another department is refused with the count.
+- Carried items: the public search shows the specialty icons at last; the page no longer
+  scrolls sideways at 1024 px; the time line holds its icon. One remainder: beside the
+  rail of a time off band the end time still ends in an ellipsis. Task 25.
+- 3298 tests in 53 seconds on my machine while a sandbox ran. The "30 seconds" I wrote
+  into four tasks was never checked by anything. A budget is a gate or it is a wish.

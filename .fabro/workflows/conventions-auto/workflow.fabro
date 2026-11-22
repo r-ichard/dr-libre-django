@@ -28,7 +28,7 @@ digraph ConventionsAuto {
 
         // Ship (card 9-12): a second reader reads the diff, blocking findings loop back
         review  [retry_target="review", label="Second reader reviews the diff", prompt="@prompts/review.md", max_visits=3, timeout="3600s"]
-        address [retry_target="address", label="Address blocking findings", prompt="@prompts/address.md", max_visits=2, timeout="3600s"]
+        address [retry_target="address", label="Address blocking findings", prompt="@prompts/address.md", max_visits=4, timeout="3600s"]
     }
 
     // Gates: a script decides every route, never an agent.

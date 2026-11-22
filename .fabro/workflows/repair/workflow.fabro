@@ -1,0 +1,31 @@
+digraph Repair {
+    graph [
+        goal="Pass the task with --goal-file and the branch with --target.",
+        on_failure="exit",
+        max_node_visits=8
+    ]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    setup [label="Toolchain", script="make setup"]
+
+    // For a branch a review approved and a last gate refused. The red gate of the task
+    // workflow cannot pass here: a test that kills a mutant passes on the real code.
+    subgraph agents {
+        node [backend="acp", acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"]
+
+        repair [retry_target="repair", label="Repair what the gates name", prompt="@prompts/repair.md", max_visits=4, timeout="3600s"]
+    }
+
+    gates [label="Mutation and FHIR gates", script="sh scripts/final_gates.sh", on_failure="route"]
+    check [label="Lint, tests, comment gate", script="make lint && make test && make gate", on_failure="route"]
+
+    start -> setup -> gates
+    gates -> exit   [label="Clean", condition="outcome=succeeded"]
+    gates -> repair [label="A gate failed"]
+    repair -> check
+    check -> gates  [label="Clean", condition="outcome=succeeded"]
+    check -> repair [label="Fix"]
+}

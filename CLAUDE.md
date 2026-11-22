@@ -196,8 +196,10 @@ review. (4) A reviewer
   event of `fabro events <id> --json` (the subscription's 5-hour limit, twice so far).
 - A failed run is resumed with `fabro rewind <id> <last good stage>`, which makes a new
   run. It keeps the visit counts of the checkpoint: a run that used its three
-  repair passes fails again at once. Then push its branch as `task/<nn>-<slug>` and run a
-  small follow-up task on it (27a3). `fabro steer` reaches only the stage that is live.
+  repair passes fails again at once. Then push its branch as `task/<nn>-<slug>` and run
+  `fabro run repair --target ...@task/<nn>-<slug> --goal-file <task>` on it: toolchain, the
+  last gates, an agent that repairs what they name, lint and tests, the gates again. No
+  red stage: a test that kills a mutant passes on the real code (27a3). `fabro steer` reaches only the stage that is live.
 - No `fabro server restart` during a run; kills it. `fabro resume <id>`.
 - Laptop sleep kills sandboxes mid-run. Keep `caffeinate -i -s` running during runs.
 - Goal paths may be stale; `ls` them before launch.

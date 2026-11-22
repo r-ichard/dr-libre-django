@@ -28,6 +28,8 @@ Status: accepted, 2026-11-22. Builds on ADR 0003 (ids, versions), ADR 0004 (fail
 - **AppointmentResponse** exists only to accept a waitlist offer: participant status `accepted`.
   Declining is not in the specification of this product, so no other status is shown or accepted.
   Only the offered patient may accept; authorization is checked before the actor is compared.
+  A clinician searching `AppointmentResponse` gets an empty search (200, total 0), as a clinician
+  asking for a slot status the clinician may not see does, because a clinician has no offers.
 - **Communication** is a notification. A recipient may change one thing: set `received` once, which
   is "mark as read". Every other difference, or a second `received`, is 400 and named. `category`
   is the notification kind, its display in words (the same words as the pages).
@@ -50,5 +52,16 @@ Status: accepted, 2026-11-22. Builds on ADR 0003 (ids, versions), ADR 0004 (fail
 
 ## Open points for the owner
 
-- Whether a patient should be able to decline an offer over FHIR (would need a status the
-  specification does not give).
+Collected as "Questions for the owner" below.
+
+## Questions for the owner
+
+1. Which clinicians are public over FHIR? Section 15.4 says "active clinicians"; section 6.1 hides a
+   clinician with no appointment type patients may book online. Today the product: hides from a
+   public caller what the public search and `GET /api/v1/slots` hide; staff tokens see them (ADR 0005).
+2. Should a token expire or carry scopes? Today the product: a token is exactly its user's rights
+   until revoked, with no expiry and no scope (ADR 0005).
+3. Should a busy slot be readable by its id? Today the product: only a free slot is (ADR 0006).
+4. Is a `Patient` search by email, phone and birth date in the query string acceptable? Today the product: serves it; the server logs no query string, but a client or proxy may (ADR 0006).
+5. Should a patient be able to decline a waitlist offer over FHIR? Today the product: accepts only
+   `accepted` in an `AppointmentResponse`; declining needs a status the specification does not give.

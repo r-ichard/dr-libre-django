@@ -79,8 +79,4 @@ Status: accepted, 2026-11-22. Builds on ADR 0003 (ids, versions) and ADR 0004 (f
 
 ## Open points for the owner
 
-- **Which clinicians are public.** Section 15.4 says "active clinicians"; section 6.1 hides a
-  clinician with no appointment type patients may book online, and the application API hides such
-  a type from a caller without a session. We took the stricter reading: what the public search
-  and `GET /api/v1/slots` hide, `/fhir` hides from a public caller. Staff tokens see them.
-- **Token expiry and scopes** are not built: a token is exactly its user's rights until revoked.
+Collected as "Questions for the owner" at the end of ADR 0007.

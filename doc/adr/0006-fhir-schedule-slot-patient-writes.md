@@ -67,6 +67,4 @@ Status: accepted, 2026-11-22. Builds on ADR 0003 (ids, versions), ADR 0004 (fail
 
 ## Open points for the owner
 
-- Whether a busy slot should be readable by its id (today: free only).
-- Whether `Patient` search by email, phone and birth date in the query string is acceptable: the
-  server logs no query string, but a client or proxy may.
+Collected as "Questions for the owner" at the end of ADR 0007.

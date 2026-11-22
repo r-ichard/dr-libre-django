@@ -3,9 +3,9 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from django.test import Client
 
 from scheduling.models.builders import make
+from scheduling.views.api_clients import fhir_client
 from scheduling.views.pages.search_pages_support import (
     PLANTED_BIRTH,
     PLANTED_EMAIL,
@@ -26,7 +26,7 @@ def _get(path: str, accept: str = "", correlation_id: str = "") -> "_MonkeyPatch
     headers = {"Accept": accept} if accept else {}
     if correlation_id:
         headers["X-Correlation-Id"] = correlation_id
-    return Client(raise_request_exception=False).get(path, headers=headers)
+    return fhir_client().get(path, headers=headers)
 
 
 def _is_outcome(response: "_MonkeyPatchedWSGIResponse") -> bool:
@@ -173,12 +173,10 @@ def returns_404_outcome_when_type_or_id_unknown(path: str) -> None:
     assert _is_outcome(response)
 
 
-def returns_404_outcome_when_method_is_not_a_read() -> None:
-    response = Client(raise_request_exception=False).post(
-        "/fhir/Organization", data="{}", content_type=FHIR_JSON
-    )
+def returns_405_outcome_when_method_is_not_a_read() -> None:
+    response = fhir_client().post("/fhir/Organization", data="{}", content_type=FHIR_JSON)
 
-    assert response.status_code == 404
+    assert response.status_code == 405
     assert _is_outcome(response)
 
 

@@ -5,11 +5,11 @@ from unittest.mock import patch
 
 import pytest
 from django.db import connection
-from django.test import Client
 from django.test.utils import CaptureQueriesContext
 
 from scheduling.domain.fhir_declaration import FHIR_RESOURCES
 from scheduling.models.builders import make
+from scheduling.views.api_clients import fhir_client
 from scheduling.views.pages.search_pages_support import plant_clinic, update_row
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 pytestmark = pytest.mark.django_db
 
-CLIENT = Client(raise_request_exception=False)
+CLIENT = fhir_client()
 
 
 def _get(path: str) -> "_MonkeyPatchedWSGIResponse":
@@ -138,7 +138,7 @@ def returns_zero_entries_but_total_when_count_is_zero() -> None:
     body = _get("/fhir/Organization?_count=0").json()
 
     assert body["total"] == 2
-    assert body["entry"] == []
+    assert "entry" not in body
 
 
 def returns_bounded_queries_whatever_the_number_of_rows() -> None:
@@ -168,7 +168,7 @@ def returns_every_declared_route_and_declares_every_answering_one() -> None:
     assert {item["type"] for item in statement} == declared
     for item in statement:
         assert _get(f"/fhir/{item['type']}").status_code == 200
-        for parameter in item["searchParam"]:
+        for parameter in item.get("searchParam", []):
             assert parameter["name"]
     assert _get("/fhir/Patient").status_code == 404
     assert _get("/fhir/Schedule").status_code == 404

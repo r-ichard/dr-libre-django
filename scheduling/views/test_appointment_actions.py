@@ -11,12 +11,12 @@ import pytest
 from django.core import mail
 from django.db import connection
 from django.db.models import F
-from django.test import Client
 from django.test.utils import CaptureQueriesContext
 
 from scheduling.models import Appointment, AuditLogEntry, Notification, User
 from scheduling.models.builders import add_clinician, make, make_clinic
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.test_appointment_support import (
     APPOINTMENTS,
     MONDAY_AFTER,
@@ -152,7 +152,7 @@ def returns_400_when_cancel_body_has_unknown_field() -> None:
 def returns_401_when_cancelling_without_session() -> None:
     appointment = _make_appointment(make_clinic())
 
-    response = _cancel(Client(), appointment)
+    response = _cancel(browser_api_client(), appointment)
 
     assert response.status_code == 401
 

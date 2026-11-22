@@ -5,10 +5,10 @@ from datetime import UTC, datetime, time
 from typing import TYPE_CHECKING
 
 import pytest
-from django.test import Client
 
 from scheduling.models.builders import add_clinician, make
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
@@ -56,21 +56,21 @@ def _publish_one_clinician() -> object:
 
 
 def _get(kind: str, query: str = "") -> "_MonkeyPatchedWSGIResponse":
-    return Client().get(f"/api/v1/search/{kind}?{query}")
+    return browser_api_client().get(f"/api/v1/search/{kind}?{query}")
 
 
 @pytest.mark.parametrize("kind", KINDS)
 def returns_200_without_a_session_for_each_endpoint(kind: str) -> None:
     _publish_one_clinician()
 
-    response = Client().get(f"/api/v1/search/{kind}")
+    response = browser_api_client().get(f"/api/v1/search/{kind}")
 
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("kind", KINDS)
 def returns_200_when_the_session_cookie_is_garbage(kind: str) -> None:
-    client = Client()
+    client = browser_api_client()
     client.cookies["drlibre_session"] = "garbage"
 
     assert client.get(f"/api/v1/search/{kind}").status_code == 200
@@ -224,7 +224,7 @@ def returns_matching_results_when_text_is_partial_and_upper_case() -> None:
 
 
 def returns_404_contract_error_for_unknown_search_path() -> None:
-    response = Client().get("/api/v1/search/nurses")
+    response = browser_api_client().get("/api/v1/search/nurses")
 
     assert (response.status_code, response.json()["error"]["code"]) == (404, "not_found")
 

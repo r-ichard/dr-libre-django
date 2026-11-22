@@ -12,6 +12,7 @@ from django.test import Client
 from scheduling.models import AuditLogEntry, Session
 from scheduling.models.builders import make
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
@@ -52,7 +53,7 @@ def _login(
 def returns_200_home_and_cookie_when_login_is_right() -> None:
     _make_user("CLINICIAN")
 
-    response = _login(Client())
+    response = _login(browser_api_client())
 
     assert response.status_code == 200
     assert response.json() == {"home": "clinician_workspace"}
@@ -67,14 +68,14 @@ def returns_secure_cookie_when_https_only_is_on(settings: object) -> None:
     settings.HTTPS_ONLY = True  # type: ignore[attr-defined]
     _make_user()
 
-    response = _login(Client())
+    response = _login(browser_api_client())
 
     assert response.cookies[COOKIE]["secure"] is True
 
 
 def returns_401_unauthenticated_with_equal_body_when_login_is_wrong_or_unknown() -> None:
     _make_user()
-    client = Client()
+    client = browser_api_client()
 
     wrong = _login(client, "wrong password")
     unknown = client.post(
@@ -101,7 +102,7 @@ def returns_401_unauthenticated_with_equal_body_when_login_is_wrong_or_unknown()
     ],
 )
 def returns_400_invalid_input_when_login_body_breaks_the_schema(body: dict[str, str]) -> None:
-    response = Client().post(LOGIN, body, content_type="application/json")
+    response = browser_api_client().post(LOGIN, body, content_type="application/json")
 
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "invalid_input"
@@ -110,7 +111,7 @@ def returns_400_invalid_input_when_login_body_breaks_the_schema(body: dict[str, 
 
 def returns_204_and_clears_cookie_when_logout_has_session() -> None:
     _make_user()
-    client = Client()
+    client = browser_api_client()
     _login(client)
 
     response = client.post(LOGOUT, {}, content_type="application/json")
@@ -122,7 +123,7 @@ def returns_204_and_clears_cookie_when_logout_has_session() -> None:
 
 
 def returns_204_when_logout_has_no_session() -> None:
-    response = Client().post(LOGOUT, {}, content_type="application/json")
+    response = browser_api_client().post(LOGOUT, {}, content_type="application/json")
 
     assert response.status_code == 204
     assert AuditLogEntry.objects.filter(action="auth.logout").count() == 0
@@ -131,7 +132,7 @@ def returns_204_when_logout_has_no_session() -> None:
 def returns_403_forbidden_when_login_post_has_foreign_origin() -> None:
     _make_user()
 
-    response = _login(Client(), origin=FOREIGN_ORIGIN)
+    response = _login(browser_api_client(), origin=FOREIGN_ORIGIN)
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "forbidden"
@@ -141,14 +142,14 @@ def returns_403_forbidden_when_login_post_has_foreign_origin() -> None:
 def returns_403_when_post_has_origin_null() -> None:
     _make_user()
 
-    response = _login(Client(), origin="null")
+    response = _login(browser_api_client(), origin="null")
 
     assert response.status_code == 403
 
 
 def returns_403_and_keeps_session_when_logout_post_has_foreign_origin() -> None:
     _make_user()
-    client = Client()
+    client = browser_api_client()
     _login(client)
 
     response = client.post(LOGOUT, {}, content_type="application/json", HTTP_ORIGIN=FOREIGN_ORIGIN)
@@ -159,7 +160,7 @@ def returns_403_and_keeps_session_when_logout_post_has_foreign_origin() -> None:
 
 def returns_204_when_logout_post_has_own_origin() -> None:
     _make_user()
-    client = Client()
+    client = browser_api_client()
     _login(client)
 
     response = client.post(LOGOUT, {}, content_type="application/json", HTTP_ORIGIN=OWN_ORIGIN)
@@ -169,13 +170,13 @@ def returns_204_when_logout_post_has_own_origin() -> None:
 
 def returns_204_when_logout_post_has_no_origin() -> None:
     _make_user()
-    client = Client()
+    client = browser_api_client()
     _login(client)
 
     assert client.post(LOGOUT, {}, content_type="application/json").status_code == 204
 
 
 def returns_200_when_get_has_foreign_origin() -> None:
-    response = Client().get("/api/v1/health", HTTP_ORIGIN=FOREIGN_ORIGIN)
+    response = browser_api_client().get("/api/v1/health", HTTP_ORIGIN=FOREIGN_ORIGIN)
 
     assert response.status_code == 200

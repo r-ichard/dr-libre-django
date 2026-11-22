@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from django.db import connection
+from django.db.models import QuerySet
 
 from scheduling.domain.fhir_common import Resource
 from scheduling.domain.fhir_location import RoomSource, SiteSource, room_location, site_location
@@ -166,6 +167,15 @@ def practitioners_with_contact(user_ids: list[UUID]) -> list[Resource]:
 
 
 def practitioner_roles(profile_ids: list[UUID]) -> list[Resource]:
+    return _roles(profile_ids, bookable_types())
+
+
+def practitioner_roles_with_all_services(profile_ids: list[UUID]) -> list[Resource]:
+    """For a staff token: the services it can read itself, so the reference resolves."""
+    return _roles(profile_ids, AppointmentType.objects.all())
+
+
+def _roles(profile_ids: list[UUID], service_types: QuerySet[AppointmentType]) -> list[Resource]:
     profiles = list(
         ClinicianProfile.objects.filter(pk__in=profile_ids).values_list(
             "id",
@@ -188,8 +198,7 @@ def practitioner_roles(profile_ids: list[UUID]) -> list[Resource]:
         rules.setdefault(clinician_id, []).append(RuleHours(weekday, start, end))
     services: dict[UUID, list[UUID]] = {}
     for department_id, type_id in (
-        bookable_types()
-        .filter(department_id__in={row[2] for row in profiles})
+        service_types.filter(department_id__in={row[2] for row in profiles})
         .order_by("name", "id")
         .values_list("department_id", "id")
     ):

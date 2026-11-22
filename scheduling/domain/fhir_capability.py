@@ -3,7 +3,7 @@ resources, so it cannot name what is not served."""
 
 from collections.abc import Sequence
 
-from scheduling.domain.fhir_common import FHIR_VERSION, Resource
+from scheduling.domain.fhir_common import CANONICAL_BASE, FHIR_VERSION, Resource
 from scheduling.domain.fhir_declaration import (
     FHIR_TYPE_OF_KIND,
     INTERACTIONS,
@@ -11,6 +11,7 @@ from scheduling.domain.fhir_declaration import (
 )
 
 CAPABILITY_DATE = "2026-11-22"
+DESCRIPTION = "DrLibre appointment scheduling, read-only FHIR R4 API."
 
 
 def capability_statement(declarations: Sequence[ResourceDeclaration]) -> Resource:
@@ -18,7 +19,9 @@ def capability_statement(declarations: Sequence[ResourceDeclaration]) -> Resourc
         "resourceType": "CapabilityStatement",
         "status": "active",
         "date": CAPABILITY_DATE,
+        "description": DESCRIPTION,
         "kind": "instance",
+        "implementation": {"description": DESCRIPTION, "url": CANONICAL_BASE},
         "fhirVersion": FHIR_VERSION,
         "format": ["application/fhir+json"],
         "rest": [

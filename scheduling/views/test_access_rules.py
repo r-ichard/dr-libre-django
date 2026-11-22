@@ -18,6 +18,7 @@ from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session
 from scheduling.views import clock
 from scheduling.views.access import public, roles, signed_in, signed_in_user
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.api_view import ApiView
 
 pytestmark = pytest.mark.django_db
@@ -78,7 +79,7 @@ def frozen_clock(settings: object, monkeypatch: pytest.MonkeyPatch) -> None:
 def _signed_in_client(role: str, email: str = "ada@example.test") -> Client:
     user = make("User", email=email, role=role, password=make_password(RIGHT_PHRASE))
     assert isinstance(user, User)
-    client = Client()
+    client = browser_api_client()
     with bind_request_context(RequestContext(correlation_id="c", now=START)):
         token = open_session(user, SessionKind.PASSWORD, "").token
     client.cookies[COOKIE] = token
@@ -86,7 +87,7 @@ def _signed_in_client(role: str, email: str = "ada@example.test") -> Client:
 
 
 def returns_401_when_signed_out_user_calls_signed_in_view() -> None:
-    response = Client().get("/api/v1/t/signed-in")
+    response = browser_api_client().get("/api/v1/t/signed-in")
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "unauthenticated"
@@ -107,7 +108,7 @@ def returns_403_when_patient_calls_admin_view() -> None:
 
 
 def returns_401_when_signed_out_user_calls_admin_view() -> None:
-    assert Client().get("/api/v1/t/admin").status_code == 401
+    assert browser_api_client().get("/api/v1/t/admin").status_code == 401
 
 
 def returns_200_when_admin_calls_admin_view() -> None:
@@ -115,21 +116,21 @@ def returns_200_when_admin_calls_admin_view() -> None:
 
 
 def returns_200_when_public_view_is_called_with_stale_cookie() -> None:
-    client = Client()
+    client = browser_api_client()
     client.cookies[COOKIE] = "stale-token"
 
     assert client.get("/api/v1/t/public").status_code == 200
 
 
 def returns_401_when_signed_in_view_is_called_with_stale_cookie() -> None:
-    client = Client()
+    client = browser_api_client()
     client.cookies[COOKIE] = "stale-token"
 
     assert client.get("/api/v1/t/signed-in").status_code == 401
 
 
 def returns_closed_when_view_declares_no_access() -> None:
-    assert Client().get("/api/v1/t/undeclared").status_code == 401
+    assert browser_api_client().get("/api/v1/t/undeclared").status_code == 401
     assert _signed_in_client("ADMIN").get("/api/v1/t/undeclared").status_code == 403
 
 

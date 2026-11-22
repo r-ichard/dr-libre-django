@@ -4,7 +4,7 @@ UV_VERSION := 0.12.13
 # uv installs into ~/.local/bin and fabro command nodes run a non-login shell.
 export PATH := $(HOME)/.local/bin:$(PATH)
 
-.PHONY: setup test lint gate mutate
+.PHONY: setup test lint gate mutate fhir-validate
 
 setup:
 	command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
@@ -31,3 +31,7 @@ mutate:
 	uv run --env-file .env.example mutmut run
 	uv run --env-file .env.example mutmut results > mutants/results.txt
 	uv run python scripts/mutation_survivors.py mutants/results.txt
+
+# Not part of `make test`: fetches a pinned HL7 validator and a Java runtime.
+fhir-validate:
+	sh scripts/fhir_validate.sh

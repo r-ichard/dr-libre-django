@@ -17,6 +17,7 @@ from django.test import Client
 from scheduling.models import Appointment, BookingHold, Session, User
 from scheduling.models.builders import STARTS_AT, Clinic, make, make_clinic
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
@@ -58,7 +59,7 @@ def _body(clinic: Clinic, **overrides: object) -> dict[str, object]:
 def _post(
     path: str, body: Mapping[str, object], client: Client | None = None
 ) -> _MonkeyPatchedWSGIResponse:
-    return (client or Client()).post(path, body, content_type="application/json")
+    return (client or browser_api_client()).post(path, body, content_type="application/json")
 
 
 def _code() -> str:
@@ -112,7 +113,7 @@ def returns_404_when_hold_id_is_unknown_on_resend_and_verify() -> None:
 
 
 def returns_404_when_holds_are_read_with_get() -> None:
-    assert Client().get(HOLDS).status_code == 404
+    assert browser_api_client().get(HOLDS).status_code == 404
 
 
 def returns_200_and_new_code_when_code_is_resent() -> None:
@@ -209,7 +210,7 @@ def returns_503_mail_unavailable_and_no_hold_when_mail_server_is_down(settings: 
         "default": {"BACKEND": f"{__name__}.MailServerDownBackend", "OPTIONS": {}}
     }
 
-    response = Client(raise_request_exception=False).post(
+    response = browser_api_client(raise_request_exception=False).post(
         HOLDS, _body(clinic), content_type="application/json"
     )
 

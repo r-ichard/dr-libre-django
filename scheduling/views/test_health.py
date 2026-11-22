@@ -1,8 +1,8 @@
-from django.test import Client
+from scheduling.views.api_clients import browser_api_client
 
 
 def returns_200_when_health_endpoint_is_requested() -> None:
-    client = Client()
+    client = browser_api_client()
 
     response = client.get("/api/v1/health")
 
@@ -12,7 +12,7 @@ def returns_200_when_health_endpoint_is_requested() -> None:
 
 
 def returns_json_when_browser_accepts_html() -> None:
-    client = Client()
+    client = browser_api_client()
 
     response = client.get("/api/v1/health", headers={"Accept": "text/html"})
 

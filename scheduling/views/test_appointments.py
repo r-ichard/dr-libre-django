@@ -13,6 +13,7 @@ from django.test import Client
 from scheduling.models import Appointment, User
 from scheduling.models.builders import STARTS_AT, add_clinician, make, make_clinic
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.test_appointment_support import (
     APPOINTMENTS,
     NOW,
@@ -49,14 +50,14 @@ def _ids(response: _MonkeyPatchedWSGIResponse) -> list[str]:
 
 
 def returns_401_when_listing_without_session() -> None:
-    response = Client().get(APPOINTMENTS)
+    response = browser_api_client().get(APPOINTMENTS)
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "unauthenticated"
 
 
 def returns_401_when_booking_without_session() -> None:
-    response = _book(Client(), {})
+    response = _book(browser_api_client(), {})
 
     assert response.status_code == 401
 

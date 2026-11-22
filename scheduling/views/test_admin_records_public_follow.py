@@ -5,7 +5,6 @@ from datetime import UTC, datetime, time
 from uuid import UUID
 
 import pytest
-from django.test import Client
 
 from scheduling.models import AppointmentType, Hospital, Room, Specialty
 from scheduling.models.builders import Clinic, make, make_clinic
@@ -18,6 +17,7 @@ from scheduling.use_cases.test_admin_record_support import (
     _values_for,
 )
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 pytestmark = pytest.mark.django_db
 
@@ -32,7 +32,7 @@ def returns_frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _total(kind: str) -> int:
-    total = Client().get(f"/api/v1/search/{kind}").json()["total"]
+    total = browser_api_client().get(f"/api/v1/search/{kind}").json()["total"]
     assert isinstance(total, int)
     return total
 
@@ -43,7 +43,7 @@ def _deactivate(kind: str, record_id: UUID, version: int) -> None:
 
 def _slot_count(clinic: Clinic) -> int:
     query = f"appointment_type_id={clinic.appointment_type.pk}&{MONDAY}"
-    response = Client().get(f"/api/v1/slots?{query}")
+    response = browser_api_client().get(f"/api/v1/slots?{query}")
     return len(response.json()["slots"]) if response.status_code == 200 else 0
 
 
@@ -96,5 +96,5 @@ def returns_the_new_type_on_the_booking_page_when_its_department_has_an_availabl
     _in_context(lambda: _create("appointment_type", values, _an_admin()))
 
     new_type = AppointmentType.objects.get(code="new-type")
-    page = Client().get("/book").content.decode()
+    page = browser_api_client().get("/book").content.decode()
     assert str(new_type.pk) in page

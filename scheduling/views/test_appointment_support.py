@@ -11,6 +11,7 @@ from django.test import Client
 
 from scheduling.models import Appointment, User
 from scheduling.models.builders import STARTS_AT, Clinic, make
+from scheduling.views.api_clients import browser_api_client
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
@@ -27,7 +28,7 @@ MONDAY_AFTER = STARTS_AT + timedelta(days=14)
 def _signed_in(user: User) -> Client:
     user.password = make_password(RIGHT_PHRASE)
     user.save()
-    client = Client()
+    client = browser_api_client()
     response = client.post(
         LOGIN, {"email": user.email, "password": RIGHT_PHRASE}, content_type="application/json"
     )

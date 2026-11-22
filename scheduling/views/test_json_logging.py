@@ -9,6 +9,7 @@ from django.test import Client
 
 from scheduling.domain.request_context import RequestContext
 from scheduling.use_cases.request_context import bind_request_context
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.json_logging import JsonFormatter
 
 EMAIL = "a@b.example"
@@ -76,7 +77,7 @@ def returns_null_correlation_id_when_logged_outside_a_request() -> None:
 def returns_request_line_with_method_route_pattern_status_and_duration_when_request_ends(
     log_lines: list[dict[str, object]],
 ) -> None:
-    Client().get("/api/v1/health", headers={"x-correlation-id": "cid-3"})
+    browser_api_client().get("/api/v1/health", headers={"x-correlation-id": "cid-3"})
 
     request_lines = [line for line in log_lines if line.get("logger") == "drlibre.request"]
     assert len(request_lines) == 1
@@ -91,8 +92,8 @@ def returns_route_pattern_without_path_or_query_when_request_has_identifier_and_
 ) -> None:
     settings.ROOT_URLCONF = "scheduling.views.probe_urls"  # type: ignore[attr-defined]
 
-    Client().get(f"/api/v1/probe/patients/{EMAIL}?token={TOKEN}&email={EMAIL}")
-    Client().get(f"/api/v1/missing/{EMAIL}?token={TOKEN}")
+    browser_api_client().get(f"/api/v1/probe/patients/{EMAIL}?token={TOKEN}&email={EMAIL}")
+    browser_api_client().get(f"/api/v1/missing/{EMAIL}?token={TOKEN}")
 
     request_lines = [line for line in log_lines if line.get("logger") == "drlibre.request"]
     assert [line["route"] for line in request_lines][0] == "api/v1/probe/patients/<str:email>"
@@ -156,7 +157,7 @@ def returns_404_status_and_duration_in_milliseconds_when_unknown_path_is_request
     readings = iter([10.0, 10.25])
     monkeypatch.setattr(time, "perf_counter", lambda: next(readings))
 
-    Client().get("/api/v1/nothing-here")
+    browser_api_client().get("/api/v1/nothing-here")
 
     line = [item for item in log_lines if item.get("logger") == "drlibre.request"][0]
     assert (line["status"], line["duration_ms"]) == (404, 250.0)

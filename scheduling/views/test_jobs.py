@@ -11,6 +11,7 @@ from django.test import Client
 from scheduling.models import AuditLogEntry, Notification
 from scheduling.models.builders import make, make_clinic
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.test_appointment_support import (
     NOW,
     THIRTY_MINUTES,
@@ -50,7 +51,7 @@ def _run(client: Client) -> _MonkeyPatchedWSGIResponse:
 
 
 def returns_401_when_running_reminders_without_session() -> None:
-    assert _run(Client()).status_code == 401
+    assert _run(browser_api_client()).status_code == 401
 
 
 def returns_403_when_patient_runs_reminders() -> None:

@@ -20,6 +20,7 @@ from scheduling.use_cases.test_waitlist_support import (
     _offered_entry,
 )
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.test_appointment_support import (
     NOW,
     _admin,
@@ -68,7 +69,7 @@ def _act(client: Client, entry: WaitlistEntry, action: str) -> _MonkeyPatchedWSG
 
 
 def returns_401_when_joining_without_session() -> None:
-    assert _join(Client(), {}).status_code == 401
+    assert _join(browser_api_client(), {}).status_code == 401
 
 
 def returns_201_when_patient_joins() -> None:
@@ -322,7 +323,7 @@ def returns_401_when_offering_without_session() -> None:
     clinic = make_clinic()
     entry = _entry_for(clinic)
 
-    assert _act(Client(), entry, "offer").status_code == 401
+    assert _act(browser_api_client(), entry, "offer").status_code == 401
 
 
 def returns_409_invalid_transition_when_offering_entry_already_offered() -> None:

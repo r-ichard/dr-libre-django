@@ -34,9 +34,10 @@ def parse_search(
     declaration: ResourceDeclaration, params: Mapping[str, Sequence[str]]
 ) -> Result[SearchQuery]:
     filters: list[tuple[str, str]] = []
-    count, offset, sort, include = DEFAULT_COUNT, 0, "name", ""
+    count, offset, sort = DEFAULT_COUNT, 0, "name"
+    include: list[str] = []
     for name, values in params.items():
-        if len(values) != 1:
+        if len(values) != 1 and name != "_include":
             return _refuse(name, "A parameter may be given once.")
         value = values[0]
         if name == "_count":
@@ -51,8 +52,8 @@ def parse_search(
         elif name == "_format":
             problem = value not in SERVED_FORMATS
         elif name == "_include":
-            include = value
-            problem = value not in declaration.includes
+            include = [item for item in declaration.includes if item in values]
+            problem = any(item not in declaration.includes for item in values)
         else:
             parameter = declaration.parameter(name)
             if parameter is None or name in COMMON_PARAMETERS:
@@ -63,9 +64,7 @@ def parse_search(
         if problem:
             return _refuse(name, "The value cannot be read.")
     descending = params.get("_sort", [""])[0].startswith("-")
-    return Success(
-        SearchQuery(tuple(filters), count, offset, sort, descending, (include,) if include else ())
-    )
+    return Success(SearchQuery(tuple(filters), count, offset, sort, descending, tuple(include)))
 
 
 def parse_id(text: str) -> str | None:

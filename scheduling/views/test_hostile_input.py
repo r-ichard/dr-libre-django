@@ -23,6 +23,7 @@ from scheduling.use_cases.api_tokens import issue_token
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client, fhir_client
 from scheduling.views.pages.browser_support import SITE_ORIGIN
 
 pytestmark = pytest.mark.django_db
@@ -133,7 +134,7 @@ def _world_ids(clinic: Clinic) -> dict[str, str]:
 def _actor_world(actor: str) -> tuple[Client, dict[str, str]]:
     """A fresh client signed in as the actor, and ids of records that actor may use."""
     clinic = make_clinic()
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
     users = {
         "PATIENT": clinic.patient,
         "CLINICIAN": clinic.clinician.user,
@@ -314,7 +315,7 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_authorization(actor: str) 
         with bind_request_context(RequestContext("hostile", clock.now_utc())):
             token = issue_token(make_user(role=actor), "Hostile").token
         headers_to_try.append({"Authorization": f"Bearer {token}"})
-    client = Client(raise_request_exception=False)
+    client = fhir_client()
     paths = [f"/fhir/{name}" for name in FHIR_TYPES] + [
         f"/fhir/Organization/{clinic.department.hospital_id}",
         f"/fhir/Practitioner/{clinic.clinician.user_id}",
@@ -327,8 +328,10 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_authorization(actor: str) 
             for query in ("", "?_count=x&name=%00&_include=%00&near=%00"):
                 response = client.get(path + query, headers=headers)
                 body = response.json()
-                if response.status_code >= 500 or (
-                    response.status_code >= 400 and body["resourceType"] != "OperationOutcome"
+                if (
+                    response.status_code >= 500
+                    or not response["Content-Type"].startswith("application/fhir+json")
+                    or (response.status_code >= 400 and body["resourceType"] != "OperationOutcome")
                 ):
                     failures.append((path, query, response.status_code))
     assert failures == []

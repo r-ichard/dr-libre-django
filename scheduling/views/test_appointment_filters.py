@@ -11,6 +11,7 @@ from django.test import Client
 from scheduling.models import Appointment, User
 from scheduling.models.builders import STARTS_AT, Clinic, add_clinician, make, make_clinic
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 pytestmark = pytest.mark.django_db
 
@@ -30,7 +31,7 @@ def _admin_client() -> Client:
     assert isinstance(admin, User)
     admin.password = make_password(RIGHT_PHRASE)
     admin.save()
-    client = Client()
+    client = browser_api_client()
     login = client.post(
         "/api/v1/auth/login",
         {"email": admin.email, "password": RIGHT_PHRASE},

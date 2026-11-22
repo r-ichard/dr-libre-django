@@ -5,17 +5,18 @@ from django.test import Client
 
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 
 def returns_same_correlation_id_when_header_is_sane() -> None:
-    response = Client().get("/api/v1/health", headers={"x-correlation-id": "req-42"})
+    response = browser_api_client().get("/api/v1/health", headers={"x-correlation-id": "req-42"})
 
     assert response["X-Correlation-Id"] == "req-42"
 
 
 @pytest.mark.parametrize("bad", ["a" * 65, "has space", "semi;colon", "é"])
 def returns_generated_id_when_header_is_too_long_or_has_bad_characters(bad: str) -> None:
-    response = Client().get("/api/v1/health", headers={"x-correlation-id": bad})
+    response = browser_api_client().get("/api/v1/health", headers={"x-correlation-id": bad})
 
     generated = response["X-Correlation-Id"]
     assert generated != bad
@@ -23,8 +24,8 @@ def returns_generated_id_when_header_is_too_long_or_has_bad_characters(bad: str)
 
 
 def returns_distinct_generated_ids_when_no_header_is_sent() -> None:
-    first = Client().get("/api/v1/health")["X-Correlation-Id"]
-    second = Client().get("/api/v1/health")["X-Correlation-Id"]
+    first = browser_api_client().get("/api/v1/health")["X-Correlation-Id"]
+    second = browser_api_client().get("/api/v1/health")["X-Correlation-Id"]
 
     assert first and first != second
 
@@ -35,7 +36,7 @@ def returns_correlation_id_header_when_response_is_success_unknown_path_or_500(
 ) -> None:
     settings.ROOT_URLCONF = "scheduling.views.probe_urls"  # type: ignore[attr-defined]
 
-    response = Client(raise_request_exception=False).get(
+    response = browser_api_client(raise_request_exception=False).get(
         path, headers={"x-correlation-id": "cid-9"}
     )
 
@@ -72,7 +73,7 @@ def returns_patched_instant_when_clock_is_replaced(
 
 
 def raises_when_context_is_read_after_request_has_finished() -> None:
-    Client().get("/api/v1/health")
+    browser_api_client().get("/api/v1/health")
 
     with pytest.raises(LookupError):
         current_request_context()

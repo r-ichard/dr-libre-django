@@ -4,6 +4,8 @@ declaration; the view only parses the address, calls a use case and formats the 
 import logging
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.cache import patch_vary_headers
+from django.views.decorators.csrf import csrf_exempt
 
 from scheduling.domain.failure import Failure, FieldMessage
 from scheduling.domain.fhir_bundle import search_bundle
@@ -23,6 +25,7 @@ from scheduling.use_cases.fhir_reads import Viewer, read_resource, search_resour
 from scheduling.views.fhir.responses import (
     failure_response,
     internal_error_response,
+    method_not_allowed_response,
     not_acceptable_response,
     resource_response,
 )
@@ -36,12 +39,19 @@ BEARER_PREFIX = "Bearer "
 STAFF_ROLES = (Role.CLINICIAN, Role.ADMIN)
 
 
+@csrf_exempt
 def fhir_entry(request: HttpRequest) -> HttpResponse:
+    """Exempt from the cross-site check: a FHIR client sends a bearer token and no cookie, and
+    this door never reads a cookie, so the check has nothing to protect (ADR 0005)."""
     try:
-        return _answer(request, request.path.removeprefix("/fhir").strip("/"))
+        response = _answer(request, request.path.removeprefix("/fhir").strip("/"))
     except Exception:
         logger.exception("unexpected error")
-        return internal_error_response()
+        response = internal_error_response()
+    patch_vary_headers(response, ("Authorization",))
+    if "Authorization" in request.headers:
+        response["Cache-Control"] = "no-store"
+    return response
 
 
 def _answer(request: HttpRequest, rest: str) -> HttpResponse:
@@ -54,12 +64,13 @@ def _answer(request: HttpRequest, rest: str) -> HttpResponse:
     if isinstance(viewer, Failure):
         return failure_response(viewer)
     parts = rest.split("/") if rest else []
-    if request.method != "GET" or not 1 <= len(parts) <= 2:
+    known = parts == [METADATA] or (1 <= len(parts) <= 2 and declaration_for(parts[0]) is not None)
+    if not known:
         return failure_response(Failure.not_found())
+    if request.method != "GET":
+        return method_not_allowed_response()
     if parts == [METADATA]:
         return resource_response(capability_statement(FHIR_RESOURCES))
-    if declaration_for(parts[0]) is None:
-        return failure_response(Failure.not_found())
     if len(parts) == 1:
         return _search(request, parts[0], viewer)
     return _read(parts[0], parts[1], viewer)

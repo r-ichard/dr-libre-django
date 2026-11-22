@@ -11,12 +11,12 @@ from collections.abc import Iterator
 from datetime import UTC, datetime
 
 import pytest
-from django.test import Client
 
 from scheduling.models import AuditLogEntry, RateLimitHit, SignInLink
 from scheduling.models.builders import make
 from scheduling.use_cases.session import hash_token
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.json_logging import JsonFormatter
 
 pytestmark = pytest.mark.django_db
@@ -78,7 +78,7 @@ def returns_no_token_in_output_rows_or_pages_when_link_goes_through_ask_page_and
         }
     }
     make("User", email=EMAIL)
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
     bodies: list[str] = []
 
     with django_capture_on_commit_callbacks(execute=True):  # type: ignore[operator]
@@ -108,7 +108,7 @@ def returns_no_token_in_output_rows_or_pages_when_link_goes_through_ask_page_and
 def returns_no_token_in_output_or_rows_when_page_and_api_refuse_a_planted_token(
     written: io.StringIO, capfd: pytest.CaptureFixture[str]
 ) -> None:
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
 
     page = client.post("/sign-in/link", {"token": PLANTED})
     api = client.post(

@@ -7,12 +7,12 @@ from uuid import uuid4
 
 import pytest
 from django.db import connection
-from django.test import Client
 from django.test.utils import CaptureQueriesContext
 
 from scheduling.models import ClinicianProfile
 from scheduling.models.builders import add_clinician, make
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.pages.search_pages_support import (
     HOUR_OF_SLOTS,
     NOW,
@@ -48,7 +48,7 @@ def _ids(clinician: ClinicianProfile) -> dict[str, object]:
 
 
 def _get(kind: str, identifier: object) -> "_MonkeyPatchedWSGIResponse":
-    return Client().get(f"/api/v1/{kind}/{identifier}")
+    return browser_api_client().get(f"/api/v1/{kind}/{identifier}")
 
 
 def returns_provider_with_exactly_the_planned_keys() -> None:
@@ -186,7 +186,7 @@ def returns_404_when_provider_has_no_online_bookable_type() -> None:
 
 
 def returns_404_when_path_id_is_not_a_uuid() -> None:
-    assert Client().get("/api/v1/providers/not-a-uuid").status_code == 404
+    assert browser_api_client().get("/api/v1/providers/not-a-uuid").status_code == 404
 
 
 def returns_same_number_of_queries_when_hospital_has_2_or_12_providers() -> None:
@@ -208,7 +208,7 @@ def returns_same_number_of_queries_when_hospital_has_2_or_12_providers() -> None
 
 def returns_the_slots_search_lists_when_hospital_body_lists_next_availabilities() -> None:
     clinician, _ = plant_clinic()
-    searched = Client().get("/api/v1/search/providers").json()["results"][0]
+    searched = browser_api_client().get("/api/v1/search/providers").json()["results"][0]
 
     body = _get("hospitals", clinician.department.hospital.pk).json()
 

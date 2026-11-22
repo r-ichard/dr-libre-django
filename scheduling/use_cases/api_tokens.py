@@ -14,7 +14,7 @@ from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.models import ApiClient, User
 from scheduling.use_cases.audit import AuditEvent, record_audit
-from scheduling.use_cases.rate_limits import is_full, record_hits
+from scheduling.use_cases.rate_limits import take_hit
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.session import TOKEN_BYTES, hash_token
 
@@ -53,13 +53,14 @@ def revoke_token(client_id: UUID) -> Result[ApiClient]:
 
 
 def resolve_token(token: str, address: str) -> Result[User]:
-    """The same failure for an unknown token, a revoked one and an inactive user."""
+    """The same failure for an unknown token, a revoked one and an inactive user. A valid token
+    never reads a counter, so nobody else's failures refuse it; a failing one is counted under the
+    lock and refused once its counters are full."""
     token_key = hash_token(token)
-    if is_full(RateLimitScope.TOKEN, token_key, address):
-        return Failure.rate_limited()
     client = ApiClient.objects.select_related("user").filter(token_hash=token_key).first()
     if client is None or client.revoked_at is not None or not client.user.is_active:
-        record_hits(RateLimitScope.TOKEN, token_key, address)
+        if not take_hit(RateLimitScope.TOKEN, token_key, address):
+            return Failure.rate_limited()
         return Failure.unauthenticated()
     _touch(client)
     return Success(client.user)

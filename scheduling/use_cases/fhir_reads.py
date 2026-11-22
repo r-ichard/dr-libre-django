@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from uuid import UUID
 
-from django.db.models import Model, QuerySet
+from django.db.models import IntegerField, Model, QuerySet, TextField, UUIDField, Value
+from django.db.models.functions import Cast, Lower
 
 from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.fhir_common import Resource
@@ -181,6 +182,7 @@ ROLE = Part(
         "active": _flag("user__is_active"),
     },
     build=loading.practitioner_roles,
+    staff_build=loading.practitioner_roles_with_all_services,
 )
 
 PARTS: dict[str, tuple[Part, ...]] = {
@@ -218,33 +220,44 @@ def search_resource(resource_type: str, query: SearchQuery, viewer: Viewer) -> R
         single = [SINGLE_BUILDERS[resource_type]()] if query.offset == 0 and query.count else []
         return Success(SearchPage(1, single, []))
     candidates = _candidates(PARTS[resource_type], query, viewer)
-    page = candidates[query.offset : query.offset + query.count]
+    page = [
+        Candidate(identifier, part_index)
+        for _, identifier, part_index in candidates[query.offset : query.offset + query.count]
+    ]
     matches = _build_page(PARTS[resource_type], page, viewer)
-    return Success(SearchPage(len(candidates), matches, _included(query, page, viewer)))
+    return Success(SearchPage(candidates.count(), matches, _included(query, page, viewer)))
 
 
 @dataclass(frozen=True)
 class Candidate:
-    sort_key: str
     identifier: UUID
     part_index: int
 
 
-def _candidates(parts: tuple[Part, ...], query: SearchQuery, viewer: Viewer) -> list[Candidate]:
-    found: list[Candidate] = []
+def _candidates(
+    parts: tuple[Part, ...], query: SearchQuery, viewer: Viewer
+) -> QuerySet[Model, tuple[str, UUID, int]]:
+    """One ordered query over every part, so the database counts and cuts the page."""
+    selections: list[QuerySet[Model, tuple[str, UUID, int]]] = []
     for index, part in enumerate(parts):
         rows = part.rows(viewer)
         for name, value in query.filters:
             refine = part.filters.get(name)
             rows = refine(rows, value) if refine else rows.none()
         column = part.sort_columns.get(query.sort, "pk")
-        found += [
-            Candidate(str(key).lower(), identifier, index)
-            for key, identifier in rows.values_list(column, part.id_column).distinct()
-        ]
-    return sorted(
-        found, key=lambda item: (item.sort_key, item.identifier), reverse=query.descending
-    )
+        selections.append(
+            rows.annotate(
+                sort_key=Lower(Cast(column, TextField())),
+                identifier=Cast(part.id_column, UUIDField()),
+                part_index=Value(index, IntegerField()),
+            )
+            .values_list("sort_key", "identifier", "part_index")
+            .distinct()
+        )
+    prefix = "-" if query.descending else ""
+    ordering = (f"{prefix}sort_key", f"{prefix}identifier")
+    united = selections[0].union(*selections[1:])
+    return united.order_by(*ordering)
 
 
 def _build_page(parts: tuple[Part, ...], page: list[Candidate], viewer: Viewer) -> list[Resource]:
@@ -264,12 +277,16 @@ def _included(query: SearchQuery, page: list[Candidate], viewer: Viewer) -> list
             "user_id", "department_id"
         )
     )
-    users = sorted({user for user, _ in links})
-    departments = sorted({department for _, department in links})
-    if query.include[0] == "PractitionerRole:practitioner":
-        return (
+    included: list[Resource] = []
+    if "PractitionerRole:practitioner" in query.include:
+        users = sorted({user for user, _ in links})
+        included += (
             loading.practitioners_with_contact(users)
             if viewer is Viewer.STAFF
             else loading.practitioners(users)
         )
-    return loading.department_organizations(departments)
+    if "PractitionerRole:organization" in query.include:
+        included += loading.department_organizations(
+            sorted({department for _, department in links})
+        )
+    return included

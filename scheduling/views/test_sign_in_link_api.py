@@ -13,6 +13,7 @@ from django.test import Client
 from scheduling.models import AuditLogEntry, SignInLink
 from scheduling.models.builders import make
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
@@ -41,11 +42,15 @@ def frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def _ask(email: str = EMAIL, client: Client | None = None) -> _MonkeyPatchedWSGIResponse:
-    return (client or Client()).post(ASK, {"email": email}, content_type="application/json")
+    return (client or browser_api_client()).post(
+        ASK, {"email": email}, content_type="application/json"
+    )
 
 
 def _verify(token: str, client: Client | None = None) -> _MonkeyPatchedWSGIResponse:
-    return (client or Client()).post(VERIFY, {"token": token}, content_type="application/json")
+    return (client or browser_api_client()).post(
+        VERIFY, {"token": token}, content_type="application/json"
+    )
 
 
 def _mailed_token() -> str:
@@ -93,7 +98,7 @@ def returns_202_and_no_mail_when_email_belongs_to_staff(
 def returns_400_invalid_input_when_body_is_malformed_or_has_unknown_field(
     body: dict[str, object],
 ) -> None:
-    response = Client().post(ASK, body, content_type="application/json")
+    response = browser_api_client().post(ASK, body, content_type="application/json")
 
     assert response.status_code == 400
     assert response.json()["error"]["code"] == "invalid_input"
@@ -163,6 +168,6 @@ def returns_400_when_token_is_used_a_second_time(
 
 
 def returns_400_invalid_input_when_verify_body_is_malformed() -> None:
-    response = Client().post(VERIFY, {"token": 5}, content_type="application/json")
+    response = browser_api_client().post(VERIFY, {"token": 5}, content_type="application/json")
 
     assert response.status_code == 400

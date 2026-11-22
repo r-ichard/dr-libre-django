@@ -418,7 +418,12 @@ def returns_capability_header_fields_when_statement_built() -> None:
         "resourceType": "CapabilityStatement",
         "status": "active",
         "date": "2026-11-22",
+        "description": "DrLibre appointment scheduling, read-only FHIR R4 API.",
         "kind": "instance",
+        "implementation": {
+            "description": "DrLibre appointment scheduling, read-only FHIR R4 API.",
+            "url": "https://drlibre.example/fhir",
+        },
         "fhirVersion": "4.0.1",
         "format": ["application/fhir+json"],
         "rest": [{"mode": "server", "resource": []}],

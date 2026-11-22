@@ -6,9 +6,9 @@ import json
 from typing import TYPE_CHECKING
 
 import pytest
-from django.test import Client
 
 from scheduling.models.builders import make_clinic
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.pages.browser_support import SITE_ORIGIN
 from scheduling.views.test_appointment_support import _signed_in
 
@@ -46,7 +46,7 @@ def _nested(depth: int) -> str:
 
 @pytest.mark.parametrize("address", ["a@b", "not-an-email", "a@b@c"])
 def returns_400_with_email_message_when_sign_in_page_gets_a_malformed_email(address: str) -> None:
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
 
     response = client.post(
         "/sign-in", {"email": address, "password": "x"}, headers={"Origin": SITE_ORIGIN}
@@ -64,7 +64,7 @@ def returns_400_invalid_input_naming_from_when_slots_ask_for_an_edge_date(instan
         f"appointment_type_id={clinic.appointment_type.pk}&from={instant}&to=2030-01-08T00:00:00Z"
     )
 
-    response = Client(raise_request_exception=False).get(f"{SLOTS}?{query}")
+    response = browser_api_client(raise_request_exception=False).get(f"{SLOTS}?{query}")
 
     assert response.status_code == 400
     assert "from" in _fields_named(response)
@@ -84,7 +84,7 @@ def returns_400_invalid_input_naming_starts_at_when_hold_asks_for_an_edge_date(
         "terms_accepted": True,
     }
 
-    response = Client(raise_request_exception=False).post(
+    response = browser_api_client(raise_request_exception=False).post(
         HOLDS, json.dumps(body), content_type=JSON_TYPE, headers={"Origin": SITE_ORIGIN}
     )
 
@@ -120,7 +120,7 @@ def returns_400_invalid_input_naming_body_when_json_is_nested_100000_deep(path: 
 def returns_400_invalid_input_naming_body_when_body_is_3_megabytes() -> None:
     padding = json.dumps({"email": "x" * THREE_MEGABYTES})
 
-    response = Client(raise_request_exception=False).post(
+    response = browser_api_client(raise_request_exception=False).post(
         "/api/v1/auth/link", padding, content_type=JSON_TYPE, headers={"Origin": SITE_ORIGIN}
     )
 
@@ -131,7 +131,7 @@ def returns_400_invalid_input_naming_body_when_body_is_3_megabytes() -> None:
 def returns_400_invalid_input_naming_query_when_search_has_1500_fields() -> None:
     query = "&".join(f"field{number}=1" for number in range(1500))
 
-    response = Client(raise_request_exception=False).get(f"{SEARCH}?{query}")
+    response = browser_api_client(raise_request_exception=False).get(f"{SEARCH}?{query}")
 
     assert response.status_code == 400
     assert _fields_named(response) == ["query"]
@@ -139,7 +139,7 @@ def returns_400_invalid_input_naming_query_when_search_has_1500_fields() -> None
 
 def returns_400_not_500_when_json_is_nested_one_past_the_limit_and_200_class_at_it() -> None:
     at_limit, past_limit = _nested(20), _nested(21)
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
 
     at_answer = client.post("/api/v1/auth/link", at_limit, content_type=JSON_TYPE, headers=ORIGIN)
     past_answer = client.post(
@@ -152,7 +152,7 @@ def returns_400_not_500_when_json_is_nested_one_past_the_limit_and_200_class_at_
 
 def _search_with(field_count: int) -> Response:
     query = "&".join(f"field{number}=1" for number in range(field_count))
-    return Client(raise_request_exception=False).get(f"{SEARCH}?{query}")
+    return browser_api_client(raise_request_exception=False).get(f"{SEARCH}?{query}")
 
 
 def returns_400_for_201_query_fields_and_no_query_error_for_200() -> None:
@@ -167,7 +167,7 @@ def _link_body_of(total_bytes: int) -> str:
 
 def returns_400_for_body_one_mebibyte_plus_one_and_no_body_error_at_one_mebibyte() -> None:
     mebibyte = 1024 * 1024
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
 
     at_limit = client.post(
         "/api/v1/auth/link", _link_body_of(mebibyte), content_type=JSON_TYPE, headers=ORIGIN
@@ -181,7 +181,7 @@ def returns_400_for_body_one_mebibyte_plus_one_and_no_body_error_at_one_mebibyte
 
 
 def _depth_answer(raw: str, content_type: str = JSON_TYPE) -> Response:
-    return Client(raise_request_exception=False).post(
+    return browser_api_client(raise_request_exception=False).post(
         "/api/v1/auth/link", raw, content_type=content_type, headers={"Origin": SITE_ORIGIN}
     )
 
@@ -238,7 +238,7 @@ def returns_200_when_instant_is_on_the_edge_of_2000_to_2099(instant: str) -> Non
 def returns_400_when_a_page_posts_more_than_200_fields() -> None:
     form = {f"field{number}": "1" for number in range(250)} | {"email": "a@b.test", "password": "x"}
 
-    response = Client(raise_request_exception=False).post(
+    response = browser_api_client(raise_request_exception=False).post(
         "/sign-in", form, headers={"Origin": SITE_ORIGIN}
     )
 
@@ -249,7 +249,7 @@ def returns_400_when_a_page_posts_more_than_200_fields() -> None:
 def returns_400_when_a_page_posts_a_form_over_one_mebibyte() -> None:
     form = {"email": "a@b.test", "password": "x" * (1024 * 1024 + 1)}
 
-    response = Client(raise_request_exception=False).post(
+    response = browser_api_client(raise_request_exception=False).post(
         "/sign-in", form, headers={"Origin": SITE_ORIGIN}
     )
 

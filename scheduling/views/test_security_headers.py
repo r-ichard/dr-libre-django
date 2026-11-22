@@ -4,6 +4,8 @@ import pytest
 from django.http.response import HttpResponseBase
 from django.test import Client
 
+from scheduling.views.api_clients import browser_api_client
+
 EXPECTED_POLICY = (
     "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; "
     "connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'; "
@@ -20,14 +22,14 @@ def _assert_policy_headers(response: HttpResponseBase) -> None:
 
 
 def returns_policy_headers_when_health_is_requested() -> None:
-    response = Client().get("/api/v1/health")
+    response = browser_api_client().get("/api/v1/health")
 
     _assert_policy_headers(response)
 
 
 @pytest.mark.parametrize("path", ["/api/v1/unmatched", "/pages/unmatched"])
 def returns_policy_headers_when_route_is_unmatched(path: str) -> None:
-    response = Client().get(path)
+    response = browser_api_client().get(path)
 
     assert response.status_code == 404
     _assert_policy_headers(response)
@@ -42,7 +44,7 @@ def returns_policy_headers_when_view_raises(probe_client: Client, path: str) -> 
 
 
 def returns_no_inline_allowance_when_policy_is_parsed() -> None:
-    policy = Client().get("/api/v1/health")["Content-Security-Policy"]
+    policy = browser_api_client().get("/api/v1/health")["Content-Security-Policy"]
 
     sources = [source for directive in policy.split(";") for source in directive.split()[1:]]
 

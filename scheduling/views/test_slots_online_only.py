@@ -4,10 +4,10 @@ Staff keep the types that are not bookable online (section 10, "Book for a patie
 from datetime import UTC, datetime, time
 
 import pytest
-from django.test import Client
 
 from scheduling.models.builders import Clinic, change_and_save, make_clinic
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.pages.booking_pages_support import details_path, times_path
 from scheduling.views.pages.browser_support import browser_client
 from scheduling.views.test_appointment_support import _admin, _signed_in
@@ -36,7 +36,7 @@ def _slots_path(clinic: Clinic) -> str:
 def returns_404_when_slots_ask_for_a_type_not_bookable_online() -> None:
     clinic = _in_person_only_clinic()
 
-    response = Client().get(_slots_path(clinic))
+    response = browser_api_client().get(_slots_path(clinic))
 
     assert response.status_code == 404
     assert response.json()["error"]["code"] == "not_found"
@@ -64,7 +64,7 @@ def returns_404_when_slots_name_a_clinician_with_inactive_specialty() -> None:
     change_and_save(clinic.clinician.specialty, "is_active", False)
     query = f"appointment_type_id={clinic.appointment_type.pk}&clinician_id={clinic.clinician.pk}"
 
-    response = Client().get(f"{SLOTS}?{query}&{MONDAY}")
+    response = browser_api_client().get(f"{SLOTS}?{query}&{MONDAY}")
 
     assert response.status_code == 404
 

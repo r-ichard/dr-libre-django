@@ -22,8 +22,8 @@ scheduling.domain.workspace_day.x_local_day_bounds__mutmut_21: astimezone(None) 
 scheduling.domain.request_limits.x_json_depth__mutmut_3: None and False are both falsy for in_string and escaped, so the scan behaves the same
 scheduling.domain.calendar_grid.x_place_in_grid__mutmut_51: the end is already cut to 19:00, so the span never exceeds the rows left and the cap is never the smaller value
 scheduling.domain.calendar_grid.x_place_in_grid__mutmut_52: the end is already cut to 19:00, so the span never exceeds the rows left and the cap is never the smaller value
-scheduling.domain.fhir_search.x_parse_search__mutmut_87: a value that reads as None sets the problem flag on the next line and the search is refused, so the placeholder in the discarded filter is never seen
-scheduling.domain.fhir_search.x_parse_search__mutmut_103: the default is only read when _sort is absent, and an empty or placeholder text does not start with a minus, so descending stays False
+scheduling.domain.fhir_search.x_parse_search__mutmut_93: a value that reads as None sets the problem flag on the next line and the search is refused, so the placeholder in the discarded filter is never seen
+scheduling.domain.fhir_search.x_parse_search__mutmut_109: the default is only read when _sort is absent, and an empty or placeholder text does not start with a minus, so descending stays False
 scheduling.domain.fhir_search.x__number__mutmut_8: every negative result only sets the problem flag, which is the same for -1 and -2
 scheduling.domain.fhir_search.x__read_value__mutmut_14: rsplit with no limit and with a limit of one have the same last piece
 scheduling.domain.fhir_search.x__read_value__mutmut_17: rsplit with a limit of two has the same last piece as with a limit of one

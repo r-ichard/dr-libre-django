@@ -7,6 +7,7 @@ from django.test import Client
 from scheduling.domain.failure import Failure
 from scheduling.domain.request_context import RequestContext
 from scheduling.use_cases.request_context import bind_request_context
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.failure_response import failure_response
 from scheduling.views.probe_views import SENSITIVE_MESSAGE
 
@@ -64,7 +65,7 @@ def returns_resources_in_details_when_view_answers_conflict(probe_client: Client
 def returns_404_not_found_when_path_under_api_is_unknown(settings: object, debug: bool) -> None:
     settings.DEBUG = debug  # type: ignore[attr-defined]
 
-    response = Client().get("/api/v1/nothing-here")
+    response = browser_api_client().get("/api/v1/nothing-here")
 
     assert response.status_code == 404
     error = response.json()["error"]
@@ -74,7 +75,7 @@ def returns_404_not_found_when_path_under_api_is_unknown(settings: object, debug
 
 @pytest.mark.parametrize("method", ["post", "head", "options"])
 def returns_404_not_found_when_method_is_not_allowed(method: str) -> None:
-    response = getattr(Client(), method)("/api/v1/health")
+    response = getattr(browser_api_client(), method)("/api/v1/health")
 
     assert response.status_code == 404
     assert "Allow" not in response
@@ -155,7 +156,7 @@ def returns_403_forbidden_when_view_declares_no_access_rule(probe_client: Client
 
 
 def returns_200_when_health_declares_itself_public() -> None:
-    response = Client().get("/api/v1/health")
+    response = browser_api_client().get("/api/v1/health")
 
     assert response.status_code == 200
 

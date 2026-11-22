@@ -3,13 +3,13 @@
 from datetime import UTC, datetime, time
 
 import pytest
-from django.test import Client
 
 from scheduling.domain.request_context import RequestContext
 from scheduling.models import AvailabilityRule, User
 from scheduling.models.builders import Clinic, make_clinic
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.views import clock
+from scheduling.views.api_clients import browser_api_client
 
 pytestmark = pytest.mark.django_db
 
@@ -25,7 +25,10 @@ def frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
 def _starts(clinic: Clinic) -> list[str]:
     ids = f"appointment_type_id={clinic.appointment_type.pk}&clinician_id={clinic.clinician.pk}"
     query = f"{ids}&{TUESDAY}"
-    return [slot["starts_at"] for slot in Client().get(f"/api/v1/slots?{query}").json()["slots"]]
+    return [
+        slot["starts_at"]
+        for slot in browser_api_client().get(f"/api/v1/slots?{query}").json()["slots"]
+    ]
 
 
 def _actor(clinic: Clinic) -> User:

@@ -4,8 +4,8 @@ page refused for its size answers in the product's layout with a correlation id.
 from __future__ import annotations
 
 import pytest
-from django.test import Client
 
+from scheduling.views.api_clients import browser_api_client
 from scheduling.views.pages.browser_support import SITE_ORIGIN
 
 pytestmark = pytest.mark.django_db
@@ -20,7 +20,7 @@ API_ROUTES = ["/api/v1/auth/login", "/api/v1/auth/link", "/api/v1/booking/holds"
 def returns_400_invalid_input_naming_body_when_content_length_is_not_a_number(
     path: str, length: str
 ) -> None:
-    client = Client(raise_request_exception=False)
+    client = browser_api_client(raise_request_exception=False)
 
     response = client.post(
         path, "{}", content_type="application/json", headers=ORIGIN, CONTENT_LENGTH=length
@@ -37,7 +37,7 @@ def returns_400_page_with_layout_and_correlation_id_when_page_gets_201_fields(
     settings.DEBUG = False  # type: ignore[attr-defined]
     query = "&".join(f"field{number}=1" for number in range(201))
 
-    response = Client(raise_request_exception=False).get(
+    response = browser_api_client(raise_request_exception=False).get(
         f"/?{query}", headers={"X-Correlation-Id": "abc-400"}
     )
 
@@ -53,7 +53,7 @@ def returns_400_page_with_layout_and_correlation_id_when_page_body_is_over_1_mib
     settings.DEBUG = False  # type: ignore[attr-defined]
     body = "a=" + "x" * ONE_MEBIBYTE
 
-    response = Client(raise_request_exception=False).post(
+    response = browser_api_client(raise_request_exception=False).post(
         "/sign-in",
         body,
         content_type="application/x-www-form-urlencoded",
@@ -69,7 +69,7 @@ def returns_400_page_in_the_layout_also_when_debug_is_on(settings: object) -> No
     settings.DEBUG = True  # type: ignore[attr-defined]
     query = "&".join(f"field{number}=1" for number in range(201))
 
-    response = Client(raise_request_exception=False).get(f"/?{query}")
+    response = browser_api_client(raise_request_exception=False).get(f"/?{query}")
 
     assert response.status_code == 400
     assert (
@@ -80,7 +80,9 @@ def returns_400_page_in_the_layout_also_when_debug_is_on(settings: object) -> No
 def returns_400_page_with_layout_when_host_is_not_allowed(settings: object) -> None:
     settings.DEBUG = False  # type: ignore[attr-defined]
 
-    response = Client(raise_request_exception=False).get("/", headers={"Host": "evil.example"})
+    response = browser_api_client(raise_request_exception=False).get(
+        "/", headers={"Host": "evil.example"}
+    )
 
     html = response.content.decode()
     assert response.status_code == 400

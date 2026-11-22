@@ -5,7 +5,6 @@ import logging
 from typing import TYPE_CHECKING
 
 import pytest
-from django.test import Client
 
 from scheduling.domain.request_context import RequestContext
 from scheduling.domain.vocabulary import SessionKind
@@ -14,6 +13,7 @@ from scheduling.use_cases.api_tokens import issue_token, revoke_token
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session
 from scheduling.views import clock
+from scheduling.views.api_clients import fhir_client
 from scheduling.views.pages.search_pages_support import (
     PLANTED_BIRTH,
     PLANTED_EMAIL,
@@ -36,7 +36,7 @@ def _token_for(role: str) -> str:
 
 def _get(path: str, token: str | None = None) -> "_MonkeyPatchedWSGIResponse":
     headers = {"Authorization": f"Bearer {token}"} if token is not None else {}
-    return Client(raise_request_exception=False).get(path, headers=headers)
+    return fhir_client().get(path, headers=headers)
 
 
 def _ids(path: str, token: str | None = None) -> list[str]:
@@ -119,9 +119,7 @@ def returns_401_outcome_when_token_unknown_revoked_or_user_inactive() -> None:
 def returns_401_outcome_when_authorization_header_is_malformed(header: str) -> None:
     plant_clinic()
 
-    response = Client(raise_request_exception=False).get(
-        "/fhir/Organization", headers={"Authorization": header}
-    )
+    response = fhir_client().get("/fhir/Organization", headers={"Authorization": header})
 
     assert response.status_code == 401
     assert response.json()["resourceType"] == "OperationOutcome"
@@ -135,7 +133,7 @@ def returns_public_answer_when_session_cookie_is_the_only_credential() -> None:
     clinician, appointment_type = plant_clinic()
     update_row(appointment_type, is_bookable_online=False)
     admin = make_user(role="ADMIN")
-    client = Client(raise_request_exception=False)
+    client = fhir_client()
     with bind_request_context(RequestContext("test-cookie", clock.now_utc())):
         client.cookies["drlibre_session"] = open_session(admin, SessionKind.PASSWORD, "").token
 

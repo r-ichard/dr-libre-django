@@ -94,3 +94,17 @@ No chart library, no script, no new dependency, no caching of figures, no new mo
 ## Checks by the orchestrator (not runnable here)
 
 Browser at 375 px and 1440 px, two figures against SQL, CSV in a spreadsheet reader.
+
+## Architect review
+
+Verdict: approve.
+
+- Ladder: no new dependency, model or chart library. SVG `width` attribute answers the CSP question without touching settings. Registry for audited types is justified by item 14.
+- Spec fit: the six figures match the section 13 table and the "n/a" rule. Day rule, "today", query count (6, asserted), 50,000 row limit are all stated as asked. Export carries ids only, POST form, audited in the read's transaction, `no-store`.
+- Tests are named as behaviours with expected values (DST 23 h and 25 h days, partial time off, hospital-day counting, 101 busy slots, no `FOR UPDATE`). Role and hostile-input route tests are covered.
+- Notes for the implementer (not blocking):
+  1. State how the appointment query bounds the range. Days are hospital-local, so fetch a UTC superset (first date minus 1 day to last date plus 1 day) and keep only rows whose hospital-local date is in the range. The same applies to rules and time off. Test it with a hospital zone ahead of UTC and one behind.
+  2. The "today" rule (latest date among hospital zones) is only sound if the range label on the page shows the first and last dates. Print them.
+  3. Item 15: the `Exists` exclusion must share one predicate with `find_conflicts`, not copy it. Add a test that both agree.
+  4. Item 17: keep the list of actions in the test parametrised from the URL names so a new admin action without a notice fails.
+  5. `?reminders=N` removal needs its existing test updated, not dropped.

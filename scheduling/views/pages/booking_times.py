@@ -8,6 +8,7 @@ from django.http import Http404, HttpRequest, HttpResponse
 from scheduling.domain.booking_week import next_week_start, previous_week_start
 from scheduling.domain.failure import Failure
 from scheduling.use_cases.booking_page_data import WeekOfSlots, week_of_slots
+from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.pages.booking_links import (
     clock_label,
     day_label,
@@ -29,7 +30,12 @@ class TimesPage(PageView):
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
         type_id = path_uuid(self, "appointment_type_id")
         provider_id = provider_from(request.GET.get("provider", ""))
-        loaded = week_of_slots(type_id, provider_id, week_from(request.GET.get("week", "")))
+        loaded = week_of_slots(
+            type_id,
+            provider_id,
+            week_from(request.GET.get("week", "")),
+            online_only_for(self.user),
+        )
         if isinstance(loaded, Failure):
             raise Http404
         week = loaded.value

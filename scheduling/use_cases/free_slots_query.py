@@ -30,14 +30,14 @@ class FoundSlots:
 
 
 def find_free_slots(
-    appointment_type_id: UUID, clinician_id: UUID | None, window: TimeRange
+    appointment_type_id: UUID, clinician_id: UUID | None, window: TimeRange, online_only: bool
 ) -> Result[FoundSlots]:
     if window.ends_at - window.starts_at > timedelta(days=MAXIMUM_QUERY_DAYS):
         return _too_wide()
-    appointment_type = active_appointment_type(appointment_type_id)
+    appointment_type = active_appointment_type(appointment_type_id, online_only)
     if appointment_type is None:
         return Failure.not_found()
-    clinicians = department_clinicians(appointment_type, clinician_id)
+    clinicians = department_clinicians(appointment_type, clinician_id, online_only)
     clinician_ids = list(clinicians.values_list("pk", flat=True))
     if clinician_id is not None and not clinician_ids:
         return Failure.not_found()

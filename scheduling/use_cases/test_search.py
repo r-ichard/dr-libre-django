@@ -104,7 +104,7 @@ def returns_lists_slots_equal_to_find_free_slots_when_same_type_and_range() -> N
     clinician = _clinician("Vera Slots", department)
     window = TimeRange(LEAD_END, LEAD_END + timedelta(days=31))
 
-    found = find_free_slots(appointment_type.pk, clinician.pk, window)
+    found = find_free_slots(appointment_type.pk, clinician.pk, window, online_only=False)
 
     assert isinstance(found, Success)
     expected = [offer.start for offer in found.value.offers][:3]

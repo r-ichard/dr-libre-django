@@ -67,7 +67,7 @@ def returns_no_room_when_none_assigned() -> None:
     assert "Room" not in html
 
 
-def returns_404_when_another_patient_opens_it() -> None:
+def returns_403_when_another_patient_opens_it() -> None:
     clinic = make_clinic()
     appointment = _booked(clinic)
     other = make("User")
@@ -75,7 +75,7 @@ def returns_404_when_another_patient_opens_it() -> None:
     response = signed_in_patient(other).get(f"/appointments/{appointment.pk}/confirmation")  # type: ignore[arg-type]
 
     owner = signed_in_patient(clinic.patient).get(f"/appointments/{appointment.pk}/confirmation")
-    assert (owner.status_code, response.status_code) == (200, 404)
+    assert (owner.status_code, response.status_code) == (200, 403)
 
 
 def returns_redirect_to_sign_in_when_not_signed_in() -> None:
@@ -104,7 +104,7 @@ def returns_text_calendar_attachment_with_utc_times_location_and_no_reason_or_no
     assert "no-store" in response["Cache-Control"]
 
 
-def returns_404_for_other_patient_and_for_cancelled_appointment() -> None:
+def returns_403_for_other_patient_and_404_for_cancelled_appointment() -> None:
     clinic = make_clinic()
     other = make("User")
     live = _booked(clinic)
@@ -116,4 +116,27 @@ def returns_404_for_other_patient_and_for_cancelled_appointment() -> None:
     owner = signed_in_patient(clinic.patient).get(f"/appointments/{cancelled.pk}/calendar.ics")
 
     live_owner = signed_in_patient(clinic.patient).get(f"/appointments/{live.pk}/calendar.ics")
-    assert (live_owner.status_code, stranger.status_code, owner.status_code) == (200, 404, 404)
+    assert (live_owner.status_code, stranger.status_code, owner.status_code) == (200, 403, 404)
+
+
+def returns_404_when_confirmation_or_calendar_id_does_not_exist() -> None:
+    clinic = make_clinic()
+    client = signed_in_patient(clinic.patient)
+    missing = "00000000-0000-4000-8000-000000000000"
+
+    codes = [
+        client.get(f"/appointments/{missing}/{leaf}").status_code
+        for leaf in ("confirmation", "calendar.ics")
+    ]
+
+    assert codes == [404, 404]
+
+
+def returns_403_when_calendar_file_belongs_to_another_patient() -> None:
+    clinic = make_clinic()
+    appointment = _booked(clinic)
+
+    response = signed_in_patient(make("User")).get(f"/appointments/{appointment.pk}/calendar.ics")  # type: ignore[arg-type]
+
+    assert response.status_code == 403
+    assert b"BEGIN:VCALENDAR" not in response.content

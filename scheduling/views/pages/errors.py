@@ -20,3 +20,7 @@ def not_found_page(request: HttpRequest, exception: Exception) -> HttpResponse:
 
 def server_error_page(request: HttpRequest) -> HttpResponse:
     return render_page(request, "errors/500.html", status=500)
+
+
+def bad_request_page(request: HttpRequest, exception: Exception) -> HttpResponse:
+    return render_page(request, "errors/400.html", status=400)

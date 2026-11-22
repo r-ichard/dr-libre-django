@@ -11,6 +11,7 @@ from django.db import transaction
 from scheduling.domain.audit_metadata import AuditMetadata, email_domain
 from scheduling.domain.booking_codes import HOLD_LIFETIME
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.profile_rules import phone_failure
 from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.domain.visitor_rules import normalise_email, valid_birth_date
 from scheduling.models import BookingHold
@@ -113,7 +114,10 @@ def _invalid_input(command: HoldCommand, now: datetime) -> Failure | None:
     if not command.terms_accepted:
         problems.append(FieldMessage("terms_accepted", "Accept the terms and the privacy notice."))
     if not valid_birth_date(command.birth_date, now.date()):
-        problems.append(FieldMessage("birth_date", "Enter a valid date of birth."))
+        problems.append(FieldMessage("date_of_birth", "Enter a valid date of birth."))
+    phone_problem = phone_failure(command.phone)
+    if phone_problem is not None:
+        problems.append(phone_problem)
     try:
         email_domain(normalise_email(command.email))
     except ValueError:

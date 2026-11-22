@@ -177,7 +177,7 @@ def returns_conflict_naming_patient_when_patient_busy() -> None:
 
 
 def returns_conflict_naming_room_when_named_room_busy() -> None:
-    clinic = make_clinic()
+    clinic = make_clinic(type_fields={"needs_room": True})
     room = make("Room", department=clinic.department)
     _busy(clinic, room=room, clinician=add_clinician(clinic.department))
 
@@ -185,7 +185,7 @@ def returns_conflict_naming_room_when_named_room_busy() -> None:
 
 
 def returns_conflict_naming_all_three_when_all_three_overlap() -> None:
-    clinic = make_clinic()
+    clinic = make_clinic(type_fields={"needs_room": True})
     room = make("Room", department=clinic.department)
     _busy(clinic, clinician=clinic.clinician)
     _busy(clinic, patient=clinic.patient, clinician=add_clinician(clinic.department))

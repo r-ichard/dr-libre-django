@@ -41,7 +41,7 @@ def returns_union_one_entry_per_start_when_no_clinician_named() -> None:
         {"start_time": time(9, 30), "end_time": time(10, 30), "slot_step_minutes": 30},
     )
 
-    result = find_free_slots(first.appointment_type.pk, None, MONDAY)
+    result = find_free_slots(first.appointment_type.pk, None, MONDAY, online_only=False)
 
     assert isinstance(result, Success)
     offered = {offer.start: set(offer.clinician_ids) for offer in result.value.offers}
@@ -56,7 +56,9 @@ def returns_union_one_entry_per_start_when_no_clinician_named() -> None:
 def returns_hospital_time_zone_beside_the_offers() -> None:
     clinic = make_clinic(rule_fields=HOUR_OF_SLOTS)
 
-    result = find_free_slots(clinic.appointment_type.pk, clinic.clinician.pk, MONDAY)
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=False
+    )
 
     assert isinstance(result, Success)
     assert result.value.time_zone == "Europe/Berlin"
@@ -66,7 +68,9 @@ def returns_only_the_named_clinician_when_one_is_named() -> None:
     clinic = make_clinic(rule_fields=HOUR_OF_SLOTS)
     add_clinician(clinic.department, HOUR_OF_SLOTS)
 
-    result = find_free_slots(clinic.appointment_type.pk, clinic.clinician.pk, MONDAY)
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=False
+    )
 
     assert isinstance(result, Success)
     assert {identifier for offer in result.value.offers for identifier in offer.clinician_ids} == {
@@ -85,7 +89,9 @@ def returns_no_slot_when_unexpired_hold_covers_it() -> None:
         expires_at=NOW + timedelta(minutes=10),
     )
 
-    result = find_free_slots(clinic.appointment_type.pk, clinic.clinician.pk, MONDAY)
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=False
+    )
 
     assert isinstance(result, Success)
     assert _starts(result.value.offers) == [datetime(2030, 1, 7, 10, 30, tzinfo=UTC)]
@@ -102,7 +108,9 @@ def returns_slot_when_hold_expired() -> None:
         expires_at=NOW - timedelta(minutes=1),
     )
 
-    result = find_free_slots(clinic.appointment_type.pk, clinic.clinician.pk, MONDAY)
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=False
+    )
 
     assert isinstance(result, Success)
     assert _starts(result.value.offers)[0] == datetime(2030, 1, 7, 10, 0, tzinfo=UTC)
@@ -118,7 +126,9 @@ def returns_no_slot_when_active_appointment_covers_it() -> None:
         ends_at=STARTS_AT + timedelta(minutes=30),
     )
 
-    result = find_free_slots(clinic.appointment_type.pk, clinic.clinician.pk, MONDAY)
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=False
+    )
 
     assert isinstance(result, Success)
     assert _starts(result.value.offers) == [datetime(2030, 1, 7, 10, 30, tzinfo=UTC)]
@@ -127,7 +137,7 @@ def returns_no_slot_when_active_appointment_covers_it() -> None:
 def returns_not_found_when_type_inactive() -> None:
     clinic = make_clinic(type_fields={"is_active": False})
 
-    result = find_free_slots(clinic.appointment_type.pk, None, MONDAY)
+    result = find_free_slots(clinic.appointment_type.pk, None, MONDAY, online_only=False)
 
     assert result == Failure.not_found()
 
@@ -136,7 +146,7 @@ def returns_not_found_when_clinician_in_other_department() -> None:
     clinic = make_clinic()
     stranger = add_clinician(make("Department"))
 
-    result = find_free_slots(clinic.appointment_type.pk, stranger.pk, MONDAY)
+    result = find_free_slots(clinic.appointment_type.pk, stranger.pk, MONDAY, online_only=False)
 
     assert result == Failure.not_found()
 
@@ -145,7 +155,7 @@ def returns_not_found_when_clinician_user_inactive() -> None:
     clinic = make_clinic()
     gone = add_clinician(clinic.department, user=make("User", role="CLINICIAN", is_active=False))
 
-    result = find_free_slots(clinic.appointment_type.pk, gone.pk, MONDAY)
+    result = find_free_slots(clinic.appointment_type.pk, gone.pk, MONDAY, online_only=False)
 
     assert result == Failure.not_found()
 
@@ -154,7 +164,7 @@ def returns_invalid_input_when_range_over_31_days() -> None:
     clinic = make_clinic()
     too_wide = TimeRange(MONDAY.starts_at, MONDAY.starts_at + timedelta(days=32))
 
-    result = find_free_slots(clinic.appointment_type.pk, None, too_wide)
+    result = find_free_slots(clinic.appointment_type.pk, None, too_wide, online_only=False)
 
     assert result == Failure.invalid_input([FieldMessage("to", "The range is at most 31 days.")])
 
@@ -167,8 +177,8 @@ def returns_same_query_count_when_ten_clinicians() -> None:
         add_clinician(many.department, HOUR_OF_SLOTS)
 
     with CaptureQueriesContext(connection) as for_two:
-        find_free_slots(few.appointment_type.pk, None, MONDAY)
+        find_free_slots(few.appointment_type.pk, None, MONDAY, online_only=False)
     with CaptureQueriesContext(connection) as for_ten:
-        find_free_slots(many.appointment_type.pk, None, MONDAY)
+        find_free_slots(many.appointment_type.pk, None, MONDAY, online_only=False)
 
     assert len(for_ten) == len(for_two)

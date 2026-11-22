@@ -7,7 +7,10 @@ from django.http import QueryDict
 from rest_framework import serializers
 
 from scheduling.domain.failure import Failure
+from scheduling.domain.profile_rules import phone_failure
+from scheduling.domain.visitor_rules import valid_birth_date
 from scheduling.use_cases.booking_holds import HoldCommand
+from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.booking_schemas import VISIT_REASON_MAXIMUM
 from scheduling.views.hold_schemas import (
     EMAIL_MAXIMUM,
@@ -16,6 +19,7 @@ from scheduling.views.hold_schemas import (
     hold_command_of,
 )
 from scheduling.views.pages.booking_links import SlotRequest
+from scheduling.views.pages.portal_forms import day_or_none
 from scheduling.views.schemas import StrictSerializer, validate_body
 
 TERMS_MESSAGE = "Accept the terms and the privacy notice."
@@ -27,7 +31,6 @@ REQUIRED_MESSAGES = {
 }
 TEXT_FIELDS = ("full_name", "date_of_birth", "email", "phone", "reason")
 FIELD_ORDER = (*TEXT_FIELDS, "terms_accepted")
-USE_CASE_FIELD_NAMES = {"birth_date": "date_of_birth"}
 
 
 class DetailsSchema(StrictSerializer):
@@ -76,7 +79,7 @@ class DetailsForm:
 
     def add_failure(self, failure: Failure) -> None:
         for name, message in field_messages_of(failure):
-            self.field_errors.setdefault(USE_CASE_FIELD_NAMES.get(name, name), message)
+            self.field_errors.setdefault(name, message)
 
 
 def field_messages_of(failure: Failure) -> list[tuple[str, str]]:
@@ -99,7 +102,20 @@ def read_details(post: QueryDict) -> DetailsForm:
             form.field_errors[name] = message
     if not form.terms_accepted:
         form.field_errors["terms_accepted"] = TERMS_MESSAGE
+    _add_rule_failures(form)
     return form
+
+
+def _add_rule_failures(form: DetailsForm) -> None:
+    """The rules the hold use case applies too, so one answer lists every error, not one round
+    of them after the next."""
+    born = day_or_none(form.values["date_of_birth"])
+    today = current_request_context().now.date()
+    if born is not None and not valid_birth_date(born, today):
+        form.field_errors.setdefault("date_of_birth", "Enter a valid date of birth.")
+    phone_problem = phone_failure(form.values["phone"])
+    if phone_problem is not None:
+        form.field_errors.setdefault("phone", phone_problem.message)
 
 
 def hold_command_from(form: DetailsForm, slot: SlotRequest) -> HoldCommand:

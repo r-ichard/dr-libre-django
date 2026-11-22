@@ -125,7 +125,7 @@ def returns_exactly_one_booking_when_two_race_for_same_patient(
 def returns_exactly_one_booking_when_two_race_for_same_named_room(
     committed_rows: None, attempt: int
 ) -> None:
-    clinic = make_clinic()
+    clinic = make_clinic(type_fields={"needs_room": True})
     second = add_clinician(clinic.department)
     room = make("Room", department=clinic.department)
     admin = _admin()

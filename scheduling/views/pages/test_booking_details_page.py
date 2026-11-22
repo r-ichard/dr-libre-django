@@ -118,7 +118,7 @@ def returns_slot_taken_page_409_with_times_link_when_slot_taken_between_page_and
     html = response.content.decode()
     assert response.status_code == 409
     assert "That time was just taken." in html
-    assert f"/book/{clinic.appointment_type.pk}" in html
+    assert "See the refreshed times" in html
 
 
 def returns_no_email_in_address_when_hold_is_created() -> None:

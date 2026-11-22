@@ -1,11 +1,13 @@
-"""Section 14: GET /slots. Public, so no identity is read."""
+"""Section 14: GET /slots. Public; a session, when present, only widens what staff may see."""
 
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.free_slots import TimeRange
+from scheduling.models import User
 from scheduling.use_cases.free_slots_query import find_free_slots
+from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.access import public
 from scheduling.views.api_view import ApiView
 from scheduling.views.booking_schemas import (
@@ -32,8 +34,12 @@ class SlotsView(ApiView):
         if refused is not None:
             return failure_response(refused)
         window = TimeRange(required_instant(values, "from"), required_instant(values, "to"))
+        user = request.user
         result = find_free_slots(
-            required_uuid(values, "appointment_type_id"), uuid_of(values, "clinician_id"), window
+            required_uuid(values, "appointment_type_id"),
+            uuid_of(values, "clinician_id"),
+            window,
+            online_only_for(user if isinstance(user, User) else None),
         )
         if isinstance(result, Failure):
             return failure_response(result)

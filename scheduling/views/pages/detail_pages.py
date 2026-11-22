@@ -14,6 +14,7 @@ from scheduling.use_cases.public_details import (
     load_specialty_detail,
 )
 from scheduling.use_cases.request_context import current_request_context
+from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.pages.booking_links import path_uuid, week_from
 from scheduling.views.pages.detail_context import (
     hospital_context,
@@ -34,7 +35,10 @@ class ProviderPage(PageView):
             raise Http404
         detail = loaded.value
         week = week_of_slots(
-            detail.chosen_type.id, provider_id, week_from(request.GET.get("week", ""))
+            detail.chosen_type.id,
+            provider_id,
+            week_from(request.GET.get("week", "")),
+            online_only_for(self.user),
         )
         if isinstance(week, Failure):
             raise Http404

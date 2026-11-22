@@ -9,6 +9,7 @@ from scheduling.domain.booking_codes import MAXIMUM_ATTEMPTS, code_is_usable
 from scheduling.domain.booking_week import group_by_local_day, week_range
 from scheduling.domain.email_mask import mask_email
 from scheduling.domain.failure import Failure, Result, Success
+from scheduling.domain.free_slots import TimeRange
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import (
     Appointment,
@@ -49,14 +50,16 @@ class HoldSummary:
     attempts_left: int
 
 
-def slot_choice(appointment_type_id: UUID, clinician_id: UUID | None) -> SlotChoice | None:
-    appointment_type = active_appointment_type(appointment_type_id)
+def slot_choice(
+    appointment_type_id: UUID, clinician_id: UUID | None, online_only: bool
+) -> SlotChoice | None:
+    appointment_type = active_appointment_type(appointment_type_id, online_only)
     if appointment_type is None:
         return None
     if clinician_id is None:
         return SlotChoice(appointment_type, None)
     clinician = (
-        department_clinicians(appointment_type, clinician_id)
+        department_clinicians(appointment_type, clinician_id, online_only)
         .select_related("user", "specialty")
         .first()
     )
@@ -64,20 +67,31 @@ def slot_choice(appointment_type_id: UUID, clinician_id: UUID | None) -> SlotCho
 
 
 def week_of_slots(
-    appointment_type_id: UUID, clinician_id: UUID | None, asked_week: date | None
+    appointment_type_id: UUID, clinician_id: UUID | None, asked_week: date | None, online_only: bool
 ) -> Result[WeekOfSlots]:
-    choice = slot_choice(appointment_type_id, clinician_id)
+    choice = slot_choice(appointment_type_id, clinician_id, online_only)
     if choice is None:
         return Failure.not_found()
     time_zone = ZoneInfo(choice.appointment_type.department.hospital.time_zone)
     week_start = _week_shown(asked_week, time_zone)
     window = week_range(week_start, time_zone)
-    found = find_free_slots(appointment_type_id, clinician_id, window)
+    found = find_free_slots(appointment_type_id, clinician_id, window, online_only)
     if isinstance(found, Failure):
         return found
     starts = [offer.start for offer in found.value.offers]
     days = group_by_local_day(starts, time_zone)
     return Success(WeekOfSlots(choice, time_zone, week_start, days))
+
+
+def slot_is_offered(choice: SlotChoice, starts_at: datetime, online_only: bool) -> bool:
+    """True when `starts_at` is one of the free times the booking pages list for this choice."""
+    appointment_type = choice.appointment_type
+    window = TimeRange(starts_at, starts_at + timedelta(minutes=appointment_type.duration_minutes))
+    clinician_id = choice.clinician.pk if choice.clinician else None
+    found = find_free_slots(appointment_type.pk, clinician_id, window, online_only)
+    return not isinstance(found, Failure) and any(
+        offer.start == starts_at for offer in found.value.offers
+    )
 
 
 def hold_summary(hold_id: UUID) -> HoldSummary | None:
@@ -151,10 +165,12 @@ def bookable_services() -> list[HospitalServices]:
 
 
 def type_providers(
-    appointment_type_id: UUID,
+    appointment_type_id: UUID, online_only: bool
 ) -> tuple[AppointmentType, list[ClinicianProfile]] | None:
-    appointment_type = active_appointment_type(appointment_type_id)
+    appointment_type = active_appointment_type(appointment_type_id, online_only)
     if appointment_type is None:
         return None
-    clinicians = department_clinicians(appointment_type, None).select_related("user", "specialty")
+    clinicians = department_clinicians(appointment_type, None, online_only).select_related(
+        "user", "specialty"
+    )
     return appointment_type, list(clinicians.order_by("user__full_name"))

@@ -72,3 +72,20 @@ Status: accepted, 2026-11-21.
   rebooking. Anyone who knows an address can therefore drop its hold; the rate limits bound that.
 - A wrong, expired or used-up code is one `invalid_input` answer on field `code`. A correct code
   for a staff or inactive address is a generic `forbidden`.
+
+## Amendment, task 17b: the limits the product ships
+
+Read from the code; the plan of task 17a stated other numbers. Pure values and checks sit in
+`scheduling/domain/request_limits.py`.
+
+| Limit | Shipped value | Enforced in |
+| --- | --- | --- |
+| Body size | 1 MiB (1,048,576 bytes) | API: `refuse_oversized`; pages: Django `DATA_UPLOAD_MAX_MEMORY_SIZE` |
+| Fields | 200 | API query: `refuse_oversized`; pages: Django `DATA_UPLOAD_MAX_NUMBER_FIELDS` |
+| JSON nesting depth | 20 | `refuse_oversized` (a scan, not a parse) |
+| `Content-Length` | non-negative integer | `refuse_oversized`; anything else is `invalid_input` on `body` |
+| Instants | 2000-01-01 up to, not including, 2100-01-01 (UTC) | `OffsetDateTimeField` |
+| Page number | 1 to 1,000,000 | API: `AppointmentsQuery`; patient portal list: at most 6 digits |
+
+A page refused for size or field count answers 400 in the product's layout (`errors/400.html`,
+`handler400`) with the correlation id, with `DEBUG` on or off.

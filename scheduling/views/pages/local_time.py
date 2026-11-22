@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
 from scheduling.domain.failure import Failure
+from scheduling.domain.request_limits import day_in_range
 
 
 def utc_from_local(raw: str, zone: ZoneInfo) -> datetime | None:
@@ -12,7 +13,7 @@ def utc_from_local(raw: str, zone: ZoneInfo) -> datetime | None:
         wall = datetime.fromisoformat(raw)
     except ValueError:
         return None
-    if wall.tzinfo is not None:
+    if wall.tzinfo is not None or not day_in_range(wall.date()):
         return None
     early = wall.replace(tzinfo=zone, fold=0)
     late = wall.replace(tzinfo=zone, fold=1)

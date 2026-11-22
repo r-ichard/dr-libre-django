@@ -16,7 +16,7 @@ from scheduling.domain.free_slots import (
     TimeRange,
 )
 from scheduling.domain.slot_search import ClinicianSchedule
-from scheduling.domain.vocabulary import AppointmentStatus
+from scheduling.domain.vocabulary import AppointmentStatus, Role
 from scheduling.models import (
     Appointment,
     AppointmentType,
@@ -24,6 +24,7 @@ from scheduling.models import (
     BookingHold,
     ClinicianProfile,
     TimeOff,
+    User,
 )
 
 
@@ -88,12 +89,16 @@ def _window_of(rule: AvailabilityRule) -> AvailabilityWindow:
     )
 
 
-def active_appointment_type(appointment_type_id: UUID) -> AppointmentType | None:
-    return (
-        AppointmentType.objects.select_related("department__hospital")
-        .filter(pk=appointment_type_id, is_active=True)
-        .first()
+def online_only_for(user: User | None) -> bool:
+    """Section 6.1: visitors and patients see what the public search shows; staff see all."""
+    return user is None or Role(user.role) == Role.PATIENT
+
+
+def active_appointment_type(appointment_type_id: UUID, online_only: bool) -> AppointmentType | None:
+    types = AppointmentType.objects.select_related("department__hospital").filter(
+        pk=appointment_type_id, is_active=True
     )
+    return (types.filter(is_bookable_online=True) if online_only else types).first()
 
 
 def slot_type_of(appointment_type: AppointmentType) -> SlotType:
@@ -104,10 +109,15 @@ def slot_type_of(appointment_type: AppointmentType) -> SlotType:
 
 
 def department_clinicians(
-    appointment_type: AppointmentType, clinician_id: UUID | None
+    appointment_type: AppointmentType, clinician_id: UUID | None, online_only: bool
 ) -> QuerySet[ClinicianProfile]:
-    """Active clinicians of the type's department, narrowed to one when named."""
+    """Active clinicians of the type's department, narrowed to one when named; online callers do
+    not get the ones the public search hides."""
     clinicians = ClinicianProfile.objects.filter(
         department_id=appointment_type.department_id, user__is_active=True
     )
+    if online_only:
+        clinicians = clinicians.filter(
+            specialty__is_active=True, department__hospital__is_active=True
+        )
     return clinicians if clinician_id is None else clinicians.filter(pk=clinician_id)

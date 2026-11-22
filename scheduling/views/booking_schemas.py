@@ -8,6 +8,7 @@ from uuid import UUID
 from rest_framework import serializers
 
 from scheduling.domain.failure import Failure, FieldMessage
+from scheduling.domain.request_limits import MAXIMUM_PAGE, instant_in_range
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import Appointment
 from scheduling.use_cases.appointment_list import AppointmentFilters
@@ -19,9 +20,6 @@ DEFAULT_PAGE_SIZE = 20
 MAXIMUM_PAGE_SIZE = 100
 CANCELLATION_REASON_MAXIMUM = 1000
 VISIT_REASON_MAXIMUM = 200
-MAXIMUM_PAGE = 1_000_000
-EARLIEST_INSTANT = datetime(2000, 1, 1, tzinfo=UTC)
-LATEST_INSTANT = datetime(2100, 1, 1, tzinfo=UTC)
 DATE_OUT_OF_RANGE = "Use a date between the years 2000 and 2099."
 
 
@@ -35,7 +33,7 @@ class OffsetDateTimeField(serializers.DateTimeField):
             instant = value.astimezone(UTC)
         except OverflowError:
             raise serializers.ValidationError(DATE_OUT_OF_RANGE) from None
-        if not EARLIEST_INSTANT <= instant < LATEST_INSTANT:
+        if not instant_in_range(instant):
             raise serializers.ValidationError(DATE_OUT_OF_RANGE)
         return instant
 

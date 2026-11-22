@@ -2,6 +2,7 @@
 email goes out only after that transaction commits."""
 
 import logging
+from collections.abc import Callable
 from datetime import datetime
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -25,14 +26,19 @@ OFFERED_TITLE = "Waitlist slot offered"
 WAITLIST_BOOKED_TITLE = "Waitlist slot booked"
 
 
-def notify_patient(appointment: Appointment, kind: NotificationKind, title: str) -> None:
+def notify_patient(
+    appointment: Appointment,
+    kind: NotificationKind,
+    title: str,
+    text_of: Callable[[datetime, ZoneInfo], str] = booked_notification_text,
+) -> None:
     hospital = appointment.appointment_type.department.hospital
     _notify(
         Notification(
             recipient_id=appointment.patient_id,
             kind=kind,
             title=title,
-            body=booked_notification_text(appointment.starts_at, ZoneInfo(hospital.time_zone)),
+            body=text_of(appointment.starts_at, ZoneInfo(hospital.time_zone)),
             appointment=appointment,
         )
     )

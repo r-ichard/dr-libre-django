@@ -89,7 +89,7 @@ def returns_no_room_lock_when_type_needs_no_room() -> None:
 
 
 def returns_room_in_audit_ids_when_a_room_is_booked() -> None:
-    clinic = make_clinic()
+    clinic = make_clinic(type_fields={"needs_room": True})
     room = make("Room", department=clinic.department)
 
     result = place_appointment(_command(clinic, room.pk), _admin())

@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.domain.failure import Failure
 from scheduling.models import Appointment
@@ -22,6 +22,7 @@ from scheduling.views.pages.patient_refusal import (
     message_page,
 )
 from scheduling.views.pages.patient_rows import LIST_PATH, appointment_row
+from scheduling.views.pages.portal_forms import redirect_with_notice
 
 TIMES_UNAVAILABLE = "We could not load times for this appointment."
 TIMES_ACTION_TEXT = "See the refreshed times"
@@ -40,7 +41,10 @@ class ReschedulePage(OwnAppointmentPage):
             return blocked
         base = request.path
         loaded = week_of_slots(
-            found.appointment_type_id, found.clinician_id, week_from(request.GET.get("week", ""))
+            found.appointment_type_id,
+            found.clinician_id,
+            week_from(request.GET.get("week", "")),
+            online_only=True,
         )
         if isinstance(loaded, Failure):
             return message_page(request, self.user, TIMES_UNAVAILABLE, LIST_ACTION, 404)
@@ -81,7 +85,7 @@ class RescheduleReviewPage(OwnAppointmentPage):
         if isinstance(moved, Failure):
             times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
             return change_refused_page(request, moved, self.user, times)
-        return HttpResponseRedirect(f"{LIST_PATH}?notice=rescheduled", status=303)
+        return redirect_with_notice(LIST_PATH, "rescheduled")
 
     def _review(
         self, request: HttpRequest, appointment: Appointment, starts_at: datetime

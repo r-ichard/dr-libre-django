@@ -49,7 +49,7 @@ def join_waitlist(command: JoinCommand, actor: User) -> Result[WaitlistEntry]:
     if isinstance(patient_id, Failure):
         return patient_id
     with transaction.atomic():
-        appointment_type = active_appointment_type(command.appointment_type_id)
+        appointment_type = active_appointment_type(command.appointment_type_id, online_only=False)
         patient_is_active = User.objects.filter(
             pk=patient_id.value, is_active=True, role=Role.PATIENT
         ).exists()

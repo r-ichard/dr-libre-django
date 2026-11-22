@@ -9,9 +9,9 @@ from scheduling.use_cases.schedule_loading import department_clinicians
 
 
 def lock_clinicians(
-    appointment_type: AppointmentType, clinician_id: UUID | None
+    appointment_type: AppointmentType, clinician_id: UUID | None, online_only: bool
 ) -> list[ClinicianProfile]:
-    candidates = department_clinicians(appointment_type, clinician_id)
+    candidates = department_clinicians(appointment_type, clinician_id, online_only)
     # of=self: the user rows stay unlocked, or the lock order would no longer be ours.
     locked = candidates.select_for_update(of=("self",), no_key=True).order_by("pk")
     return list(locked)

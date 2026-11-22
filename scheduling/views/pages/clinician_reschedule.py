@@ -41,7 +41,10 @@ class ReschedulePage(ClinicianPage):
         if StaffAction.RESCHEDULE not in staff_actions_for(AppointmentStatus(found.status)):
             return message_page(request, self.user, STATUS_CHANGED, back, 409)
         loaded = week_of_slots(
-            found.appointment_type_id, found.clinician_id, week_from(request.GET.get("week", ""))
+            found.appointment_type_id,
+            found.clinician_id,
+            week_from(request.GET.get("week", "")),
+            online_only=False,
         )
         if isinstance(loaded, Failure):
             return message_page(request, self.user, TIMES_UNAVAILABLE, back, 404)

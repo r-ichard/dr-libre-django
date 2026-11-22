@@ -71,6 +71,7 @@ from scheduling.views.search import (
 from scheduling.views.slots import SlotsView
 from scheduling.views.waitlist import AcceptView, OfferView, WaitlistView
 
+handler400 = "scheduling.views.pages.errors.bad_request_page"
 handler403 = "scheduling.views.pages.errors.forbidden_page"
 handler404 = "scheduling.views.pages.errors.not_found_page"
 handler500 = "scheduling.views.pages.errors.server_error_page"

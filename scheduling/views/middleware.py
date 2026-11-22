@@ -3,6 +3,7 @@ import time
 import uuid
 from collections.abc import Callable
 
+from django.core.exceptions import RequestDataTooBig, TooManyFieldsSent
 from django.core.signals import got_request_exception
 from django.dispatch import receiver
 from django.http import HttpRequest, HttpResponse
@@ -16,6 +17,7 @@ from scheduling.views.failure_response import (
     INTERNAL_ERROR_STATUS,
     error_response,
 )
+from scheduling.views.pages.errors import bad_request_page
 
 CORRELATION_HEADER = "X-Correlation-Id"
 UNMATCHED_ROUTE = "<unmatched>"
@@ -64,3 +66,11 @@ class RequestContextMiddleware:
                 },
             )
         return response
+
+    def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
+        """With DEBUG on Django would show its technical page for a refused size; pages get ours."""
+        if request.path.startswith(API_PREFIX):
+            return None
+        if isinstance(exception, TooManyFieldsSent | RequestDataTooBig):
+            return bad_request_page(request, exception)
+        return None

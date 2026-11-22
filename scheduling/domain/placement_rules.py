@@ -80,10 +80,10 @@ def choose_room(
     rooms_in_code_order: Sequence[UUID],
     busy_room_ids: Collection[UUID],
 ) -> Result[UUID | None]:
-    if named_room_id is not None:
-        return Success(named_room_id)
     if not needs_room:
         return Success(None)
+    if named_room_id is not None:
+        return Success(named_room_id)
     if default_room_id in rooms_in_code_order and default_room_id not in busy_room_ids:
         return Success(default_room_id)
     free_rooms = [room_id for room_id in rooms_in_code_order if room_id not in busy_room_ids]
@@ -93,3 +93,16 @@ def choose_room(
 def booked_notification_text(starts_at: datetime, time_zone: ZoneInfo) -> str:
     local = starts_at.astimezone(time_zone)
     return f"Your appointment is on {local:%Y-%m-%d} at {local:%H:%M} ({time_zone.key})."
+
+
+def _written_time(starts_at: datetime, time_zone: ZoneInfo) -> str:
+    local = starts_at.astimezone(time_zone)
+    return f"{local:%A} {local.day} {local:%B %Y}, {local:%H:%M} ({time_zone.key})"
+
+
+def cancelled_notification_text(starts_at: datetime, time_zone: ZoneInfo) -> str:
+    return f"Your appointment on {_written_time(starts_at, time_zone)} is cancelled."
+
+
+def rescheduled_notification_text(starts_at: datetime, time_zone: ZoneInfo) -> str:
+    return f"Your appointment has moved to {_written_time(starts_at, time_zone)}."

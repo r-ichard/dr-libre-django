@@ -10,6 +10,7 @@ from zoneinfo import ZoneInfo
 from django.http import Http404
 from django.views import View
 
+from scheduling.domain.request_limits import day_in_range, instant_in_range
 from scheduling.models import Hospital
 
 START_PATH = "/"
@@ -65,16 +66,18 @@ def provider_from(raw: str) -> UUID | None:
 def instant_from(raw: str) -> datetime | None:
     try:
         instant = datetime.fromisoformat(raw)
-    except ValueError:
+        utc = instant.astimezone(UTC) if instant.utcoffset() is not None else None
+    except (ValueError, OverflowError):
         return None
-    return instant.astimezone(UTC) if instant.utcoffset() is not None else None
+    return utc if utc is not None and instant_in_range(utc) else None
 
 
 def week_from(raw: str) -> date | None:
     try:
-        return date.fromisoformat(raw)
+        day = date.fromisoformat(raw)
     except ValueError:
         return None
+    return day if day_in_range(day) else None
 
 
 def day_label(day: date) -> str:

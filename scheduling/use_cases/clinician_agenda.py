@@ -68,7 +68,7 @@ def next_free_slot(profile: ClinicianProfile, now: datetime) -> datetime | None:
     if shortest is None:
         return None
     window = TimeRange(now, now + timedelta(days=NEXT_FREE_SLOT_DAYS))
-    found = find_free_slots(shortest.pk, profile.pk, window)
+    found = find_free_slots(shortest.pk, profile.pk, window, online_only=False)
     if isinstance(found, Failure) or not found.value.offers:
         return None
     return min(offer.start for offer in found.value.offers)

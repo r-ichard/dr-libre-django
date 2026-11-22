@@ -4,7 +4,7 @@ session; the record rule answers 404 for a missing appointment and 403 for someo
 from math import ceil
 from uuid import UUID
 
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.domain.failure import Failure, FailureCode
 from scheduling.domain.vocabulary import Role
@@ -21,6 +21,7 @@ from scheduling.views.pages.booking_links import path_uuid
 from scheduling.views.pages.page_view import PageView, render_page
 from scheduling.views.pages.patient_refusal import blocked_page_or_none, change_refused_page
 from scheduling.views.pages.patient_rows import LIST_PATH, appointment_row
+from scheduling.views.pages.portal_forms import forget_notice, redirect_with_notice, take_notice
 from scheduling.views.schemas import validate_body
 
 PAGE_SIZE = 10
@@ -44,7 +45,7 @@ class AppointmentsPage(PageView):
         past = past_appointments(self.user, now, page, PAGE_SIZE)
         page_count = max(1, ceil(past.count / PAGE_SIZE))
         context = {
-            "notice": NOTICES.get(request.GET.get("notice", ""), ""),
+            "notice": take_notice(request, NOTICES),
             "upcoming": [
                 appointment_row(item, now) for item in upcoming_appointments(self.user, now)
             ],
@@ -54,7 +55,7 @@ class AppointmentsPage(PageView):
             "previous_href": f"{LIST_PATH}?page={page - 1}" if page > 1 else "",
             "next_href": f"{LIST_PATH}?page={page + 1}" if page < page_count else "",
         }
-        return self.page(request, context)
+        return forget_notice(request, self.page(request, context))
 
 
 class OwnAppointmentPage(PageView):
@@ -97,7 +98,7 @@ class CancelPage(OwnAppointmentPage):
         cancelled = cancel_appointment(UUID(str(found.pk)), reason, self.user)
         if isinstance(cancelled, Failure):
             return change_refused_page(request, cancelled, self.user)
-        return HttpResponseRedirect(f"{LIST_PATH}?notice=cancelled", status=303)
+        return redirect_with_notice(LIST_PATH, "cancelled")
 
     def _form(
         self,

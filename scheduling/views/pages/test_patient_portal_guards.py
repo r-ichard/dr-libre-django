@@ -201,7 +201,7 @@ def returns_303_and_moves_appointment_when_review_is_confirmed() -> None:
 
     appointment.refresh_from_db()
     assert response.status_code == 303
-    assert response["Location"] == f"{LIST_PATH}?notice=rescheduled"
+    assert response["Location"] == LIST_PATH
     assert appointment.starts_at == IN_TWO_WEEKS
 
 

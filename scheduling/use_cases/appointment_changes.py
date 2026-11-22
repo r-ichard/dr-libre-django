@@ -15,6 +15,10 @@ from scheduling.domain.appointment_status import (
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.booking_rules import BookingAction, BookingAttempt, violated_rules
 from scheduling.domain.failure import Failure, Result, Success
+from scheduling.domain.placement_rules import (
+    cancelled_notification_text,
+    rescheduled_notification_text,
+)
 from scheduling.domain.vocabulary import AppointmentStatus, Role
 from scheduling.models import Appointment, User
 from scheduling.models.booking import NotificationKind
@@ -54,7 +58,12 @@ def cancel_appointment(appointment_id: UUID, reason: str, actor: User) -> Result
             actor,
             ["status", "cancelled_at", "cancellation_reason"],
         )
-        notify_patient(appointment, NotificationKind.APPOINTMENT_CANCELLED, CANCELLED_TITLE)
+        notify_patient(
+            appointment,
+            NotificationKind.APPOINTMENT_CANCELLED,
+            CANCELLED_TITLE,
+            cancelled_notification_text,
+        )
         offer_freed_slot(appointment, actor)
         return Success(appointment)
 
@@ -73,7 +82,12 @@ def reschedule_appointment(
         if isinstance(moved, Failure):
             return moved
         _audit("appointment.reschedule", appointment, actor, ["starts_at", "ends_at", "room"])
-        notify_patient(appointment, NotificationKind.SCHEDULE_CHANGED, RESCHEDULED_TITLE)
+        notify_patient(
+            appointment,
+            NotificationKind.SCHEDULE_CHANGED,
+            RESCHEDULED_TITLE,
+            rescheduled_notification_text,
+        )
         return moved
 
 

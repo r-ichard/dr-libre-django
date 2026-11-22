@@ -102,7 +102,7 @@ def returns_conflict_naming_patient_when_only_the_constraint_catches_it(
 def returns_conflict_naming_room_when_only_the_constraint_catches_it(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    clinic = make_clinic()
+    clinic = make_clinic(type_fields={"needs_room": True})
     room = make("Room", department=clinic.department)
     _existing(clinic, STARTS_AT, room=room, clinician=add_clinician(clinic.department))
     _stale_checks(monkeypatch)

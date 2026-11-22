@@ -36,7 +36,7 @@ from scheduling.use_cases.placement_choice import (
 )
 from scheduling.use_cases.placement_locks import lock_clinicians, lock_patient, lock_rooms
 from scheduling.use_cases.request_context import current_request_context
-from scheduling.use_cases.schedule_loading import active_appointment_type
+from scheduling.use_cases.schedule_loading import active_appointment_type, online_only_for
 
 
 @dataclass(frozen=True)
@@ -185,16 +185,20 @@ def _place(
 
 def _select(request: _Request) -> Result[_Selection]:
     command = request.command
-    appointment_type = active_appointment_type(command.appointment_type_id)
+    # The type stays visible here: the booking rules answer a typed rule_violation for it.
+    appointment_type = active_appointment_type(command.appointment_type_id, online_only=False)
     if appointment_type is None:
         return Failure.not_found()
-    pool = lock_clinicians(appointment_type, request.clinician_id)
+    pool = lock_clinicians(appointment_type, request.clinician_id, online_only_for(request.actor))
     patient = None if request.patient_id is None else lock_patient(request.patient_id)
     rooms = lock_rooms(appointment_type, request.room_id)
     named_clinician_missing = request.clinician_id is not None and not pool
     patient_missing = request.patient_id is not None and patient is None
     if named_clinician_missing or patient_missing or rooms is None:
         return Failure.not_found()
+    if not appointment_type.needs_room:
+        # Section 5.2 step 5: a type with no room need gets none; the name was checked above.
+        request = replace(request, room_id=None)
     now = current_request_context().now
     slot = slot_of(appointment_type, command.starts_at, now)
     replacing_id = request.replacing.pk if request.replacing is not None else None

@@ -201,7 +201,7 @@ def returns_cancelled_notification_with_time_only_text_when_cancelling() -> None
     assert notification.recipient_id == clinic.patient.pk
     for forbidden in (PLANTED_REASON, clinic.patient.full_name, clinic.patient.email):
         assert forbidden not in notification.body
-    assert "2030-01-09" in notification.body
+    assert "9 January 2030" in notification.body
 
 
 # --- reschedule ---
@@ -301,7 +301,7 @@ def returns_rescheduled_notification_and_audit_entry_when_rescheduling() -> None
         appointment=appointment, title="Appointment rescheduled"
     )
     assert notification.kind == "SCHEDULE_CHANGED"
-    assert "2030-01-21" in notification.body
+    assert "21 January 2030" in notification.body
     assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 1
 
 

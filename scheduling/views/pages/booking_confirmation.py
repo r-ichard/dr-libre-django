@@ -6,39 +6,36 @@ from django.http import Http404, HttpRequest, HttpResponse
 from django.utils.cache import add_never_cache_headers
 
 from scheduling.domain.calendar_event import CalendarEvent, build_calendar_text
-from scheduling.domain.vocabulary import Role
+from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import Appointment
-from scheduling.use_cases.booking_page_data import appointment_for_patient
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.views.pages.booking_links import (
     PATIENT_PATH,
     address_of,
     clock_label,
     day_label,
-    path_uuid,
 )
-from scheduling.views.pages.page_view import PageView
+from scheduling.views.pages.patient_appointments import OwnAppointmentPage
 
 CALENDAR_TYPE = "text/calendar; charset=utf-8"
 
 
-class _PatientAppointmentPage(PageView):
-    allowed_roles = frozenset({Role.PATIENT})
-
-    def own_appointment(self) -> Appointment:
-        appointment = None
-        if self.user is not None:
-            appointment = appointment_for_patient(path_uuid(self, "appointment_id"), self.user)
-        if appointment is None:
+class _PatientAppointmentPage(OwnAppointmentPage):
+    def live_appointment_or_refusal(self, request: HttpRequest) -> Appointment | HttpResponse:
+        """Section 12.3: someone else's record is forbidden; a cancelled one is gone."""
+        found = self.appointment_or_refusal(request)
+        if isinstance(found, Appointment) and found.status == AppointmentStatus.CANCELLED:
             raise Http404
-        return appointment
+        return found
 
 
 class ConfirmationPage(_PatientAppointmentPage):
     template_name = "booking/confirmation.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
-        appointment = self.own_appointment()
+        appointment = self.live_appointment_or_refusal(request)
+        if isinstance(appointment, HttpResponse):
+            return appointment
         hospital = appointment.appointment_type.department.hospital
         time_zone = ZoneInfo(hospital.time_zone)
         clinician = appointment.clinician
@@ -62,7 +59,9 @@ class ConfirmationPage(_PatientAppointmentPage):
 
 class CalendarFile(_PatientAppointmentPage):
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
-        appointment = self.own_appointment()
+        appointment = self.live_appointment_or_refusal(request)
+        if isinstance(appointment, HttpResponse):
+            return appointment
         hospital = appointment.appointment_type.department.hospital
         clinician = appointment.clinician
         event = CalendarEvent(

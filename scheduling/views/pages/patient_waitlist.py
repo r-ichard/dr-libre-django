@@ -3,7 +3,7 @@ comes from the session; the record rule answers 404 for a missing entry and 403 
 
 from zoneinfo import ZoneInfo
 
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.domain.failure import Failure, FailureCode
 from scheduling.domain.vocabulary import Role
@@ -25,7 +25,10 @@ from scheduling.views.pages.patient_waitlist_rows import WAITLIST_PATH, waitlist
 from scheduling.views.pages.portal_forms import (
     day_or_none,
     failure_messages,
+    forget_notice,
+    redirect_with_notice,
     summary_items,
+    take_notice,
     uuid_or_none,
 )
 
@@ -50,7 +53,7 @@ class WaitlistPage(PageView):
         errors = _join_errors(entered, self.user)
         if errors:
             return self._render(request, entered, errors, 422)
-        return HttpResponseRedirect(f"{WAITLIST_PATH}?notice=joined", status=303)
+        return redirect_with_notice(WAITLIST_PATH, "joined")
 
     def _render(
         self,
@@ -62,7 +65,7 @@ class WaitlistPage(PageView):
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         types = joinable_types()
         context = {
-            "notice": NOTICES.get(request.GET.get("notice", ""), ""),
+            "notice": take_notice(request, NOTICES),
             "entries": [waitlist_row(entry) for entry in own_waitlist(self.user)],
             "type_options": [("", "Choose a service")]
             + [(str(item.pk), _type_label(item)) for item in types],
@@ -75,7 +78,7 @@ class WaitlistPage(PageView):
             "errors": errors,
             "summary": summary_items(errors),
         }
-        return self.page(request, context, status)
+        return forget_notice(request, self.page(request, context, status))
 
 
 class AcceptOfferPage(PageView):
@@ -92,7 +95,7 @@ class AcceptOfferPage(PageView):
         accepted = accept_offer(entry_id, self.user)
         if isinstance(accepted, Failure):
             return waitlist_refused_page(request, accepted, self.user)
-        return HttpResponseRedirect(f"{LIST_PATH}?notice=booked", status=303)
+        return redirect_with_notice(LIST_PATH, "booked")
 
 
 def _type_label(appointment_type: AppointmentType) -> str:
@@ -104,7 +107,7 @@ def _join_errors(entered: dict[str, str], user: User) -> dict[str, str]:
     """Empty when the entry was joined; otherwise field name to message."""
     errors: dict[str, str] = {}
     type_id = uuid_or_none(entered["appointment_type"])
-    appointment_type = active_appointment_type(type_id) if type_id else None
+    appointment_type = active_appointment_type(type_id, online_only=False) if type_id else None
     if appointment_type is None:
         errors["appointment_type"] = CHOOSE_TYPE
     provider_id = uuid_or_none(entered["provider"])

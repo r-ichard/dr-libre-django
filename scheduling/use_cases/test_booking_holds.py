@@ -88,7 +88,7 @@ def returns_invalid_input_when_birth_date_is_impossible(birth_date: date) -> Non
     result = _create(make_clinic(), birth_date=birth_date)
 
     assert isinstance(result, Failure)
-    assert result.details["fields"][0]["field"] == "birth_date"  # type: ignore[index]
+    assert result.details["fields"][0]["field"] == "date_of_birth"  # type: ignore[index]
     assert BookingHold.objects.count() == 0
 
 

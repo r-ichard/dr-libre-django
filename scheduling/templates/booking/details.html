@@ -4,6 +4,7 @@
 <h1>Your details</h1>
 {% include "components/booking_summary.html" %}
 {% if notice %}{% include "components/notice.html" with kind="error" text=notice %}{% endif %}
+{% if times_link %}<p><a href="{{ times_link }}">See the refreshed times</a>. Choosing another time starts this form again.</p>{% endif %}
 <form class="form" method="post" action="{{ action }}" novalidate>
   {% csrf_token %}
   {% if form.summary %}{% include "components/error_summary.html" with errors=form.summary %}{% endif %}

@@ -61,8 +61,10 @@ def returns_none_when_clinician_belongs_to_another_department() -> None:
     clinic = make_clinic()
     other = make_clinic()
 
-    assert slot_choice(clinic.appointment_type.pk, clinic.clinician.pk) is not None
-    assert slot_choice(clinic.appointment_type.pk, other.clinician.pk) is None
+    assert (
+        slot_choice(clinic.appointment_type.pk, clinic.clinician.pk, online_only=False) is not None
+    )
+    assert slot_choice(clinic.appointment_type.pk, other.clinician.pk, online_only=False) is None
 
 
 def returns_the_hospital_time_zone_when_a_week_is_loaded() -> None:
@@ -74,7 +76,9 @@ def returns_the_hospital_time_zone_when_a_week_is_loaded() -> None:
     clinic = make_clinic()
 
     with _at(NOW):
-        loaded = week_of_slots(clinic.appointment_type.pk, None, date(2030, 1, 9))
+        loaded = week_of_slots(
+            clinic.appointment_type.pk, None, date(2030, 1, 9), online_only=False
+        )
 
     assert not isinstance(loaded, Failure)
     assert loaded.value.time_zone.key == clinic.appointment_type.department.hospital.time_zone

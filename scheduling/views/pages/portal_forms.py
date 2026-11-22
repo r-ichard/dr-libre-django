@@ -4,10 +4,13 @@ import re
 from datetime import date
 from uuid import UUID
 
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+
 from scheduling.domain.failure import Failure
 
 ISO_DAY = re.compile(r"[0-9]{4}-[0-9]{2}-[0-9]{2}")
-NOTICE_KEY = "notice"
+NOTICE_COOKIE = "drlibre_notice"
+NOTICE_LIFETIME_SECONDS = 60
 
 
 def failure_messages(failure: Failure) -> dict[str, str]:
@@ -37,3 +40,28 @@ def uuid_or_none(raw: str) -> UUID | None:
         return UUID(raw)
     except ValueError:
         return None
+
+
+def redirect_with_notice(path: str, key: str) -> HttpResponseRedirect:
+    """A notice comes from what the server just did, so it rides a short-lived cookie the next
+    page takes once; an address value could be written by anyone."""
+    response = HttpResponseRedirect(path, status=303)
+    response.set_cookie(
+        NOTICE_COOKIE,
+        key,
+        max_age=NOTICE_LIFETIME_SECONDS,
+        httponly=True,
+        samesite="Strict",
+    )
+    return response
+
+
+def take_notice(request: HttpRequest, notices: dict[str, str]) -> str:
+    """Text for the key the cookie holds; an unknown key is no notice."""
+    return notices.get(request.COOKIES.get(NOTICE_COOKIE, ""), "")
+
+
+def forget_notice(request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    if NOTICE_COOKIE in request.COOKIES:
+        response.delete_cookie(NOTICE_COOKIE, samesite="Strict")
+    return response

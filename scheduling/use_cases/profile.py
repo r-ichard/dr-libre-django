@@ -20,6 +20,8 @@ from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.sign_in import is_locked_out, record_wrong_password
 
 CURRENT_MISMATCH_MESSAGE = "The current password is not right."
+CURRENT_MISSING_MESSAGE = "Enter your current password."
+NEW_MISSING_MESSAGE = "Enter a new password."
 
 
 @dataclass(frozen=True)
@@ -61,10 +63,12 @@ def change_password(
         user = User.objects.select_for_update().get(pk=actor.pk)
         if is_locked_out(user.email):
             return _current_mismatch()
-        if not check_password(current, user.password):
+        problems = _new_password_problems(current, new)
+        if not current:
+            problems.insert(0, FieldMessage("current_password", CURRENT_MISSING_MESSAGE))
+        elif not check_password(current, user.password):
             record_wrong_password(user)
-            return _current_mismatch()
-        problems = new_password_failures(current, new)
+            problems.insert(0, FieldMessage("current_password", CURRENT_MISMATCH_MESSAGE))
         if problems:
             return Failure.invalid_input(problems)
         user.set_password(new)
@@ -79,6 +83,12 @@ def change_password(
         )
         record_audit(AuditEvent("auth.password_change", "User", str(user.pk), metadata), actor)
     return Success(None)
+
+
+def _new_password_problems(current: str, new: str) -> list[FieldMessage]:
+    if not new:
+        return [FieldMessage("new_password", NEW_MISSING_MESSAGE)]
+    return new_password_failures(current, new)
 
 
 def _current_mismatch() -> Result[None]:

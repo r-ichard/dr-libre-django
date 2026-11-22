@@ -1,22 +1,24 @@
-"""Task 17a item 5: hostile values to every route found in the URL configuration; no 500."""
+"""Hostile values to every route of the URL configuration; no 500 (tasks 17a, 17b). Each path id
+is a record the actor may use, so requests reach the parsing; a random id is one more case."""
 
 from __future__ import annotations
 
 import json
+import re
 import uuid
 from collections.abc import Iterator, Sequence
+from functools import cache
 
 import pytest
-from django.contrib.auth.hashers import make_password
 from django.test import Client
-from django.urls import URLPattern, URLResolver, get_resolver
+from django.urls import URLPattern, URLResolver, get_resolver, resolve
 from django.urls.converters import UUIDConverter
 from hypothesis import given, settings, strategies
 
 from scheduling.domain.request_context import RequestContext
 from scheduling.domain.vocabulary import SessionKind
 from scheduling.models import User
-from scheduling.models.builders import make
+from scheduling.models.builders import Clinic, make, make_clinic
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.use_cases.session import open_session
 from scheduling.views import clock
@@ -30,6 +32,7 @@ NESTED_DEEP = "[" * 100_000 + "]" * 100_000
 HOSTILE_TEXT = ["", "x" * 100_000, "a\x00b", "NaN", str(10**30), "-1", "not-a-uuid"]
 HOSTILE_DATES = ["0001-01-01", "9999-12-31T23:59:59Z", "2024-02-30", "0000-00-00T00:00:00Z"]
 ACTORS = ("ANONYMOUS", "PATIENT", "CLINICIAN", "ADMIN")
+SHARDS = 8
 SESSION_COOKIE = "drlibre_session"
 CATCH_ALL_SUFFIX = "x"  # the API catch-all is a prefix regex; a path under it exercises it
 FIELD_NAMES = [
@@ -49,15 +52,16 @@ def _walk(patterns: Sequence[URLPattern | URLResolver], prefix: str = "") -> Ite
 
 
 def _path_of(entry: URLPattern) -> str:
+    """The route with its ids left as `<name>` markers, filled later per actor."""
     path = str(entry.pattern)
     for name, converter in entry.pattern.converters.items():
         if not isinstance(converter, UUIDConverter):
             raise AssertionError(f"route {path}: unknown converter {type(converter).__name__}")
-        path = path.replace(f"<uuid:{name}>", str(uuid.uuid4()))
+        path = path.replace(f"<uuid:{name}>", f"<{name}>")
     return path
 
 
-def _every_route_path() -> list[str]:
+def _route_templates() -> list[str]:
     paths = [
         "/" + path.lstrip("^").removesuffix("$")
         for path in _walk(get_resolver().url_patterns)
@@ -66,7 +70,78 @@ def _every_route_path() -> list[str]:
     return sorted({path + CATCH_ALL_SUFFIX if path.endswith("api/v1/") else path for path in paths})
 
 
-def _hostile_requests() -> Iterator[tuple[str, dict[str, object]]]:
+def _filled(template: str, ids: dict[str, str]) -> str:
+    """Each `<name>` becomes the world's record of that name; with no world, a random id."""
+    for name in re.findall(r"<(\w+)>", template):
+        template = template.replace(f"<{name}>", ids[name] if ids else str(uuid.uuid4()))
+    return template
+
+
+def _every_route_path() -> list[str]:
+    return sorted({_filled(template, {}) for template in _route_templates()})
+
+
+def _world_ids(clinic: Clinic) -> dict[str, str]:
+    """One record of every kind a path names, tied to the clinic's patient and clinician."""
+    appointment = make(
+        "Appointment",
+        patient=clinic.patient,
+        clinician=clinic.clinician,
+        appointment_type=clinic.appointment_type,
+    )
+    return {
+        "hospital_id": str(clinic.department.hospital_id),
+        "provider_id": str(clinic.clinician.pk),
+        "specialty_id": str(clinic.clinician.specialty_id),
+        "appointment_type_id": str(clinic.appointment_type.pk),
+        "appointment_id": str(appointment.pk),
+        "hold_id": str(make("BookingHold", clinician=clinic.clinician).pk),
+        "entry_id": str(
+            make(
+                "WaitlistEntry", patient=clinic.patient, appointment_type=clinic.appointment_type
+            ).pk
+        ),
+        "notification_id": str(
+            make("Notification", recipient=clinic.patient, appointment=appointment).pk
+        ),
+        "rule_id": str(make("AvailabilityRule", clinician=clinic.clinician, weekday=3).pk),
+        "time_off_id": str(make("TimeOff", clinician=clinic.clinician).pk),
+    }
+
+
+def _actor_world(actor: str) -> tuple[Client, dict[str, str]]:
+    """A fresh client signed in as the actor, and ids of records that actor may use."""
+    clinic = make_clinic()
+    client = Client(raise_request_exception=False)
+    users = {
+        "PATIENT": clinic.patient,
+        "CLINICIAN": clinic.clinician.user,
+        "ADMIN": make("User", role="ADMIN"),
+    }
+    user = users.get(actor)
+    if user is not None:
+        assert isinstance(user, User)
+        with bind_request_context(RequestContext(correlation_id="hostile", now=clock.now_utc())):
+            client.cookies[SESSION_COOKIE] = open_session(user, SessionKind.PASSWORD, "").token
+    return client, _world_ids(clinic)
+
+
+def _accepts(path: str, method: str) -> bool:
+    """False when the route's view has no handler for the method: Django refuses that before any
+    parsing, so only one request per method proves it."""
+    view_class = getattr(resolve(path).func, "view_class", None)
+    return view_class is None or (
+        method in view_class.http_method_names and hasattr(view_class, method)
+    )
+
+
+@cache
+def _hostile_requests() -> tuple[tuple[str, dict[str, object]], ...]:
+    """Built once: the large bodies cost more to make than the request costs to send."""
+    return tuple(_generate_hostile_requests())
+
+
+def _generate_hostile_requests() -> Iterator[tuple[str, dict[str, object]]]:
     for value in HOSTILE_TEXT + HOSTILE_DATES:
         query = "&".join(f"{name}={value}" for name in FIELD_NAMES).replace("\x00", "%00")
         yield "query", {"query": query.encode("utf-8", "surrogatepass").decode("latin-1")}
@@ -80,6 +155,35 @@ def _hostile_requests() -> Iterator[tuple[str, dict[str, object]]]:
     yield "json", {"body": b"\xff\xfe\x00{"}
     yield "query", {"query": "&".join(f"f{number}=1" for number in range(1500))}
     yield "form", {"body": {f"f{number}": "1" for number in range(1500)}}
+
+
+PRE_GUARD_KINDS = 5  # the last requests of `_hostile_requests`: size and field counts
+
+
+def _refused_by_guard(client: Client, method: str, path: str) -> bool:
+    """True when the actor is turned away (401, 403, or a redirect to sign-in) before the route
+    reads any value."""
+    response = getattr(client, method)(path, headers={"Origin": SITE_ORIGIN})
+    return response.status_code in (401, 403) or (
+        response.status_code == 302 and response["Location"].startswith("/sign-in")
+    )
+
+
+def _requests_for(
+    client: Client, path: str, method: str, known_record: bool
+) -> Sequence[tuple[str, dict[str, object]]]:
+    """Cut what proves nothing, never a route, actor or kind of value. A GET has no body: json
+    and form are a plain GET. No handler, or an id naming no record: one request. A refused actor
+    keeps the size and field-count requests, which are read before the guard."""
+    every = _hostile_requests()
+    if not known_record or not _accepts(path, method):
+        return [every[-1] if method == "post" else every[1]]
+    if _refused_by_guard(client, method, path):
+        every = every[-PRE_GUARD_KINDS:]
+    if method == "get":
+        bare: tuple[str, dict[str, object]] = ("query", {"query": ""})
+        return [bare] + [item for item in every if item[0] == "query"]
+    return every
 
 
 def _send(client: Client, method: str, path: str, kind: str, parts: dict[str, object]) -> int:
@@ -106,32 +210,43 @@ def returns_a_route_list_that_includes_pages_and_api_routes() -> None:
     assert len(paths) > 50
 
 
-def _client_for(actor: str) -> Client:
-    client = Client(raise_request_exception=False)
-    if actor == "ANONYMOUS":
-        return client
-    user = make(
-        "User",
-        email=f"{actor.lower()}-{uuid.uuid4().hex}@example.test",
-        role=actor,
-        password=make_password("x"),
-    )
-    assert isinstance(user, User)
-    with bind_request_context(RequestContext(correlation_id="hostile", now=clock.now_utc())):
-        client.cookies[SESSION_COOKIE] = open_session(user, SessionKind.PASSWORD, "").token
-    return client
+def returns_one_world_id_for_every_name_a_path_uses() -> None:
+    names = {name for template in _route_templates() for name in re.findall(r"<(\w+)>", template)}
+    _, ids = _actor_world("ANONYMOUS")
+
+    assert names <= set(ids)
 
 
-@pytest.mark.parametrize("actor", ACTORS)
-def returns_no_500_when_any_route_gets_hostile_input(actor: str) -> None:
-    client = _client_for(actor)
-    server_errors = [
+def returns_422_from_its_own_parser_when_own_appointment_gets_a_hostile_reason() -> None:
+    client, ids = _actor_world("PATIENT")
+    path = f"/patient/appointments/{ids['appointment_id']}/cancel"
+
+    status = _send(client, "post", path, "form", {"body": {"reason": "x" * 100_000}})
+
+    assert status == 422
+
+
+def _server_errors(actor: str, template: str) -> list[str]:
+    """A fresh world per route: an earlier request may cancel or delete what a later one names."""
+    client, ids = _actor_world(actor)
+    cases = [(_filled(template, ids), True)]
+    if ids and "<" in template:
+        cases.append((_filled(template, {}), False))
+    return [
         f"{actor} {method.upper()} {path} {kind} -> {status}"
-        for path in _every_route_path()
-        for kind, parts in _hostile_requests()
+        for path, known_record in cases
         for method in METHODS
+        for kind, parts in _requests_for(client, path, method, known_record)
         if (status := _send(client, method, path, kind, parts)) >= 500
     ]
+
+
+@pytest.mark.parametrize("shard", range(SHARDS))
+@pytest.mark.parametrize("actor", ACTORS)
+def returns_no_500_when_any_route_gets_hostile_input(actor: str, shard: int) -> None:
+    templates = _route_templates()[shard::SHARDS]
+
+    server_errors = [error for template in templates for error in _server_errors(actor, template)]
 
     assert server_errors == []
 
@@ -145,17 +260,18 @@ JSON_VALUES = strategies.recursive(
 )
 
 
-@settings(max_examples=60, deadline=None)
-@given(
-    actor=strategies.sampled_from(ACTORS),
-    path=strategies.sampled_from(_every_route_path()),
-    method=strategies.sampled_from(METHODS),
-    body=JSON_VALUES,
-)
-def returns_no_500_when_any_actor_sends_generated_json_to_any_route(
-    actor: str, path: str, method: str, body: object
-) -> None:
-    client = _client_for(actor)
-    parts: dict[str, object] = {"body": json.dumps(body)}
+@pytest.mark.parametrize("actor", ACTORS)
+def returns_no_500_when_actor_sends_generated_json_to_any_route(actor: str) -> None:
+    client, ids = _actor_world(actor)
+    paths = sorted({_filled(template, ids) for template in _route_templates()})
 
-    assert _send(client, method, path, "json", parts) < 500
+    @settings(max_examples=60, deadline=None)
+    @given(
+        path=strategies.sampled_from(paths),
+        method=strategies.sampled_from(METHODS),
+        body=JSON_VALUES,
+    )
+    def attempt(path: str, method: str, body: object) -> None:
+        assert _send(client, method, path, "json", {"body": json.dumps(body)}) < 500
+
+    attempt()

@@ -35,7 +35,9 @@ def _buffered_clinic() -> Clinic:
 
 
 def _offered(clinic: Clinic, window: TimeRange = FROM_FIRST_SLOT) -> list[datetime]:
-    result = find_free_slots(clinic.appointment_type.pk, clinic.clinician.pk, window)
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, window, online_only=False
+    )
     assert isinstance(result, Success)
     return [offer.start for offer in result.value.offers]
 
@@ -115,7 +117,7 @@ def returns_invalid_input_when_range_is_31_days_and_one_second() -> None:
     clinic = make_clinic()
     window = TimeRange(NOW, NOW + timedelta(days=31, seconds=1))
 
-    result = find_free_slots(clinic.appointment_type.pk, None, window)
+    result = find_free_slots(clinic.appointment_type.pk, None, window, online_only=False)
 
     assert result == Failure.invalid_input([FieldMessage("to", "The range is at most 31 days.")])
 
@@ -124,7 +126,10 @@ def returns_success_when_range_is_exactly_31_days() -> None:
     clinic = make_clinic()
 
     result = find_free_slots(
-        clinic.appointment_type.pk, None, TimeRange(NOW, NOW + timedelta(days=31))
+        clinic.appointment_type.pk,
+        None,
+        TimeRange(NOW, NOW + timedelta(days=31)),
+        online_only=False,
     )
 
     assert isinstance(result, Success)

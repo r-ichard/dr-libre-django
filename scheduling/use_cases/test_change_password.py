@@ -126,3 +126,37 @@ def returns_forbidden_and_writes_nothing_when_the_patient_has_no_password() -> N
 
     assert isinstance(result, Failure) and result.code == FailureCode.FORBIDDEN
     assert SignInFailure.objects.count() == 0 and AuditLogEntry.objects.count() == 0
+
+
+def _messages_of(result: object) -> dict[str, str]:
+    assert isinstance(result, Failure)
+    return {item["field"]: item["message"] for item in result.details["fields"]}  # type: ignore[attr-defined]
+
+
+def returns_enter_message_and_no_lockout_failure_when_current_password_is_empty() -> None:
+    user = _patient()
+
+    result = _change(user, "", NEW)
+
+    assert _messages_of(result) == {"current_password": "Enter your current password."}
+    assert SignInFailure.objects.count() == 0
+
+
+def returns_both_enter_messages_when_current_and_new_password_are_empty() -> None:
+    user = _patient()
+
+    result = _change(user, "", "")
+
+    assert _messages_of(result) == {
+        "current_password": "Enter your current password.",
+        "new_password": "Enter a new password.",
+    }
+
+
+def returns_both_fields_in_one_answer_when_current_is_wrong_and_new_is_too_short() -> None:
+    user = _patient()
+
+    result = _change(user, "not-the-password", "short")
+
+    assert sorted(_messages_of(result)) == ["current_password", "new_password"]
+    assert SignInFailure.objects.count() == 1

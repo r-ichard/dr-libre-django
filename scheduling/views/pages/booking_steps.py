@@ -3,6 +3,7 @@
 from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.use_cases.booking_page_data import bookable_services, type_providers
+from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.pages.booking_links import path_uuid, times_href
 from scheduling.views.pages.booking_summary import duration_label
 from scheduling.views.pages.page_view import PageView
@@ -40,7 +41,7 @@ class ProviderChoicePage(PageView):
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
         type_id = path_uuid(self, "appointment_type_id")
-        loaded = type_providers(type_id)
+        loaded = type_providers(type_id, online_only_for(self.user))
         if loaded is None:
             raise Http404
         appointment_type, clinicians = loaded

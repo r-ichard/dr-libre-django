@@ -11,7 +11,9 @@ from scheduling.domain.placement_rules import (
     NamedParties,
     authorize_booking,
     booked_notification_text,
+    cancelled_notification_text,
     choose_room,
+    rescheduled_notification_text,
 )
 from scheduling.domain.vocabulary import AppointmentSource, Role
 
@@ -195,3 +197,25 @@ def returns_both_messages_in_order_when_admin_names_neither() -> None:
         ]
     )
     assert authorize_booking(_admin(), named) == expected
+
+
+def returns_no_room_when_type_needs_none_and_a_room_is_named() -> None:
+    chosen = choose_room(False, ROOM_ID, None, [ROOM_ID], set())
+
+    assert chosen == Success(None)
+
+
+def returns_written_cancelled_text_in_the_hospital_zone_when_appointment_is_cancelled() -> None:
+    starts_at = datetime(2030, 1, 14, 10, 0, tzinfo=UTC)
+
+    text = cancelled_notification_text(starts_at, ZoneInfo("Europe/Berlin"))
+
+    assert text == "Your appointment on Monday 14 January 2030, 11:00 (Europe/Berlin) is cancelled."
+
+
+def returns_written_new_time_text_in_the_hospital_zone_when_appointment_moves() -> None:
+    starts_at = datetime(2030, 1, 21, 10, 0, tzinfo=UTC)
+
+    text = rescheduled_notification_text(starts_at, ZoneInfo("Europe/Berlin"))
+
+    assert text == "Your appointment has moved to Monday 21 January 2030, 11:00 (Europe/Berlin)."

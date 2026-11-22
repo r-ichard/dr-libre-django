@@ -3,7 +3,7 @@ offer for the patient. Every write is a use case of task 09; these pages parse a
 
 from zoneinfo import ZoneInfo
 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 
 from scheduling.domain.failure import Failure
@@ -28,6 +28,7 @@ from scheduling.views.pages.admin_filters import (
     patient_links,
     search_text,
 )
+from scheduling.views.pages.admin_notices import admin_redirect
 from scheduling.views.pages.admin_refusal import admin_refused_page
 from scheduling.views.pages.booking_links import path_uuid
 from scheduling.views.pages.local_time import utc_from_local
@@ -100,7 +101,8 @@ class WaitlistAddPage(AdminWaitlistPage):
         joined = join_waitlist(command, self.user)
         if isinstance(joined, Failure):
             return admin_refused_page(request, self.user, joined, BACK_TO_LIST)
-        return HttpResponseRedirect(LIST_PATH, status=303)
+        name = joined.value.patient.full_name
+        return admin_redirect(LIST_PATH, f"Added {name} to the waitlist.")
 
     def _render(
         self,
@@ -187,7 +189,7 @@ class OfferPage(AdminWaitlistPage):
             return admin_refused_page(
                 request, self.user, offered, BACK_TO_LIST, waitlist_offer=True
             )
-        return HttpResponseRedirect(LIST_PATH, status=303)
+        return admin_redirect(LIST_PATH, f"Offered a time to {offered.value.patient.full_name}.")
 
 
 class AcceptPage(AdminWaitlistPage):
@@ -198,7 +200,9 @@ class AcceptPage(AdminWaitlistPage):
         accepted = accept_offer(path_uuid(self, "entry_id"), self.user)
         if isinstance(accepted, Failure):
             return admin_refused_page(request, self.user, accepted, BACK_TO_LIST)
-        return HttpResponseRedirect(LIST_PATH, status=303)
+        return admin_redirect(
+            LIST_PATH, f"Accepted the offer for {accepted.value.patient.full_name}."
+        )
 
 
 def admin_waitlist_routes() -> list[URLPattern]:

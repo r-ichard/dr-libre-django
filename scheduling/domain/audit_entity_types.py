@@ -3,5 +3,5 @@
 AUDITED_ENTITY_TYPES: frozenset[str] = frozenset({
     "ApiClient", "Appointment", "AppointmentType", "AvailabilityRule", "BookingHold",
     "ClinicianProfile", "DemoSeed", "Department", "Hospital", "Notification", "Room",
-    "Session", "SignInLink", "Specialty", "TimeOff", "User", "WaitlistEntry",
+    "Session", "SignInFailure", "SignInLink", "Specialty", "TimeOff", "User", "WaitlistEntry",
 })  # fmt: skip

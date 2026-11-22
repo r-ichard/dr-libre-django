@@ -1,14 +1,16 @@
 """Section 5.8: joining the waitlist, offering a freed slot (on cancel or by an admin) and
 accepting an offer. Every change locks the entry, audits and notifies in one transaction."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from itertools import islice
 from uuid import UUID
 
 from django.db import transaction
-from django.db.models import Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 
+from scheduling.domain.appointment_status import ACTIVE_STATUSES
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.vocabulary import AppointmentStatus, Role, WaitlistStatus
@@ -18,7 +20,14 @@ from scheduling.domain.waitlist_rules import (
     authorize_join,
     best_match,
 )
-from scheduling.models import Appointment, AppointmentType, ClinicianProfile, User, WaitlistEntry
+from scheduling.models import (
+    Appointment,
+    AppointmentType,
+    ClinicianProfile,
+    TimeOff,
+    User,
+    WaitlistEntry,
+)
 from scheduling.models.booking import NotificationKind
 from scheduling.use_cases.audit import AuditEvent, changed_field_names, record_audit
 from scheduling.use_cases.notifications import (
@@ -188,13 +197,48 @@ RESOURCE_ORDER = ("clinician", "patient", "room")
 
 
 def _first_free_cancelled_slot(entry: WaitlistEntry) -> Appointment | Failure:
-    """The first cancelled slot, soonest first, whose clinician, room and patient are free."""
+    """The first cancelled slot, soonest first, whose clinician, room and patient are free.
+
+    Busy times are left out in the query, so a fitting time behind any number of busy ones is
+    found. Only when nothing fits does a capped scan of all times name what is busy."""
     now = current_request_context().now
-    candidates = _cancelled_candidates(entry, now).iterator()
     held = _held_slot_ids(entry)
+    candidates = _cancelled_candidates(entry, now)
+    free = _without_conflicts(candidates, entry.patient_id)
+    found = _scan(entry, free.iterator(), held, now)
+    if isinstance(found, Appointment):
+        return found
+    return _scan(entry, islice(candidates.iterator(), MAX_SLOTS_CHECKED), held, now)
+
+
+def _without_conflicts(
+    candidates: QuerySet[Appointment], patient_id: UUID
+) -> QuerySet[Appointment]:
+    """Same test as `find_conflicts`, one SQL predicate: an active appointment overlapping the
+    time that shares its clinician, the patient or its room, or time off of the clinician."""
+    overlapping = Appointment.objects.filter(
+        status__in=ACTIVE_STATUSES,
+        starts_at__lt=OuterRef("ends_at"),
+        ends_at__gt=OuterRef("starts_at"),
+    ).filter(
+        Q(clinician_id=OuterRef("clinician_id"))
+        | Q(patient_id=patient_id)
+        | Q(room_id=OuterRef("room_id"))
+    )
+    off = TimeOff.objects.filter(
+        clinician_id=OuterRef("clinician_id"),
+        starts_at__lt=OuterRef("ends_at"),
+        ends_at__gt=OuterRef("starts_at"),
+    )
+    return candidates.filter(~Exists(overlapping), ~Exists(off))
+
+
+def _scan(
+    entry: WaitlistEntry, candidates: Iterable[Appointment], held: set[UUID], now: datetime
+) -> Appointment | Failure:
     seen = 0
     busy: set[str] = set()
-    for cancelled in islice(candidates, MAX_SLOTS_CHECKED):
+    for cancelled in candidates:
         seen += 1
         if cancelled.pk in held:
             continue

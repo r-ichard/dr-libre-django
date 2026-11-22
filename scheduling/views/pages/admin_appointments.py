@@ -2,9 +2,10 @@
 cancel step. Status changes and cancel are the use cases of task 08; an admin sees the
 appointment and its history, never a clinical note."""
 
+from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 
 from scheduling.domain.audit_labels import audit_label
@@ -22,12 +23,14 @@ from scheduling.use_cases.admin_appointments import (
 from scheduling.use_cases.appointment_changes import cancel_appointment, change_status
 from scheduling.use_cases.clinician_appointment import appointment_history
 from scheduling.views.pages.admin_filters import (
+    address_with,
     choice_param,
     day_range,
     page_links,
     page_number,
     uuid_param,
 )
+from scheduling.views.pages.admin_notices import admin_redirect
 from scheduling.views.pages.admin_refusal import admin_refused_page
 from scheduling.views.pages.booking_links import clock_label, day_label, path_uuid
 from scheduling.views.pages.page_view import PageView
@@ -35,6 +38,7 @@ from scheduling.views.pages.patient_appointments import reason_error
 from scheduling.views.pages.patient_rows import STATUS_BADGES
 
 LIST_PATH = "/admin-console/appointments"
+EXPORT_PATH = f"{LIST_PATH}/export"
 STATUSES = {
     status.value: status.value.replace("_", " ").capitalize() for status in AppointmentStatus
 }
@@ -72,27 +76,33 @@ def when_text(appointment: Appointment) -> str:
     return f"{day}, {start} to {end} ({zone_name})"
 
 
+def asked_filters(request: HttpRequest) -> tuple[AdminAppointmentFilters, dict[str, str]]:
+    """The list and the export read the same address, so the export covers what the list shows."""
+    days = day_range(request)
+    department_id = uuid_param(request, "department")
+    clinician_id = uuid_param(request, "clinician")
+    status = choice_param(request, "status", STATUSES)
+    source = choice_param(request, "source", SOURCES)
+    asked = {
+        "from": days.first.isoformat() if days.first else "",
+        "to": days.last.isoformat() if days.last else "",
+        "department": str(department_id or ""),
+        "clinician": str(clinician_id or ""),
+        "status": status,
+        "source": source,
+    }
+    filters = AdminAppointmentFilters(
+        days.first, days.last, department_id, clinician_id, status, source
+    )
+    return filters, asked
+
+
 class AppointmentListPage(AdminAppointmentPage):
     template_name = "admin/appointments.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
-        days = day_range(request)
-        department_id = uuid_param(request, "department")
-        clinician_id = uuid_param(request, "clinician")
-        status = choice_param(request, "status", STATUSES)
-        source = choice_param(request, "source", SOURCES)
-        filters = AdminAppointmentFilters(
-            days.first, days.last, department_id, clinician_id, status, source
-        )
+        filters, asked = asked_filters(request)
         found = list_appointments_for_admin(filters, page_number(request))
-        asked = {
-            "from": days.first.isoformat() if days.first else "",
-            "to": days.last.isoformat() if days.last else "",
-            "department": str(department_id or ""),
-            "clinician": str(clinician_id or ""),
-            "status": status,
-            "source": source,
-        }
         context = {
             "rows": [_list_row(appointment) for appointment in found.items],
             "total_text": f"{found.total} {'appointment' if found.total == 1 else 'appointments'}",
@@ -105,6 +115,7 @@ class AppointmentListPage(AdminAppointmentPage):
             "source_options": [("", "Any source"), *SOURCES.items()],
             "base_path": LIST_PATH,
             "book_path": f"{LIST_PATH}/new",
+            "export_action": address_with(EXPORT_PATH, asked),
             "current": "appointments",
             "page": found.page,
             "page_count": found.page_count,
@@ -171,6 +182,7 @@ class AppointmentShowPage(AdminAppointmentPage):
 class StatusActionPage(AdminAppointmentPage):
     http_method_names = ["post"]
     target = AppointmentStatus.CHECKED_IN
+    done_words = "Checked in"
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
@@ -179,19 +191,30 @@ class StatusActionPage(AdminAppointmentPage):
         if isinstance(changed, Failure):
             back = (appointment_path(appointment_id), BACK_TO_APPOINTMENT)
             return admin_refused_page(request, self.user, changed, back)
-        return HttpResponseRedirect(appointment_path(appointment_id), status=303)
+        return admin_redirect(
+            appointment_path(appointment_id),
+            f"{self.done_words} the appointment of {_patient_name(appointment_id)}.",
+        )
 
 
 class CheckInPage(StatusActionPage):
     target = AppointmentStatus.CHECKED_IN
+    done_words = "Checked in"
 
 
 class CompletePage(StatusActionPage):
     target = AppointmentStatus.COMPLETED
+    done_words = "Completed"
 
 
 class NoShowPage(StatusActionPage):
     target = AppointmentStatus.NO_SHOW
+    done_words = "Marked as no-show"
+
+
+def _patient_name(appointment_id: UUID) -> str:
+    found = appointment_for_admin(appointment_id)
+    return found.patient.full_name if found else "the patient"
 
 
 class CancelPage(AdminAppointmentPage):
@@ -211,7 +234,10 @@ class CancelPage(AdminAppointmentPage):
         back = (appointment_path(appointment.pk), BACK_TO_APPOINTMENT)
         if isinstance(cancelled, Failure):
             return admin_refused_page(request, self.user, cancelled, back)
-        return HttpResponseRedirect(appointment_path(appointment.pk), status=303)
+        return admin_redirect(
+            appointment_path(appointment.pk),
+            f"Cancelled the appointment of {appointment.patient.full_name}.",
+        )
 
     def _form(
         self,

@@ -49,6 +49,9 @@ def _message_and_status(failure: Failure, waitlist_offer: bool) -> tuple[str, in
         return NO_ROOM, 409
     if code == FailureCode.NO_CLINICIAN_AVAILABLE and waitlist_offer:
         return NO_CANCELLED_TIME, 409
+    if code == FailureCode.RULE_VIOLATION:
+        rules = failure.details.get("violated_rules")
+        return " ".join(str(rule) for rule in rules) if isinstance(rules, list) else "", 422
     if code == FailureCode.CONFLICT:
         resources = failure.details.get("resources")
         named = [str(name) for name in resources] if isinstance(resources, list) else []

@@ -18,9 +18,11 @@ from scheduling.views.fhir.views import fhir_entry
 from scheduling.views.health import HealthView
 from scheduling.views.jobs import RemindersView
 from scheduling.views.pages.admin_appointment_book import admin_book_routes
+from scheduling.views.pages.admin_appointment_export import admin_appointment_export_routes
 from scheduling.views.pages.admin_appointment_reschedule import admin_reschedule_routes
 from scheduling.views.pages.admin_appointments import admin_appointment_routes
 from scheduling.views.pages.admin_audit import admin_audit_routes
+from scheduling.views.pages.admin_dashboard import AdminDashboard
 from scheduling.views.pages.admin_records import admin_record_routes
 from scheduling.views.pages.admin_settings import admin_settings_routes
 from scheduling.views.pages.admin_user_pages import admin_user_routes
@@ -52,7 +54,7 @@ from scheduling.views.pages.clinician_rooms import RoomsPage
 from scheduling.views.pages.clinician_time_off import TimeOffDeletePage, TimeOffPage
 from scheduling.views.pages.clinician_today import CheckInPage, CompletePage, NoShowPage, TodayPage
 from scheduling.views.pages.detail_pages import HospitalPage, ProviderPage, SpecialtyPage
-from scheduling.views.pages.homes import AdminConsole, PatientPortal
+from scheduling.views.pages.homes import PatientPortal
 from scheduling.views.pages.patient_appointments import AppointmentsPage, CancelPage
 from scheduling.views.pages.patient_notifications import (
     MarkAllReadPage,
@@ -173,10 +175,11 @@ urlpatterns = [
         "clinician/appointments/<uuid:appointment_id>/reschedule/review",
         ClinicianRescheduleReviewPage.as_view(),
     ),
-    path("admin-console/", AdminConsole.as_view()),
+    path("admin-console/", AdminDashboard.as_view()),
     *admin_record_routes(),
     *admin_user_routes(),
     *admin_appointment_routes(),
+    *admin_appointment_export_routes(),
     *admin_book_routes(),
     *admin_reschedule_routes(),
     *admin_audit_routes(),

@@ -801,3 +801,16 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   stage may skip is a gate only I run.
 - `main` carried the failing commit for about ten minutes. Reverted with `git revert`
   (8712dd6), not rewritten. The work continues on `task/24-fhir-rest` with task 24a.
+
+## 2026-11-22 task 25b, run 01M819523S2W (23 minutes, merged)
+
+- Three items, one run, one review pass. The size was right.
+- First run verified from a `verify/` branch: squash there, gates from a clone of that
+  branch, stack from it, then the final message and a fast-forward of `main`. `main`
+  held nothing unpushed while I wrote other files.
+- At 375 px as a new visitor: the birth date group refuses a missing year, 31 February,
+  the year 2999 and letters, each by name, and keeps what was typed; the booking went
+  through with the code from the inbox; the profile shows the same date in the same
+  group; the notification and the email write "Monday 23 November 2026, 09:00
+  (Australia/Sydney)".
+- 4001 tests.

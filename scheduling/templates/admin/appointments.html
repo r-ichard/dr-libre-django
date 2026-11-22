@@ -1,10 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Appointments · DrLibre<form class="form" method="post" action="{{ export_action }}">
-  {% csrf_token %}
-  <p class="hint">Exports every appointment that matches the filters, not only this page. Ids only, no names.</p>
-  <button class="button button--secondary" type="submit">Export as CSV</button>
-</form>
-{% endblock %}
+{% block title %}Appointments · DrLibre{% endblock %}
 {% block content %}
 {% include "components/admin_nav.html" %}
 <h1>Appointments</h1>
@@ -29,7 +24,7 @@
     <thead><tr role="row"><th role="columnheader" scope="col">When</th><th role="columnheader" scope="col">Patient</th><th role="columnheader" scope="col">Clinician</th><th role="columnheader" scope="col">Type</th><th role="columnheader" scope="col">Status</th><th role="columnheader" scope="col">Source</th></tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr role="row"><th scope="row" role="rowheader" data-label="When"><a href="{{ row.href }}">{{ row.time }}</a></th><td role="cell" data-label="Patient">{{ row.patient }}</td><td role="cell" data-label="Clinician">{{ row.clinician }}</td><td role="cell" data-label="Type">{{ row.type_name }}</td><td role="cell" data-label="Status">{{ row.status }}</td><td role="cell" data-label="Source">{{ row.source }}</td></tr>
+      <tr role="row"><th scope="row" role="rowheader" data-label="When"><a href="{{ row.href }}">{{ row.time }}</a></th><td role="cell" data-label="Patient">{{ row.patient }}</td><td role="cell" data-label="Clinician">{{ row.clinician }}</td><td role="cell" data-label="Type">{{ row.type_name }}</td><td role="cell" data-label="Status">{% include "components/badge.html" with kind=row.badge_kind text=row.badge_text %}</td><td role="cell" data-label="Source">{{ row.source }}</td></tr>
       {% endfor %}
     </tbody>
   </table>

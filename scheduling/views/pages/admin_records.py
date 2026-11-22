@@ -41,6 +41,7 @@ from scheduling.views.pages.admin_record_kinds import (
 from scheduling.views.pages.booking_links import path_uuid
 from scheduling.views.pages.local_time import errors_by_field
 from scheduling.views.pages.page_view import PageView, render_page
+from scheduling.views.pages.status_words import ACTIVE_BADGE, INACTIVE_BADGE
 
 STALE_TEXT = (
     "Another admin saved this record first. Your changes are not saved. "
@@ -73,13 +74,28 @@ def _page_number(raw: str) -> int:
     return int(raw) if raw.isascii() and raw.isdigit() else 1
 
 
-def _cell(record: Model, accessor: str) -> str:
+def _value(record: Model, accessor: str) -> object:
     value: object = record
     for part in accessor.split("."):
         value = getattr(value, part)
+    return value
+
+
+def _cell(record: Model, accessor: str) -> str:
+    value = _value(record, accessor)
     if isinstance(value, bool):
-        return "Active" if value else "Inactive"
+        return (ACTIVE_BADGE if value else INACTIVE_BADGE)[1]
     return str(value).capitalize() if accessor == "role" else str(value)
+
+
+def _active_kind(record: Model, accessor: str) -> str:
+    """Badge kind for a yes/no column, empty for a plain text cell."""
+    if accessor == "extra":
+        return ""
+    value = _value(record, accessor)
+    if not isinstance(value, bool):
+        return ""
+    return (ACTIVE_BADGE if value else INACTIVE_BADGE)[0]
 
 
 class RecordListPage(RecordPage):
@@ -103,6 +119,7 @@ class RecordListPage(RecordPage):
                         extras.get(record.pk, "")
                         if accessor == "extra"
                         else _cell(record, accessor),
+                        _active_kind(record, accessor),
                     )
                     for label, accessor in view.columns
                 ],

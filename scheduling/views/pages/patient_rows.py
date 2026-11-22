@@ -7,18 +7,9 @@ from scheduling.domain.portal_options import appointment_options, expects_change
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import Appointment
 from scheduling.views.pages.booking_links import address_of, clock_label, day_label
+from scheduling.views.pages.status_words import APPOINTMENT_BADGES
 
 LIST_PATH = "/patient/appointments"
-
-# Each status gets a word and an icon through the badge, so colour is never the only signal.
-STATUS_BADGES: dict[AppointmentStatus, tuple[str, str]] = {
-    AppointmentStatus.BOOKED: ("information", "Booked"),
-    AppointmentStatus.CONFIRMED: ("success", "Confirmed"),
-    AppointmentStatus.CHECKED_IN: ("success", "Checked in"),
-    AppointmentStatus.COMPLETED: ("information", "Completed"),
-    AppointmentStatus.CANCELLED: ("error", "Cancelled"),
-    AppointmentStatus.NO_SHOW: ("warning", "Missed"),
-}
 
 
 def appointment_row(appointment: Appointment, now: datetime) -> dict[str, object]:
@@ -27,7 +18,7 @@ def appointment_row(appointment: Appointment, now: datetime) -> dict[str, object
     clinician = appointment.clinician
     status = AppointmentStatus(appointment.status)
     options = appointment_options(status, appointment.starts_at, now)
-    badge_kind, badge_text = STATUS_BADGES[status]
+    badge_kind, badge_text = APPOINTMENT_BADGES[status]
     base = f"{LIST_PATH}/{appointment.pk}"
     return {
         "provider": f"{clinician.title} {clinician.user.full_name}",

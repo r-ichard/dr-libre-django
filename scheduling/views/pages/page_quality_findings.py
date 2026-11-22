@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from html.parser import HTMLParser
 
 UNLABELLED_INPUT_TYPES = {"hidden", "submit", "button", "image", "reset"}
+TITLE_LIMIT = 80
+TOKEN_FIELD = "csrfmiddlewaretoken"  # noqa: S105 - a field name, not a secret
 VOID_TAGS = {"input", "img", "br", "meta", "link", "hr"}
 
 
@@ -32,6 +34,8 @@ class _Collected:
     images_without_alternative: int = 0
     tables: list[_Table] = field(default_factory=list)
     title: str = ""
+    title_markup: bool = False
+    token_outside_form: bool = False
     has_lang: bool = False
     has_main: bool = False
 
@@ -44,6 +48,7 @@ class _Reader(HTMLParser):
         self._label_depth = 0
         self._hidden_depth = 0
         self._in_title = False
+        self._form_depth = 0
         self._tables: list[_Table] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
@@ -56,6 +61,10 @@ class _Reader(HTMLParser):
             self.found.has_main = True
         if tag == "title":
             self._in_title = True
+        if tag == "form":
+            self._form_depth += 1
+        if attributes.get("name") == TOKEN_FIELD and self._form_depth == 0:
+            self.found.token_outside_form = True
         if tag == "label":
             self._label_depth += 1
             if "for" in attributes:
@@ -85,6 +94,8 @@ class _Reader(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if tag == "title":
             self._in_title = False
+        if tag == "form":
+            self._form_depth = max(0, self._form_depth - 1)
         if tag == "label":
             self._label_depth = max(0, self._label_depth - 1)
         if tag == "table" and self._tables:
@@ -101,6 +112,7 @@ class _Reader(HTMLParser):
     def handle_data(self, data: str) -> None:
         if self._in_title:
             self.found.title += data
+            self.found.title_markup = self.found.title_markup or "<" in data
         if self._hidden_depth == 0:
             for control in self._open_elements:
                 control.text += data
@@ -148,6 +160,10 @@ def findings_of(html: str) -> list[str]:
         "table without header cells" for table in found.tables if not table.has_header_cell
     ]
     findings += [] if found.title.strip() else ["page without a title"]
+    findings += ["title holds markup"] if found.title_markup else []
+    if len(found.title.strip()) > TITLE_LIMIT:
+        findings.append(f"title longer than {TITLE_LIMIT} characters")
+    findings += ["cross-site token outside a form"] if found.token_outside_form else []
     findings += [] if found.has_lang else ["page without lang"]
     findings += [] if found.has_main else ["page without main"]
     return findings

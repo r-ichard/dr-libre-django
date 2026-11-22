@@ -34,7 +34,7 @@ from scheduling.views.pages.admin_refusal import admin_refused_page
 from scheduling.views.pages.booking_links import clock_label, day_label, path_uuid
 from scheduling.views.pages.page_view import PageView
 from scheduling.views.pages.patient_appointments import reason_error
-from scheduling.views.pages.patient_rows import STATUS_BADGES
+from scheduling.views.pages.status_words import STAFF_APPOINTMENT_BADGES
 
 LIST_PATH = "/admin-console/appointments"
 EXPORT_PATH = f"{LIST_PATH}/export"
@@ -44,7 +44,6 @@ STATUSES = {
 SOURCES = {
     source.value: source.value.replace("_", " ").capitalize() for source in AppointmentSource
 }
-STATUS_BADGE_TEXT = {**STATUS_BADGES, AppointmentStatus.NO_SHOW: ("warning", "No-show")}
 BACK_TO_APPOINTMENT = "Back to the appointment"
 ACTION_BUTTONS = (
     (StaffAction.CHECK_IN, "Check in"),
@@ -124,6 +123,7 @@ class AppointmentListPage(AdminAppointmentPage):
 
 
 def _list_row(appointment: Appointment) -> dict[str, str]:
+    badge_kind, badge_text = STAFF_APPOINTMENT_BADGES[AppointmentStatus(appointment.status)]
     hospital = appointment.appointment_type.department.hospital
     zone = ZoneInfo(hospital.time_zone)
     local = appointment.starts_at.astimezone(zone)
@@ -133,7 +133,8 @@ def _list_row(appointment: Appointment) -> dict[str, str]:
         "patient": appointment.patient.full_name,
         "clinician": appointment.clinician.user.full_name,
         "type_name": appointment.appointment_type.name,
-        "status": STATUSES[appointment.status],
+        "badge_kind": badge_kind,
+        "badge_text": badge_text,
         "source": SOURCES[appointment.source],
     }
 
@@ -147,7 +148,7 @@ class AppointmentShowPage(AdminAppointmentPage):
         status = AppointmentStatus(appointment.status)
         allowed = staff_actions_for(status)
         base = appointment_path(appointment.pk)
-        badge_kind, badge_text = STATUS_BADGE_TEXT[status]
+        badge_kind, badge_text = STAFF_APPOINTMENT_BADGES[status]
         context = {
             "appointment": appointment,
             "when": when_text(appointment),

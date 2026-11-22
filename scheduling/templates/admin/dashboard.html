@@ -17,6 +17,9 @@
   {% endfor %}
 </ul>
 <h2>Appointments per day</h2>
+{% if not busiest %}
+{% include "components/empty_state.html" with title="No appointments in this range" text="Pick a longer range of days above, or book one for a patient." action_href="/admin-console/appointments/new" action_text="Book for a patient" %}
+{% endif %}
 <div class="table-wrap" tabindex="0" role="region" aria-labelledby="table-caption-dashboard">
   <table class="table" role="table">
     <caption id="table-caption-dashboard">Appointments per day, cancelled ones not counted</caption>

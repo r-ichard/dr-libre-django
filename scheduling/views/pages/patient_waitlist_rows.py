@@ -5,15 +5,9 @@ from zoneinfo import ZoneInfo
 from scheduling.domain.vocabulary import WaitlistStatus
 from scheduling.models import WaitlistEntry
 from scheduling.views.pages.booking_links import clock_label, day_label
+from scheduling.views.pages.status_words import WAITLIST_BADGES
 
 WAITLIST_PATH = "/patient/waitlist"
-
-STATUS_BADGES: dict[WaitlistStatus, tuple[str, str]] = {
-    WaitlistStatus.WAITING: ("pending", "Waiting"),
-    WaitlistStatus.OFFERED: ("warning", "Offered"),
-    WaitlistStatus.BOOKED: ("success", "Booked"),
-    WaitlistStatus.EXPIRED: ("error", "Expired"),
-}
 
 
 def waitlist_row(entry: WaitlistEntry) -> dict[str, object]:
@@ -23,7 +17,7 @@ def waitlist_row(entry: WaitlistEntry) -> dict[str, object]:
     first_day = entry.earliest_at.astimezone(zone).date()
     last_day = entry.latest_at.astimezone(zone).date()
     status = WaitlistStatus(entry.status)
-    badge_kind, badge_text = STATUS_BADGES[status]
+    badge_kind, badge_text = WAITLIST_BADGES[status]
     preferred = entry.preferred_clinician
     return {
         "type_name": appointment_type.name,

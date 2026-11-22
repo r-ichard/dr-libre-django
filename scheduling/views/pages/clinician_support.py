@@ -4,13 +4,13 @@ record rule of one appointment, and the words of a status."""
 from django.http import Http404, HttpRequest, HttpResponse
 
 from scheduling.domain.failure import Failure, FailureCode
-from scheduling.domain.vocabulary import AppointmentStatus, Role
+from scheduling.domain.vocabulary import Role
 from scheduling.models import Appointment, ClinicianProfile
 from scheduling.use_cases.clinician_agenda import clinician_profile_of
 from scheduling.use_cases.clinician_appointment import own_appointment_of_clinician
 from scheduling.views.pages.booking_links import path_uuid
 from scheduling.views.pages.page_view import PageView, render_page
-from scheduling.views.pages.patient_rows import STATUS_BADGES
+from scheduling.views.pages.status_words import STAFF_APPOINTMENT_BADGES
 
 TODAY_PATH = "/clinician/"
 CALENDAR_PATH = "/clinician/calendar"
@@ -21,7 +21,7 @@ PATIENTS_PATH = "/clinician/patients"
 ROOMS_PATH = "/clinician/rooms"
 
 # The clinician's word for a missed visit is the status name; the patient's is "Missed".
-CLINICIAN_BADGES = {**STATUS_BADGES, AppointmentStatus.NO_SHOW: ("warning", "No-show")}
+CLINICIAN_BADGES = STAFF_APPOINTMENT_BADGES
 
 
 def appointment_path(appointment_id: object) -> str:

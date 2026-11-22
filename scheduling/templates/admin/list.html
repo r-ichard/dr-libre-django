@@ -16,7 +16,7 @@
     <thead><tr role="row"><th scope="col" role="columnheader">Name</th><th scope="col" role="columnheader">{{ view.identifier_label }}</th>{% for label, accessor in view.columns %}<th scope="col" role="columnheader">{{ label }}</th>{% endfor %}</tr></thead>
     <tbody>
       {% for row in rows %}
-      <tr role="row"><th scope="row" role="rowheader" data-label="Name"><a href="{{ row.href }}">{{ row.name }}</a></th><td role="cell" data-label="{{ view.identifier_label }}">{{ row.code }}</td>{% for label, cell in row.cells %}<td role="cell" data-label="{{ label }}">{{ cell }}</td>{% endfor %}</tr>
+      <tr role="row"><th scope="row" role="rowheader" data-label="Name"><a href="{{ row.href }}">{{ row.name }}</a></th><td role="cell" data-label="{{ view.identifier_label }}">{{ row.code }}</td>{% for label, cell, kind in row.cells %}<td role="cell" data-label="{{ label }}">{% if kind %}{% include "components/badge.html" with kind=kind text=cell %}{% else %}{{ cell }}{% endif %}</td>{% endfor %}</tr>
       {% endfor %}
     </tbody>
   </table>

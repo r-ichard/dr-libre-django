@@ -10,7 +10,7 @@ VERIFIED_AT = datetime(2026, 1, 1, tzinfo=UTC)
 AVAILABLE_FROM = date(2026, 1, 1)
 OPENING_TIME = time(9, 0)
 CLOSING_TIME = time(17, 0)
-WEEKDAYS_WORKED = (0, 1, 2, 3, 4)
+WEEKDAYS_WORKED = (1, 2, 3, 4, 5)
 
 
 @dataclass(frozen=True)

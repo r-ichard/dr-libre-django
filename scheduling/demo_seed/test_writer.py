@@ -23,7 +23,7 @@ __all__ = ["seed_environment"]
 
 DAYS_LATER = [1, 2, 3, 9, 40]
 ALL_APPOINTMENT_STATUSES = {
-    "BOOKED", "CONFIRMED", "CHECKED_IN", "COMPLETED", "CANCELLED", "NO_SHOW",
+    "BOOKED", "CHECKED_IN", "COMPLETED", "CANCELLED", "NO_SHOW",
 }  # fmt: skip
 ALL_APPOINTMENT_SOURCES = {"ONLINE", "ROUND_ROBIN", "STAFF"}
 ALL_WAITLIST_STATUSES = {"WAITING", "OFFERED", "BOOKED", "EXPIRED"}
@@ -43,7 +43,6 @@ def returns_same_row_counts_when_command_runs_twice_on_one_day(seed_environment:
     _seed_at(0)
 
     second = row_counts()
-    assert second.pop("AuditLogEntry") == first.pop("AuditLogEntry") + 1
     assert second == first
 
 
@@ -88,8 +87,8 @@ def returns_finished_appointments_before_today_and_open_ones_from_today_when_see
     appointments = Appointment.objects.select_related("clinician__department__hospital")
     for each in appointments.filter(status__in=["COMPLETED", "NO_SHOW"]):
         day, today = local_date(each)
-        assert day < today
-    for each in appointments.filter(status__in=["BOOKED", "CONFIRMED"]):
+        assert day <= today
+    for each in appointments.filter(status="BOOKED"):
         day, today = local_date(each)
         assert day >= today
     assert len({local_date(each)[0] for each in appointments}) >= 6

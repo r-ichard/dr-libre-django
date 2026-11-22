@@ -103,7 +103,7 @@ def returns_new_hash_only_when_password_in_environment_changed(
 def returns_audit_entry_with_only_integer_counts_when_seeded(seed_environment: None) -> None:
     run_seed()
 
-    entry = AuditLogEntry.objects.get()
+    entry = AuditLogEntry.objects.get(action="demo_seed.run")
 
     assert entry.action == "demo_seed.run"
     assert entry.actor_id is None
@@ -124,7 +124,7 @@ def returns_no_seeded_name_email_or_phone_when_audit_metadata_is_serialised(
 ) -> None:
     run_seed()
 
-    serialised = json.dumps(AuditLogEntry.objects.get().metadata)
+    serialised = json.dumps(AuditLogEntry.objects.get(action="demo_seed.run").metadata)
 
     for person in User.objects.all():
         assert person.full_name not in serialised
@@ -133,16 +133,14 @@ def returns_no_seeded_name_email_or_phone_when_audit_metadata_is_serialised(
     assert "+44" not in serialised
 
 
-def returns_one_new_audit_entry_when_command_runs_again(seed_environment: None) -> None:
+def returns_no_new_audit_entry_when_command_runs_again_on_one_day(seed_environment: None) -> None:
     run_seed()
-    first_metadata = AuditLogEntry.objects.get().metadata
+    first_count = AuditLogEntry.objects.count()
 
     run_seed()
 
-    assert AuditLogEntry.objects.count() == 2
-    assert {
-        json.dumps(entry.metadata, sort_keys=True) for entry in AuditLogEntry.objects.all()
-    } == {json.dumps(first_metadata, sort_keys=True)}
+    assert AuditLogEntry.objects.count() == first_count
+    assert AuditLogEntry.objects.filter(action="demo_seed.run").count() == 1
 
 
 def returns_unchanged_manual_row_when_seed_runs_again(seed_environment: None) -> None:
@@ -159,10 +157,7 @@ def returns_fresh_context_correlation_id_and_instant_when_seed_runs(seed_environ
     before = timezone.now()
 
     run_seed()
-    run_seed()
 
-    first, second = AuditLogEntry.objects.order_by("created_at")
-    assert re.fullmatch(r"[0-9a-f]{32}", first.correlation_id)
-    assert re.fullmatch(r"[0-9a-f]{32}", second.correlation_id)
-    assert first.correlation_id != second.correlation_id
-    assert before <= first.created_at <= second.created_at <= timezone.now()
+    entry = AuditLogEntry.objects.get(action="demo_seed.run")
+    assert re.fullmatch(r"[0-9a-f]{32}", entry.correlation_id)
+    assert before <= entry.created_at <= timezone.now()

@@ -22,6 +22,10 @@ class Command(BaseCommand):
         now = timezone.now()
         # No request exists here, so the command makes the context a request would have made.
         with bind_request_context(RequestContext(uuid.uuid4().hex, now)):
-            counts = seed_demo(now, password)
-        for model_name, count in sorted(counts.items()):
-            self.stdout.write(f"{model_name}: {count}")
+            report = seed_demo(now, password)
+        for model_name, count in sorted(report.built.items()):
+            self.stdout.write(f"built {model_name}: {count}")
+        for model_name, count in sorted(report.kept.items()):
+            self.stdout.write(f"kept {model_name}: {count} (used by a person)")
+        for scenario in report.skipped:
+            self.stdout.write(f"skipped: {scenario}")

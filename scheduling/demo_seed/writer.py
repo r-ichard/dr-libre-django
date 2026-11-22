@@ -1,17 +1,19 @@
-"""Writes the demo world through the models. A row is found by its identity (see the plan) and
-rewritten only when a value differs, so a second run changes nothing but the moving bookings."""
+"""Writes the stable demo catalogue through the models (a row is found by its code or email and
+rewritten only when a value differs) and the moving world through use cases, once a local day."""
 
 from collections import Counter
 from collections.abc import Mapping
-from datetime import UTC, datetime, time, timedelta
+from dataclasses import dataclass
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from django.db import transaction
-from django.db.models import Model
+from django.db.models import F, Model, Q, QuerySet
 
-from scheduling.demo_seed import catalogue, scenarios
+from scheduling.demo_seed import booking, catalogue, marker, scenarios
+from scheduling.demo_seed.retire import retire_time_off, retire_world
 from scheduling.domain.audit_metadata import AuditMetadata
-from scheduling.domain.vocabulary import AppointmentStatus
+from scheduling.domain.failure import Failure, FailureCode
 from scheduling.models import (
     Appointment,
     AppointmentType,
@@ -27,20 +29,27 @@ from scheduling.models import (
     WaitlistEntry,
 )
 from scheduling.use_cases.audit import AuditEvent, record_audit
+from scheduling.use_cases.time_off import TimeOffCommand, create_time_off
 
-AUDIT_ACTION = "demo_seed.run"
+
+@dataclass(frozen=True)
+class SeedReport:
+    built: dict[str, int]
+    kept: dict[str, int]
+    skipped: list[str]
 
 
-def seed_demo(now: datetime, password: str) -> dict[str, int]:
-    """Row count per model; the counts are also the whole audit metadata."""
+def seed_demo(now: datetime, password: str) -> SeedReport:
+    """What the run built, kept for a person and skipped; built counts are the audit metadata."""
     with transaction.atomic():
         seeding = _Seeding(now, password)
         seeding.write_everything()
-        counts = dict(seeding.counts)
-        row_counts = {f"{name.lower()}_count": rows for name, rows in counts.items()}
-        metadata = AuditMetadata(counts=row_counts)
-        record_audit(AuditEvent(AUDIT_ACTION, "DemoSeed", "demo", metadata), None)
-    return counts
+        counts = seeding.built_counts()
+        if seeding.rebuilt:
+            row_counts = {f"{name.lower()}_count": rows for name, rows in counts.items()}
+            metadata = AuditMetadata(counts=row_counts)
+            record_audit(AuditEvent(marker.RUN_ACTION, "DemoSeed", "demo", metadata), None)
+    return SeedReport(counts, dict(seeding.kept), seeding.skipped)
 
 
 class _Seeding:
@@ -48,6 +57,12 @@ class _Seeding:
         self.now = now
         self.password = password
         self.counts: Counter[str] = Counter()
+        self.kept: Counter[str] = Counter()
+        self.skipped: list[str] = []
+        self.rebuilt = False
+        self.made_appointments: list[Appointment] = []
+        self.made_entries: list[WaitlistEntry] = []
+        self.made_time_off: list[TimeOff] = []
         self.hospitals: dict[str, Hospital] = {}
         self.departments: dict[str, Department] = {}
         self.rooms: dict[str, Room] = {}
@@ -55,17 +70,30 @@ class _Seeding:
         self.types: dict[str, AppointmentType] = {}
         self.users: dict[str, User] = {}
         self.clinicians: dict[str, ClinicianProfile] = {}
-        self.appointments: dict[scenarios.AppointmentKey, Appointment] = {}
-        self.entries: dict[scenarios.WaitlistKey, WaitlistEntry] = {}
 
     def write_everything(self) -> None:
         self._organisation()
         self._people()
-        self._availability_and_time_off()
-        self._waitlist(offered=False)
-        self._appointments()
-        self._waitlist(offered=True)
-        self._notifications()
+        self._availability()
+        if marker.world_is_current(self.now):
+            return
+        self.kept = retire_time_off() + retire_world()
+        self._time_off()
+        builder = booking.WorldBuilder(self.now, self.users, self.clinicians, self.types)
+        builder.build()
+        self.skipped += builder.skipped
+        joined = [entry.pk for _, entry in builder.joined]
+        self.made_entries = list(WaitlistEntry.objects.filter(pk__in=joined))
+        placed = Q(pk__in=[row.pk for _, row in builder.placed])
+        self.made_appointments = list(
+            Appointment.objects.filter(placed | Q(waitlist_entry__in=self.made_entries))
+        )
+        # The seed never mails: only its own rows are silenced, the on-commit send finds none.
+        self._seeded_notices().filter(email_pending=True).update(
+            email_pending=False, version=F("version") + 1
+        )
+        marker.record_marks(self.made_appointments, self.made_entries, self.made_time_off)
+        self.rebuilt = True
 
     def _upsert[Row: Model](
         self, model: type[Row], lookup: Mapping[str, object], values: Mapping[str, object]
@@ -159,7 +187,7 @@ class _Seeding:
             user.save()
         return user
 
-    def _availability_and_time_off(self) -> None:
+    def _availability(self) -> None:
         for clinician in self.clinicians.values():
             for weekday in catalogue.WEEKDAYS_WORKED:
                 self._upsert(
@@ -171,81 +199,33 @@ class _Seeding:
                         "valid_to": None,
                     },
                 )  # fmt: skip
+
+    def _time_off(self) -> None:
         for leave in scenarios.TIME_OFF:
             clinician = self.clinicians[leave.clinician_email]
-            self._upsert(
-                TimeOff,
-                {"clinician": clinician, "reason": leave.reason},
-                {
-                    "starts_at": self._utc_midnight(leave.start_offset),
-                    "ends_at": self._utc_midnight(leave.end_offset + 1),
-                },
-            )
-
-    def _utc_midnight(self, day_offset: int) -> datetime:
-        day = self.now.astimezone(UTC).date() + timedelta(days=day_offset)
-        return datetime.combine(day, time.min, tzinfo=UTC)
-
-    def _waitlist(self, *, offered: bool) -> None:
-        for seed in scenarios.WAITLIST_ENTRIES:
-            if (seed.offered is not None) != offered:
-                continue
-            preferred = seed.preferred_clinician_email
-            self.entries[seed.key] = self._upsert(
-                WaitlistEntry,
-                {
-                    "patient": self.users[seed.patient_email],
-                    "appointment_type": self.types[seed.type_code],
-                },
-                {
-                    "preferred_clinician": self.clinicians[preferred] if preferred else None,
-                    "earliest_at": self._utc_midnight(seed.earliest_offset),
-                    "latest_at": self._utc_midnight(seed.latest_offset),
-                    "status": seed.status,
-                    "offered_appointment": self.appointments[seed.offered]
-                    if seed.offered
-                    else None,
-                },
-            )
-
-    def _appointments(self) -> None:
-        for seed in scenarios.APPOINTMENTS:
-            clinician = self.clinicians[seed.clinician_email]
-            kind = self.types[seed.type_code]
             zone = ZoneInfo(clinician.department.hospital.time_zone)
-            starts_at = scenarios.starts_at_for(self.now, zone, seed.day_offset, seed.hour)
-            cancelled = seed.status == AppointmentStatus.CANCELLED
-            entry = (
-                self.entries[(seed.patient_email, seed.type_code)] if seed.from_waitlist else None
+            command = TimeOffCommand(
+                scenarios.local_midnight(self.now, zone, leave.start_offset),
+                scenarios.local_midnight(self.now, zone, leave.end_offset + 1),
+                leave.reason,
             )
-            self.appointments[seed.key] = self._upsert(
-                Appointment,
-                {
-                    "patient": self.users[seed.patient_email],
-                    "clinician": clinician,
-                    "appointment_type": kind,
-                },
-                {
-                    "room": clinician.default_room if kind.needs_room else None,
-                    "starts_at": starts_at,
-                    "ends_at": starts_at + timedelta(minutes=kind.duration_minutes),
-                    "status": seed.status,
-                    "source": seed.source,
-                    "cancelled_at": self._utc_midnight(0) if cancelled else None,
-                    "cancellation_reason": "Patient asked to cancel" if cancelled else "",
-                    "waitlist_entry": entry,
-                },
-            )
+            created = create_time_off(command, clinician.user)
+            if isinstance(created, Failure) and created.code == FailureCode.INVALID_INPUT:
+                self.skipped.append(f"time off {leave.start_offset} to {leave.end_offset}")
+            else:
+                self.made_time_off.append(booking.expect(created))
 
-    def _notifications(self) -> None:
-        for seed in scenarios.NOTIFICATIONS:
-            appointment = self.appointments[seed.appointment] if seed.appointment else None
-            entry = self.entries[seed.waitlist] if seed.waitlist else None
-            self.counts[Notification.__name__] += 1
-            Notification.objects.get_or_create(
-                recipient=self.users[seed.recipient_email],
-                kind=seed.kind,
-                appointment=appointment,
-                waitlist_entry=entry,
-                defaults={"title": seed.title, "read_at": self.now if seed.is_read else None},
-            )
+    def _seeded_notices(self) -> QuerySet[Notification]:
+        return Notification.objects.filter(
+            Q(appointment__in=self.made_appointments) | Q(waitlist_entry__in=self.made_entries)
+        )
+
+    def built_counts(self) -> dict[str, int]:
+        notices = self._seeded_notices()
+        return {
+            **self.counts,
+            Appointment.__name__: len(self.made_appointments),
+            WaitlistEntry.__name__: len(self.made_entries),
+            Notification.__name__: notices.count(),
+            TimeOff.__name__: len(self.made_time_off),
+        }

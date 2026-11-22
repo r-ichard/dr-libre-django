@@ -99,7 +99,7 @@ tasks.
 | 26a | Security: lockout race and every counter, cache headers, content type, audit flood, search limit, code page, email rule (#46 to #48) | 4, 11, 12 | merged `0cb030b` |
 | 26a2 | Abuse limits as the real server and a limited visitor meet them: writes without a body, the 429 page, `Retry-After`, counters' race tests, two holds in one browser | 11, 12 | merged `0cb030b` |
 | 26b | Security: start-up checks, cookie flags, trusted proxy, logs without personal data, the access table | 11, 12 | merged `917edd1` (items 1 to 3, 8, 9) |
-| 26b2 | A limit on every public read that costs work (detail pages, slots, anonymous FHIR search); what the review of 26b left small | 11, 12 | todo |
+| 26b2 | A limit on every public read that costs work (detail pages, slots, anonymous FHIR search); what the review of 26b left small | 11, 12 | merged `ac99dd7` |
 | 26b3 | Access proven as data: one table over every route and caller, the access section of the review document | 11, 12 | todo |
 | 26c | Gates that hold: per-test time gate, mutants without a test, the flaky test, `make audit`, docstrings | process | todo |
 | 26d | Security review written: encryption at rest, the server, the review document, the owner's questions | all | todo |
@@ -174,6 +174,10 @@ Small findings waiting for the next task that touches the same file.
 - The reason of a booking is one line on the pages and free text in `/api/v1` and FHIR
   (review of 27a2). Owner to confirm which; tightening the API would refuse text that
   clients may send today.
+- `RateLimitHit` rows are never deleted: up to 1200 an hour for an address since task
+  26b2. A small task: the worker deletes hits older than the window.
+- A signed-in caller is limited per user (1200 schedule reads, 600 FHIR, 120 searches an
+  hour). Owner to say if staff integrations need more.
 - A wrong method on a route of `/api/v1` answers 404 `not_found`, never 405 (QA round 3,
   public area): section 4 has no failure code for a method. Owner to confirm whether the
   contract gains one. Listed with the owner's questions of task 26d.

@@ -781,3 +781,23 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   the owner. It stays; this entry and the backlog say what `e9a419c` is.
 - The recipe changes: the squash under verification lives on `verify/<task>`. `main`
   never holds a commit I would not push.
+
+## 2026-11-22 task 24, run 01M8184D89GV (25 minutes, failed, held), and a revert
+
+- Too large again, written before I had learned it from task 25: the run delivered the
+  read side of three resources and refused the admin writes as "own task". Split into
+  24a to 24d. The planning prompt now tells a run to plan a slice it can finish, and the
+  review prompt to hold it to that slice.
+- With a token per role the read side is right: only the patient accepts the own offer
+  (others 403, twice 409, the appointment is then booked under the same id); a
+  notification is read and marked by its recipient only, an admin included; audit
+  events are for admins, paged to the end, with no name, address, phone or reason in 80
+  of them.
+- My own validator run found every AuditEvent invalid: `action` holds the product's
+  action name where R4 wants C, R, U, D or E. Then the fresh-clone gates, finishing
+  after the accidental push, showed `make fhir-validate` failing on exactly that and
+  `make mutate` failing on two survivors. Neither the run nor its reviewer had run
+  either gate; both are in "done when" and both need network or minutes. A gate that a
+  stage may skip is a gate only I run.
+- `main` carried the failing commit for about ten minutes. Reverted with `git revert`
+  (8712dd6), not rewritten. The work continues on `task/24-fhir-rest` with task 24a.

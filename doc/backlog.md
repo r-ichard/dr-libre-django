@@ -82,7 +82,11 @@ tasks.
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
 | 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | merged `ca45d88` |
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
-| 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | running `01M8184D89GV` |
+| 24 | AppointmentResponse, Communication, AuditEvent: read side, accept an offer, mark as read | 15.2, 15.4 | run `01M8184D89GV` did the read side; held on branch `task/24-fhir-rest` (two gates fail), continued by 24a |
+| 24a | Valid AuditEvent, samples for every FHIR type, the two failing gates; merges 24 with it | 15 | running `01M819SMCY56` |
+| 24b | FHIR admin writes: Organization, Location, HealthcareService, CodeSystem, ValueSet | 15.4 | todo |
+| 24c | FHIR writes: Practitioner, PractitionerRole, time off through `notAvailable` | 15.2, 15.4 | todo |
+| 24d | Section 15 closed: tables as a test, one journey through FHIR, ADRs, README section | 15 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | merged with 25a `4f6dbec` (8 of 17 items; rest in 25b, 25c) |
 | 25a | UX pass: the week fits at 1440 px again; small leftovers | 16 | merged `4f6dbec` |

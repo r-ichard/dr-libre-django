@@ -19,7 +19,8 @@ SOME_ID = "6f1c3a52-0d1e-4b8a-9c53-2f7d1b0e4a11"
 RECORD_KINDS = 7
 ROUTES_PER_KIND = 5
 # Task 19: 3. Task 20: 6 appointment, 5 booking, 2 reschedule, 1 audit, 2 settings, 4 waitlist.
-EXTRA_ROUTES = 23
+# Task 21: 1 export (the dashboard replaces the home).
+EXTRA_ROUTES = 24
 
 
 def _templates(patterns: list[URLPattern | URLResolver], prefix: str = "") -> Iterator[str]:

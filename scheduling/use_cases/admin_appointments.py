@@ -9,7 +9,7 @@ from operator import or_
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 from scheduling.domain.search_ordering import Page, page_bounds
 from scheduling.models import Appointment, ClinicianProfile, Department, Hospital
@@ -29,7 +29,7 @@ class AdminAppointmentFilters:
     source: str = ""
 
 
-def list_appointments_for_admin(filters: AdminAppointmentFilters, page: int) -> Page[Appointment]:
+def matching_appointments(filters: AdminAppointmentFilters) -> QuerySet[Appointment]:
     matching = Appointment.objects.all()
     if filters.department_id is not None:
         matching = matching.filter(appointment_type__department_id=filters.department_id)
@@ -41,6 +41,11 @@ def list_appointments_for_admin(filters: AdminAppointmentFilters, page: int) -> 
         matching = matching.filter(source=filters.source)
     if filters.first_day is not None or filters.last_day is not None:
         matching = matching.filter(_days_in_each_hospital_zone(filters))
+    return matching
+
+
+def list_appointments_for_admin(filters: AdminAppointmentFilters, page: int) -> Page[Appointment]:
+    matching = matching_appointments(filters)
     total = matching.count()
     bounds = page_bounds(total, page, PAGE_SIZE)
     rows = matching.select_related(

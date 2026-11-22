@@ -1,11 +1,12 @@
 """Section 10: the booking policy as the rules read it (read only) and the reminder button."""
 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 
 from scheduling.domain import booking_rules
 from scheduling.domain.vocabulary import Role
 from scheduling.use_cases.reminders import send_reminders
+from scheduling.views.pages.admin_notices import admin_redirect
 from scheduling.views.pages.page_view import PageView
 
 SETTINGS_PATH = "/admin-console/settings"
@@ -28,7 +29,6 @@ class SettingsPage(PageView):
             "lead_minutes": lead_minutes,
             "cancellation_hours": cancellation_hours,
             "open_bookings": booking_rules.OPEN_ONLINE_BOOKINGS_MAXIMUM,
-            "reminders_text": _reminders_text(request.GET.get("reminders", "")),
             "action": f"{SETTINGS_PATH}/reminders",
             "current": "settings",
         }
@@ -42,14 +42,8 @@ class RemindersPage(PageView):
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         created = send_reminders(self.user)
-        return HttpResponseRedirect(f"{SETTINGS_PATH}?reminders={created}", status=303)
-
-
-def _reminders_text(raw: str) -> str:
-    if not (raw.isascii() and raw.isdigit() and len(raw) <= MAXIMUM_REMINDER_DIGITS):
-        return ""
-    count = int(raw)
-    return f"{count} {'reminder' if count == 1 else 'reminders'} created."
+        word = "reminder" if created == 1 else "reminders"
+        return admin_redirect(SETTINGS_PATH, f"{created} {word} created.")
 
 
 def admin_settings_routes() -> list[URLPattern]:

@@ -177,3 +177,18 @@ def returns_an_index_walk_for_the_page_query_when_the_log_holds_50000() -> None:
         plan = "\n".join(row[0] for row in cursor.fetchall())
 
     assert re.search(r"Index (Only )?Scan", plan), plan
+
+
+def returns_every_audited_type_as_a_filter_choice_that_finds_its_entries() -> None:
+    from scheduling.domain.audit_entity_types import AUDITED_ENTITY_TYPES
+
+    client = admin_client()
+    for name in sorted(AUDITED_ENTITY_TYPES):
+        make("AuditLogEntry", entity_type=name, entity_id=f"id-of-{name}")
+
+    html = client.get(PATH).content.decode()
+    for name in AUDITED_ENTITY_TYPES:
+        assert f'value="{name}"' in html
+        filtered = client.get(PATH, {"entity_type": name}).content.decode()
+        assert f"id-of-{name}" in filtered
+        assert "1 entry" in filtered

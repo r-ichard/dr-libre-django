@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 from django.views.decorators.csrf import csrf_exempt
 
+from scheduling.domain.audit_entity_types import AUDITED_ENTITY_TYPES
 from scheduling.domain.audit_labels import audit_label
 from scheduling.domain.vocabulary import Role
 from scheduling.models import AuditLogEntry, User
@@ -22,11 +23,6 @@ from scheduling.views.pages.admin_filters import (
 from scheduling.views.pages.page_view import PageView
 
 AUDIT_PATH = "/admin-console/audit"
-ENTITY_TYPES = frozenset({
-    "ApiClient", "Appointment", "AppointmentType", "AvailabilityRule", "BookingHold",
-    "ClinicianProfile", "DemoSeed", "Department", "Hospital", "Notification", "Room",
-    "Session", "Specialty", "TimeOff", "User", "WaitlistEntry",
-})  # fmt: skip
 STAFF_LIMIT = 200
 
 
@@ -37,7 +33,7 @@ class AuditPage(PageView):
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
         actor_id = uuid_param(request, "actor")
-        entity_type = choice_param(request, "entity_type", ENTITY_TYPES)
+        entity_type = choice_param(request, "entity_type", AUDITED_ENTITY_TYPES)
         days = day_range(request)
         found = list_audit(
             AuditFilters(actor_id, entity_type, *_instants(days)), page_number(request)
@@ -54,7 +50,8 @@ class AuditPage(PageView):
             "total_text": f"{found.total} {word}",
             "asked": asked,
             "actors": [("", "Anyone")] + _staff_options(),
-            "entity_types": [("", "Any record")] + [(name, name) for name in sorted(ENTITY_TYPES)],
+            "entity_types": [("", "Any record")]
+            + [(name, name) for name in sorted(AUDITED_ENTITY_TYPES)],
             "base_path": AUDIT_PATH,
             "current": "audit",
             "page": found.page,

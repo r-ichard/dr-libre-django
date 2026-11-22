@@ -1,5 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Appointments · DrLibre{% endblock %}
+{% block title %}Appointments · DrLibre<form class="form" method="post" action="{{ export_action }}">
+  {% csrf_token %}
+  <p class="hint">Exports every appointment that matches the filters, not only this page. Ids only, no names.</p>
+  <button class="button button--secondary" type="submit">Export as CSV</button>
+</form>
+{% endblock %}
 {% block content %}
 {% include "components/admin_nav.html" %}
 <h1>Appointments</h1>
@@ -33,4 +38,9 @@
 {% else %}
 {% include "components/empty_state.html" with title="No appointments match" text="Widen the range of days or clear the filters." %}
 {% endif %}
+<form class="form" method="post" action="{{ export_action }}">
+  {% csrf_token %}
+  <p class="hint">Exports every appointment that matches the filters, not only this page. Ids only, no names.</p>
+  <button class="button button--secondary" type="submit">Export as CSV</button>
+</form>
 {% endblock %}

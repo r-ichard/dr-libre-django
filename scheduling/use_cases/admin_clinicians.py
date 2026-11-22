@@ -5,7 +5,7 @@ at once."""
 from uuid import UUID
 
 from django.db import IntegrityError, transaction
-from django.db.models import ProtectedError
+from django.db.models import Model, ProtectedError, QuerySet
 
 from scheduling.domain import clinician_rules, record_fields
 from scheduling.domain.audit_metadata import AuditMetadata
@@ -155,16 +155,17 @@ def _user_messages(user: User | None) -> list[FieldMessage]:
 
 
 def _reference_messages(
-    changed: dict[str, object], profile: ClinicianProfile | None
+    changed: dict[str, object], profile: ClinicianProfile | None, lock: bool = True
 ) -> list[FieldMessage]:
+    """`lock` is for the save path, where what was checked must hold until the write."""
     messages: list[FieldMessage] = []
     department_id = changed.get("department_id", profile.department_id if profile else None)
-    if "department_id" in changed and not _department_exists(changed["department_id"]):
+    if "department_id" in changed and not _department_exists(changed["department_id"], lock):
         messages.append(FieldMessage("department", CHOOSE_DEPARTMENT))
-    if "specialty_id" in changed and not _specialty_is_active(changed["specialty_id"]):
+    if "specialty_id" in changed and not _specialty_is_active(changed["specialty_id"], lock):
         messages.append(FieldMessage("specialty", CHOOSE_SPECIALTY))
     room_id = changed.get("default_room_id")
-    if room_id is not None and not _room_fits(room_id, department_id):
+    if room_id is not None and not _room_fits(room_id, department_id, lock):
         messages.append(FieldMessage("default_room", CHOOSE_ROOM))
     return messages
 
@@ -172,36 +173,38 @@ def _reference_messages(
 def reference_messages(values: dict[str, object], record_id: UUID | None) -> dict[str, str]:
     """The cross-field messages the form can know before it is saved, so a submission that also
     holds an unreadable field reports them in the same answer. Writes nothing."""
-    with transaction.atomic():
-        profile = ClinicianProfile.objects.filter(pk=record_id).first() if record_id else None
-        changed = {
-            key: value
-            for key, value in values.items()
-            if key in FIELDS and (profile is None or getattr(profile, key) != value)
-        }
-        messages = _reference_messages(changed, profile)
-        if profile is not None:
-            messages += _move_messages(profile, changed)
+    profile = ClinicianProfile.objects.filter(pk=record_id).first() if record_id else None
+    changed = {
+        key: value
+        for key, value in values.items()
+        if key in FIELDS and (profile is None or getattr(profile, key) != value)
+    }
+    messages = _reference_messages(changed, profile, lock=False)
+    if profile is not None:
+        messages += _move_messages(profile, changed)
     return {message.field: message.message for message in reversed(messages)}
 
 
-def _department_exists(key: object) -> bool:
-    return isinstance(key, UUID) and Department.objects.select_for_update().filter(pk=key).exists()
+def _department_exists(key: object, lock: bool) -> bool:
+    return isinstance(key, UUID) and _rows(Department, lock).filter(pk=key).exists()
 
 
-def _specialty_is_active(key: object) -> bool:
+def _specialty_is_active(key: object, lock: bool) -> bool:
     if not isinstance(key, UUID):
         return False
-    return Specialty.objects.select_for_update().filter(pk=key, is_active=True).exists()
+    return _rows(Specialty, lock).filter(pk=key, is_active=True).exists()
 
 
-def _room_fits(room_id: object, department_id: object) -> bool:
+def _room_fits(room_id: object, department_id: object, lock: bool) -> bool:
     if not (isinstance(room_id, UUID) and isinstance(department_id, UUID)):
         return False
-    rooms = Room.objects.select_for_update().filter(
-        pk=room_id, is_active=True, department_id=department_id
-    )
+    rooms = _rows(Room, lock).filter(pk=room_id, is_active=True, department_id=department_id)
     return rooms.exists()
+
+
+def _rows[Row: Model](model: type[Row], lock: bool) -> QuerySet[Row]:
+    manager = model._default_manager
+    return manager.select_for_update() if lock else manager.all()
 
 
 def _move_messages(profile: ClinicianProfile, changed: dict[str, object]) -> list[FieldMessage]:

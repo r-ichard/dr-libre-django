@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime
 from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 
 from scheduling.domain.failure import Failure, FailureCode
@@ -19,6 +19,7 @@ from scheduling.views.pages.admin_appointments import (
     AdminAppointmentPage,
     appointment_path,
 )
+from scheduling.views.pages.admin_notices import admin_redirect
 from scheduling.views.pages.admin_refusal import admin_refused_page
 from scheduling.views.pages.booking_links import week_from
 from scheduling.views.pages.booking_times import week_strip
@@ -102,7 +103,10 @@ class RescheduleReviewPage(AdminAppointmentPage):
         )
         if isinstance(moved, Failure):
             return self._refused(request, found, moved)
-        return HttpResponseRedirect(appointment_path(found.pk), status=303)
+        return admin_redirect(
+            appointment_path(found.pk),
+            f"Rescheduled the appointment of {found.patient.full_name}.",
+        )
 
     def _refused(self, request: HttpRequest, found: Appointment, failure: Failure) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user

@@ -15,6 +15,7 @@ from scheduling.domain.vocabulary import Role
 from scheduling.models import User
 from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.session import ResolvedSession, resolve_session
+from scheduling.views.pages.admin_notices import forget_admin_notice, take_admin_notice
 from scheduling.views.session_cookie import SESSION_COOKIE, set_session_cookie
 
 SIGN_IN_PATH = "/sign-in"
@@ -82,9 +83,21 @@ class PageView(View):
     def page(
         self, request: HttpRequest, context: Mapping[str, object] | None = None, status: int = 200
     ) -> HttpResponse:
-        return render_page(
-            request, self.template_name, context, status=status, signed_in_user=self.user
+        shows_notice = self.shows_admin_notice(request, status)
+        notice = take_admin_notice(request) if shows_notice else ""
+        response = render_page(
+            request,
+            self.template_name,
+            {**(context or {}), "admin_notice": notice},
+            status=status,
+            signed_in_user=self.user,
         )
+        return forget_admin_notice(request, response) if shows_notice else response
+
+    def shows_admin_notice(self, request: HttpRequest, status: int) -> bool:
+        """Only an admin's page that answers a GET takes the notice, so it is shown once."""
+        admin_only = self.allowed_roles == frozenset({Role.ADMIN})
+        return admin_only and request.method == "GET" and status == 200
 
     @staticmethod
     def _resolve_session(request: HttpRequest) -> ResolvedSession | None:

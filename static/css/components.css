@@ -217,3 +217,10 @@
 }
 
 .list-count { margin-top: var(--space-4); }
+
+/* Dashboard: a bar's length is the width attribute of its rect; the number beside it says the same. */
+.range-links { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.range-links [aria-current="true"] { border-width: 3px; font-weight: 700; }
+.bar { display: block; width: 100%; min-width: 6rem; height: 0.75rem; }
+.bar__track { fill: var(--colour-page); stroke: var(--colour-line); }
+.bar__value { fill: var(--colour-primary); stroke: var(--colour-ink); }

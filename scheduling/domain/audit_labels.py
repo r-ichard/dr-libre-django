@@ -24,6 +24,7 @@ AUDIT_LABELS = {
     "appointment.cancelled": "Cancelled",
     "appointment.reschedule": "Rescheduled",
     "appointment.rescheduled": "Rescheduled",
+    "appointment.export": "Appointments exported",
     "appointment.note_save": "Clinical note saved",
     **{
         f"{record}.{verb}": f"{noun} {past}"

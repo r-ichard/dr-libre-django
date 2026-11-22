@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 from uuid import UUID
 
 from django.db.models import Model
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
@@ -20,6 +20,7 @@ from scheduling.use_cases.admin_record_specs import count_text
 from scheduling.use_cases.admin_record_writers import WRITERS
 from scheduling.use_cases.admin_records import RecordEdit
 from scheduling.use_cases.request_context import current_request_context
+from scheduling.views.pages.admin_notices import admin_redirect
 from scheduling.views.pages.admin_record_forms import (
     form_fields,
     initial_text,
@@ -240,12 +241,20 @@ class RecordFormPage(RecordPage):
     ) -> HttpResponse:
         record = self.record_or_404() if "record_id" in self.kwargs else None
         if not isinstance(result, Failure):
-            return HttpResponseRedirect(f"{self.view.base_path}/{result.value}", status=303)
+            return admin_redirect(
+                f"{self.view.base_path}/{result.value}", self._saved_sentence(result.value, record)
+            )
         if result.code == FailureCode.INVALID_INPUT:
             return self._form(request, record, typed, errors_by_field(result), version, 422)
         if result.code == FailureCode.CONFLICT and record is not None:
             return self._form(request, record, typed, {}, record.version, 409, STALE_TEXT)
         return self.refusal_of(request, result)
+
+    def _saved_sentence(self, record_id: UUID, before: Versioned | None) -> str:
+        saved = admin_record_reads.find_record(self.kind, record_id)
+        name = _cell(saved, self.view.title_accessor) if saved else ""
+        verb = "Created" if before is None else "Saved"
+        return f"{verb} the {self.view.singular} {name}."
 
     def _form(
         self,
@@ -304,9 +313,11 @@ class RecordDeletePage(RecordPage):
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         record_id: UUID = path_uuid(self, "record_id")
+        name = _cell(self.record_or_404(), self.view.title_accessor)
         result = WRITERS[self.kind].delete(self.kind, record_id, self.user)
         if not isinstance(result, Failure):
-            return HttpResponseRedirect(self.view.base_path, status=303)
+            sentence = f"Deleted the {self.view.singular} {name}."
+            return admin_redirect(self.view.base_path, sentence)
         if result.code != FailureCode.HAS_DEPENDENTS:
             return self.refusal_of(request, result)
         reasons = result.details["dependents"]

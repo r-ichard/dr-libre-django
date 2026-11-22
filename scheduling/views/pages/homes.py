@@ -30,8 +30,3 @@ class PatientPortal(PageView):
             "unread_count": unread_count(self.user),
         }
         return self.page(request, context)
-
-
-class AdminConsole(PageView):
-    template_name = "homes/admin.html"
-    allowed_roles = frozenset({Role.ADMIN})

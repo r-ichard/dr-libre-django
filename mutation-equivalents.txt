@@ -33,6 +33,11 @@ scheduling.domain.fhir_declaration.x__parameters__mutmut_3: the function only ru
 scheduling.domain.fhir_declaration.x__parameters__mutmut_4: the function only runs while the module is imported, before mutmut switches a mutant on, so no test can see the change
 scheduling.domain.fhir_declaration.x__parameters__mutmut_5: the function only runs while the module is imported, before mutmut switches a mutant on, so no test can see the change
 scheduling.domain.lane_assignment.x__clusters__mutmut_10: joining two blocks that only touch into one cluster changes nothing, the second reuses lane 1 and the lane count stays the highest lane used
+scheduling.domain.report_utilisation.x__rule_windows__mutmut_3: astimezone(None) is the same instant in the machine zone, and datetimes compare by instant
+scheduling.domain.report_utilisation.x__rule_windows__mutmut_10: astimezone(None) is the same instant in the machine zone, and datetimes compare by instant
+scheduling.domain.report_utilisation.x__merged__mutmut_4: periods that only touch measure the same overlap merged or apart
+scheduling.domain.report_figures.x_appointments_per_day__mutmut_7: with no days the generator is empty and the default None is as falsy as 0
+scheduling.domain.report_figures.x_appointments_per_day__mutmut_10: the default is only read when there are no days, and then no bar is built
 scheduling.domain.fhir_slot_id.x_slot_id__mutmut_3: int() truncates and // floors alike for a start after 1970, and a slot never starts before it
 scheduling.domain.fhir_slot_id.x__encode__mutmut_7: the codec name "ASCII" is an alias of "ascii"
 scheduling.domain.fhir_slot_id.x__encode__mutmut_8: the last base32 letter of 16 bytes is one of A E I M Q U Y 4, never X, so stripping X as well removes nothing

@@ -4,7 +4,7 @@ the deactivation step, a clinician's read-only week calendar and the type colour
 from datetime import timedelta
 from zoneinfo import ZoneInfo
 
-from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 from django.utils.cache import patch_cache_control
 
@@ -15,6 +15,7 @@ from scheduling.models import AppointmentType, ClinicianProfile
 from scheduling.use_cases import admin_record_reads
 from scheduling.use_cases.admin_users import deactivate_user
 from scheduling.use_cases.request_context import current_request_context
+from scheduling.views.pages.admin_notices import admin_redirect
 from scheduling.views.pages.admin_record_kinds import KIND_VIEWS
 from scheduling.views.pages.admin_records import STALE_TEXT, UNREADABLE_VERSION, RecordPage
 from scheduling.views.pages.booking_links import day_label, path_uuid, week_from
@@ -41,7 +42,8 @@ class DeactivatePage(RecordPage):
             return self._confirmation(request, [], UNREADABLE_VERSION, 422)
         result = deactivate_user(path_uuid(self, "record_id"), int(version), self.user)
         if not isinstance(result, Failure):
-            return HttpResponseRedirect(f"{self.view.base_path}/{result.value}", status=303)
+            name = str(getattr(self.record_or_404(), "full_name", ""))
+            return admin_redirect(f"{self.view.base_path}/{result.value}", f"Deactivated {name}.")
         if result.code == FailureCode.RULE_VIOLATION:
             reasons = result.details["violated_rules"]
             return self._confirmation(

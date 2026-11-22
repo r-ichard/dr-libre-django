@@ -528,3 +528,17 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   how it is measured, or it is not a gate.
 - My timing command called `uv` without the Makefile's PATH and failed after the gates
   had passed; ten minutes lost to a rerun.
+
+## 2026-11-22 task 17b, run 01M809JSVRXD (30 minutes after the rewind, merged 58caea4)
+
+- Clean pass, no bounce, fifteen items in one run. The rewound run kept the plan and the
+  red tests of the run the subscription limit had stopped.
+- Replayed on the stack: the ten issues with curl, focus and the one-time notice in
+  Chrome at 375 px, the cancellation email in the inbox. `Content-Length: abc` answers
+  400; a page with 1500 fields shows the product's 400 page with its reference.
+- Suite: 75 seconds before, 37 on my machine and 22 in the sandbox, with 2482 tests. The
+  budget said "under 30 seconds" and not where; the sandbox number is the one a run pays.
+- The fix for #23 changed the two notifications the task named and left the others in
+  the old date style. A task that names examples gets the examples fixed: name the rule.
+- Looking at the waitlist page for the focus check showed a type that is not bookable
+  online offered to a patient. Within the letter of section 5.8; noted for the owner.

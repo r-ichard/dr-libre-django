@@ -67,7 +67,7 @@ tasks.
 | 16 | Clinician workspace: today, calendar, appointment, clinical notes | 9 | merged `f72c635` |
 | 17 | Clinician workspace: availability, time off, patients, rooms; calendar grid fixes | 9 | merged `a6609fc` |
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | merged `e412ecb` |
-| 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | running `01M809JSVRXD` |
+| 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | merged `58caea4` |
 | 17c | QA round 2, clinician: time grid alignment, multi-day time off, five smaller (#25 to #31) | 9, 16 | todo |
 | 17d | Demo seed books through the use cases (#32) | 16 | merged with 17e `3df1aa8` |
 | 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
@@ -147,3 +147,13 @@ Small findings waiting for the next task that touches the same file.
 - Review of 17e, small: any `invalid_input` from `create_time_off` counts as "skipped";
   the reminder test accepts any unread notification; `test_survives_use.py` is 346
   lines; the seed's tests take 16 seconds alone. With the next task that touches the seed.
+- "Appointment booked", "Waitlist slot offered" and the emails still write dates as
+  "2026-11-23 at 13:00"; pages and the cancelled notification write "Monday 23 November
+  2026, 13:00" (rest of #23). Task 25.
+- Review of 17b, small: the notice cookie is not marked secure when `DEBUG` is off; ADR
+  0004 gives the portal page limit as "6 digits" beside the API's 1,000,000; the
+  middleware imports the 400 page from `views.pages`. Task 26.
+- The patient's waitlist form offers a type that is not bookable online ("Skin check")
+  and names its clinician, whom the public search hides. Section 5.8 only asks for an
+  active type, and an admin can accept the offer for the patient, but the patient
+  cannot. Owner to confirm whether a patient may join for such a type.

@@ -38,7 +38,7 @@ Two runs of the build pipeline (`fabro`, see "The pipeline"). Check them with
 
 | Run | Task | Base | When it ends |
 |---|---|---|---|
-| `01M82JYZ...` (`fabro ps -a`; rewound from `01M82GCRE3JK` after its mutation gate failed three times) | `doc/backlog/27a2-text-fields-as-a-person-fills-them.md` | branch `task/27a-qa-round-3-inputs` | Verify, then land 27a and 27a2 as one squash. Closes #33, #38, #41, #45. |
+| see `fabro ps -a`, task 27a3 | `doc/backlog/27a3-mutation-gate-on-the-held-branch.md` | branch `task/27a-qa-round-3-inputs` (holds 27a and 27a2, approved; only `make mutate` fails) | Verify, then land 27a, 27a2 and 27a3 as one squash. Closes #33, #38, #41, #45. |
 | `01M82GCRX3TWJRH62BZJ8HJRH1` | `doc/backlog/26b2-limits-on-public-reads.md` | `main` | Verify, land. |
 
 If a run shows `Error: ?` on an agent stage, the reason is the last event of

@@ -195,7 +195,9 @@ review. (4) A reviewer
   `fabro wait` returned. A failed agent stage shows `Error: ?`; the reason is the last
   event of `fabro events <id> --json` (the subscription's 5-hour limit, twice so far).
 - A failed run is resumed with `fabro rewind <id> <last good stage>`, which makes a new
-  run. `fabro steer` reaches only the stage that is live.
+  run. It keeps the visit counts of the checkpoint: a run that used its three
+  repair passes fails again at once. Then push its branch as `task/<nn>-<slug>` and run a
+  small follow-up task on it (27a3). `fabro steer` reaches only the stage that is live.
 - No `fabro server restart` during a run; kills it. `fabro resume <id>`.
 - Laptop sleep kills sandboxes mid-run. Keep `caffeinate -i -s` running during runs.
 - Goal paths may be stale; `ls` them before launch.

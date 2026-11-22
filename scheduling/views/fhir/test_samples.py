@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from scheduling.demo_seed.seed_support import run_seed, seed_environment
 from scheduling.domain.fhir_common import Resource
+from scheduling.domain.fhir_declaration import FHIR_RESOURCES
 from scheduling.domain.request_context import RequestContext
 from scheduling.models import User
 from scheduling.use_cases.request_context import bind_request_context
@@ -69,3 +70,22 @@ def returns_a_sample_of_every_type_in_both_views_when_samples_are_built(
             f"metadata-{view}",
             f"OperationOutcome-{view}",
         } <= names
+
+
+def returns_a_staff_sample_for_every_declared_type_when_samples_are_built(
+    seed_environment: None,
+) -> None:
+    run_seed()
+    admin = User.objects.filter(role="ADMIN").first()
+    assert admin is not None
+    with bind_request_context(RequestContext("samples-test", timezone.now())):
+        names = set(sample_documents(admin))
+
+    missing = [
+        declaration.type
+        for declaration in FHIR_RESOURCES
+        if not any(
+            name.startswith(f"{declaration.type}-") and name.endswith("-staff") for name in names
+        )
+    ]
+    assert missing == []

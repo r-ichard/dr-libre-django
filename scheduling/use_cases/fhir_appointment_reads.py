@@ -72,7 +72,7 @@ def _booked_part(user: User, role: Role | None) -> Part:
             "practitioner": _equals("clinician__user_id"),
             "location": _location,
             "status": _booked_status,
-            "date": _starts_within("starts_at"),
+            "date": starts_within("starts_at"),
             "service-type": _service_type,
         },
         build=lambda ids: loading.booked(ids, user.pk),
@@ -96,7 +96,7 @@ def _waitlist_part(user: User, role: Role | None) -> Part:
             "practitioner": _preferred_or_offered,
             "location": _equals("offered_appointment__room_id"),
             "status": _waitlist_status,
-            "date": _starts_within("offered_appointment__starts_at"),
+            "date": starts_within("offered_appointment__starts_at"),
             "service-type": _service_type,
         },
         build=loading.waiting,
@@ -120,7 +120,7 @@ def _hold_part(user: User, role: Role | None) -> Part:
             "practitioner": _equals("clinician__user_id"),
             "location": _nothing,
             "status": lambda found, value: found if value == PENDING else found.none(),
-            "date": _starts_within("starts_at"),
+            "date": starts_within("starts_at"),
             "service-type": _service_type,
         },
         build=loading.holds,
@@ -160,7 +160,7 @@ def _waitlist_status(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
     return rows.filter(status=wanted) if wanted else rows.none()
 
 
-def _starts_within(column: str) -> Filter:
+def starts_within(column: str) -> Filter:
     def narrow(rows: QuerySet[Model], value: str) -> QuerySet[Model]:
         first, last = day_bounds([value])
         if first is not None:

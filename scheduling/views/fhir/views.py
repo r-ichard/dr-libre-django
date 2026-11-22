@@ -40,7 +40,7 @@ SERVED_MEDIA_TYPES = ("*/*", "application/*", "application/json", "application/f
 METADATA = "metadata"
 BEARER_PREFIX = "Bearer "
 STAFF_ROLES = (Role.CLINICIAN, Role.ADMIN)
-NO_STORE_TYPES = ("Patient", "Appointment")
+NO_STORE_TYPES = ("Patient", "Appointment", "AppointmentResponse", "Communication", "AuditEvent")
 METHOD_OF_INTERACTION = {
     "read": "GET",
     "search-type": "GET",

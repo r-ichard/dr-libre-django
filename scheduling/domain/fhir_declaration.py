@@ -147,6 +147,27 @@ FHIR_RESOURCES = (
         includes=("Appointment:patient", "Appointment:practitioner", "Appointment:location"),
         interactions=(*READ_ONLY, "create", "update"),
     ),
+    ResourceDeclaration("AppointmentResponse", (), interactions=(*READ_ONLY, "create")),
+    ResourceDeclaration(
+        "Communication",
+        (
+            *_parameters(("recipient", _REFERENCE), ("category", _CODE)),
+            SearchParameter("sent", ParameterKind.DATE, maximum_repeats=2),
+        ),
+        interactions=(*READ_ONLY, "update"),
+    ),
+    ResourceDeclaration(
+        "AuditEvent",
+        (
+            *_parameters(
+                ("agent", _REFERENCE),
+                ("entity", _CODE),
+                ("entity-type", _CODE),
+                ("action", _CODE),
+            ),
+            SearchParameter("date", ParameterKind.DATE, maximum_repeats=2),
+        ),
+    ),
 )
 
 

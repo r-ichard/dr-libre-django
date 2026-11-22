@@ -19,6 +19,11 @@ Start-up and settings:
    address: `SECURE_PROXY_SSL_HEADER` and the network address used for rate limits come
    from one setting that says how many proxies are trusted, default none. A forwarded
    header from an untrusted caller changes nothing: test it.
+3a. Carried from 26a: the cookie of a booking hold (`drlibre_hold`) joins the list of
+   item 2. The public detail pages (`/providers/<id>`, `/hospitals/<id>`,
+   `/specialties/<id>`), their `/api/v1` twins, `/api/v1/slots` and a `/fhir` search
+   without a token load schedules for anyone and have no limit; the search has one since
+   26a. Give them the same mechanism, and say in the plan which share a counter.
 
 Logs and errors:
 

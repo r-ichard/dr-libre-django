@@ -17,6 +17,7 @@ from scheduling.domain.availability_rules import (
     rule_failures,
 )
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.vocabulary import Role
 from scheduling.models import AvailabilityRule, ClinicianProfile, Room, User
 from scheduling.use_cases.audit import AuditEvent, changed_field_names, record_audit
@@ -53,12 +54,14 @@ def create_rule(command: RuleCommand, actor: User) -> Result[AvailabilityRule]:
         return _save_and_audit(rule, command, "availability.create", RULE_FIELDS, actor)
 
 
-def update_rule(rule_id: UUID, command: RuleCommand, actor: User) -> Result[AvailabilityRule]:
+def update_rule(
+    rule_id: UUID, command: RuleCommand, actor: User, expected_version: int | None = None
+) -> Result[AvailabilityRule]:
     with transaction.atomic():
         locked = locked_profile(actor)
         if isinstance(locked, Failure):
             return locked
-        found = _own_rule(rule_id, locked.value)
+        found = _own_rule(rule_id, locked.value, expected_version)
         if isinstance(found, Failure):
             return found
         invalid = _invalid(command, locked.value, exclude_rule_id=rule_id)
@@ -68,12 +71,12 @@ def update_rule(rule_id: UUID, command: RuleCommand, actor: User) -> Result[Avai
         return _save_and_audit(found.value, command, "availability.update", changed, actor)
 
 
-def delete_rule(rule_id: UUID, actor: User) -> Result[UUID]:
+def delete_rule(rule_id: UUID, actor: User, expected_version: int | None = None) -> Result[UUID]:
     with transaction.atomic():
         locked = locked_profile(actor)
         if isinstance(locked, Failure):
             return locked
-        found = _own_rule(rule_id, locked.value)
+        found = _own_rule(rule_id, locked.value, expected_version)
         if isinstance(found, Failure):
             return found
         rule = found.value
@@ -94,9 +97,14 @@ def _zone_of(profile: ClinicianProfile) -> ZoneInfo:
     return ZoneInfo(profile.department.hospital.time_zone)
 
 
-def _own_rule(rule_id: UUID, profile: ClinicianProfile) -> Result[AvailabilityRule]:
+def _own_rule(
+    rule_id: UUID, profile: ClinicianProfile, expected_version: int | None
+) -> Result[AvailabilityRule]:
     rule = AvailabilityRule.objects.select_for_update().filter(pk=rule_id).first()
-    return guard_record(rule, lambda found: found.clinician_id == profile.pk)
+    guarded = guard_record(rule, lambda found: found.clinician_id == profile.pk)
+    if isinstance(guarded, Success) and expected_version not in (None, guarded.value.version):
+        return stale_version()
+    return guarded
 
 
 def _invalid(

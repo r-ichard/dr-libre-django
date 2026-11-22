@@ -9,6 +9,7 @@ from django.db import transaction
 
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.profile_rules import (
     birth_date_failure,
     new_password_failures,
@@ -30,7 +31,9 @@ class ProfileCommand:
     date_of_birth: date | None
 
 
-def update_profile(command: ProfileCommand, actor: User) -> Result[None]:
+def update_profile(
+    command: ProfileCommand, actor: User, expected_version: int | None = None
+) -> Result[None]:
     today = current_request_context().now.date()
     failures = [phone_failure(command.phone)]
     if command.date_of_birth is not None:
@@ -40,6 +43,8 @@ def update_profile(command: ProfileCommand, actor: User) -> Result[None]:
         return Failure.invalid_input(problems)
     with transaction.atomic():
         user = User.objects.select_for_update().get(pk=actor.pk)
+        if expected_version not in (None, user.version):
+            return stale_version()
         changed = []
         if user.phone != command.phone:
             user.phone = command.phone

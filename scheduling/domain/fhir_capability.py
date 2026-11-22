@@ -6,12 +6,11 @@ from collections.abc import Sequence
 from scheduling.domain.fhir_common import CANONICAL_BASE, FHIR_VERSION, Resource
 from scheduling.domain.fhir_declaration import (
     FHIR_TYPE_OF_KIND,
-    INTERACTIONS,
     ResourceDeclaration,
 )
 
 CAPABILITY_DATE = "2026-11-22"
-DESCRIPTION = "DrLibre appointment scheduling, read-only FHIR R4 API."
+DESCRIPTION = "DrLibre appointment scheduling, FHIR R4 API."
 
 
 def capability_statement(declarations: Sequence[ResourceDeclaration]) -> Resource:
@@ -34,7 +33,7 @@ def _resource(declaration: ResourceDeclaration) -> Resource:
     resource: Resource = {
         "type": declaration.type,
         "versioning": "versioned",
-        "interaction": [{"code": code} for code in INTERACTIONS],
+        "interaction": [{"code": code} for code in declaration.interactions],
         "searchParam": [
             {"name": item.name, "type": FHIR_TYPE_OF_KIND[item.kind]}
             for item in declaration.parameters

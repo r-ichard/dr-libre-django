@@ -3,18 +3,23 @@ read through the real routes. `make fhir-validate` hands them to the HL7 validat
 walks them for empty values."""
 
 import json
+from datetime import timedelta
 from pathlib import Path
 
 from django.test import Client
+from django.utils import timezone
 
 from scheduling.domain.fhir_common import Resource
 from scheduling.domain.fhir_declaration import FHIR_RESOURCES
+from scheduling.domain.fhir_outcome import information_outcome
 from scheduling.models import User
 from scheduling.use_cases.api_tokens import issue_token
 from scheduling.views.api_clients import fhir_client
 
 SAMPLE_HOST = "localhost"
 VIEWS = ("public", "staff")
+NEEDS_MORE = ("Slot", "Patient")  # a start range and a type; a token
+SLOT_DAYS = 14
 MISSING_PATH = "/fhir/Organization/00000000-0000-0000-0000-000000000000"
 
 
@@ -25,6 +30,8 @@ def sample_documents(staff_user: User) -> dict[str, Resource]:
     for view in VIEWS:
         client = fhir_client(token if view == "staff" else None)
         documents.update(_view_documents(client, view))
+        documents.update(_slot_documents(client, view))
+    documents.update(_staff_documents(fhir_client(token)))
     return documents
 
 
@@ -36,6 +43,8 @@ def _view_documents(client: Client, view: str) -> dict[str, Resource]:
     documents: dict[str, Resource] = {}
     for declaration in FHIR_RESOURCES:
         name = declaration.type
+        if name in NEEDS_MORE:
+            continue
         bundle = fetch(f"/fhir/{name}")
         documents[f"{name}-search-{view}"] = bundle
         identifiers = [entry["resource"]["id"] for entry in bundle.get("entry", [])]  # type: ignore[attr-defined]
@@ -45,6 +54,47 @@ def _view_documents(client: Client, view: str) -> dict[str, Resource]:
     documents[f"PractitionerRole-include-{view}"] = fetch(f"/fhir/PractitionerRole?{include}")
     documents[f"metadata-{view}"] = fetch("/fhir/metadata")
     documents[f"OperationOutcome-{view}"] = fetch(MISSING_PATH)
+    return documents
+
+
+def _fetch(client: Client, path: str) -> Resource:
+    body: Resource = client.get(path, SERVER_NAME=SAMPLE_HOST).json()
+    return body
+
+
+def _slot_documents(client: Client, view: str) -> dict[str, Resource]:
+    """Slots of the first service the demo seed offers any, as the public and as staff."""
+    today = timezone.now().date()
+    window = f"start=ge{today}&start=lt{today + timedelta(days=SLOT_DAYS)}"
+    services = _fetch(client, "/fhir/HealthcareService?_count=100").get("entry", [])
+    for entry in services:  # type: ignore[attr-defined]
+        base = f"/fhir/Slot?service-type={entry['resource']['id']}&{window}"
+        bundle = _fetch(client, base)
+        if bundle.get("entry"):
+            documents = {f"Slot-search-{view}": bundle}
+            first = bundle["entry"][0]["resource"]  # type: ignore[index]
+            documents[f"Slot-read-{view}"] = _fetch(client, f"/fhir/Slot/{first['id']}")
+            documents[f"Slot-include-{view}"] = _fetch(client, f"{base}&_include=Slot:schedule")
+            busy = "&status=free&status=busy&status=busy-tentative&status=busy-unavailable"
+            documents[f"Slot-busy-{view}"] = _fetch(client, base + busy)
+            return documents
+    return {}
+
+
+def _staff_documents(client: Client) -> dict[str, Resource]:
+    """Patient reads, the request bodies of every write, and the answer to a delete."""
+    documents: dict[str, Resource] = {}
+    patients = _fetch(client, "/fhir/Patient")
+    documents["Patient-search-staff"] = patients
+    first_patient = patients["entry"][0]["resource"]  # type: ignore[index]
+    documents["Patient-read-staff"] = _fetch(client, f"/fhir/Patient/{first_patient['id']}")
+    documents["Patient-put-body"] = first_patient
+    schedule = _fetch(client, "/fhir/Schedule")["entry"][0]["resource"]  # type: ignore[index]
+    documents["Schedule-put-body"] = schedule
+    documents["Schedule-post-body"] = {
+        key: value for key, value in schedule.items() if key not in ("id", "meta")
+    }
+    documents["OperationOutcome-deleted"] = information_outcome("The record was deleted.", "sample")
     return documents
 
 

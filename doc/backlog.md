@@ -76,12 +76,12 @@ tasks.
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | merged `42600a0` |
 | 19 | Users and clinicians; carried: list paging, demo specialty icons, two time grid faults | 10 | merged `bc0bbac` |
 | 20 | Appointments, waitlist, audit log, settings | 10 | merged `6f9a986` |
-| 21 | Dashboard, reporting, CSV export; four items carried from task 20 | 13 | running |
+| 21 | Dashboard, reporting, CSV export; four items carried from task 20 | 13 | running `01M80JJ8BJP3` |
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
-| 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | running `01M80HFKDRHQ` |
-| 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries | 15.2 to 15.6 | todo |
+| 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | merged `ca45d88` |
+| 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | running `01M80M4WGA8Q` |
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |
 | 25 | Accessibility and UX pass (impeccable) | 16 | todo |
@@ -137,8 +137,6 @@ Small findings waiting for the next task that touches the same file.
   the appointments without a notice; the notifications page goes from an h1 to h3
   headings; the profile form does not move focus to its first invalid field; notification
   times are shown in UTC while the rest of the portal uses the hospital's zone. Task 25.
-- `ClinicalNote` declares itself not exposed through FHIR, but section 15.3 maps clinical
-  notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
 - Section 5.6 puts no time on a status change: a clinician can mark an appointment two
   days ahead as completed or as a no-show (seen in the demo seed of task 17d). Owner to
   confirm whether check in, complete and no-show wait for the day or the start time.
@@ -172,3 +170,7 @@ Small findings waiting for the next task that touches the same file.
 - Review of 22a, small: `scripts/fhir_validate.sh` never drops its throwaway database;
   FHIR search sorts by the database collation where it sorted by code point; the
   `fhir_samples` command imports from the view layer. Task 24.
+- Review of 23, small: `fhir_slot_reads.py` is 279 lines, split the busy intervals out;
+  an `assert` in `_allowed_methods` of the FHIR views. ADR 0006 open points for the
+  owner: whether a busy slot can be read by id; whether a Patient search by email or
+  phone in the address is acceptable. Task 24.

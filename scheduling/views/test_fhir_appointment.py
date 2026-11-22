@@ -6,7 +6,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from scheduling.models import Appointment, WaitlistEntry
+from scheduling.models import Appointment, AuditLogEntry, Notification, WaitlistEntry
 from scheduling.models.builders import STARTS_AT, make, make_clinic, make_user
 from scheduling.views import clock
 from scheduling.views.fhir_test_support import NOW, get, send, token_of
@@ -371,6 +371,22 @@ def returns_200_and_moved_row_when_patient_reschedules_a_week_later() -> None:
     assert response.status_code == 200  # type: ignore[attr-defined]
     assert row.starts_at == datetime(2030, 2, 11, 10, tzinfo=UTC)
     assert row.ends_at == datetime(2030, 2, 11, 10, 30, tzinfo=UTC)
+
+
+def returns_200_without_audit_entry_or_notification_when_put_keeps_the_current_start() -> None:
+    clinic = make_clinic()
+    row = _later(clinic)
+
+    response = _put(
+        row,
+        token_of(clinic.patient),
+        start="2030-02-06T10:00:00Z",
+        end="2030-02-06T10:30:00Z",
+    )
+
+    assert response.status_code == 200  # type: ignore[attr-defined]
+    assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 0
+    assert Notification.objects.filter(appointment=row, kind="SCHEDULE_CHANGED").count() == 0
 
 
 def returns_200_and_cancellation_reason_when_patient_cancels() -> None:

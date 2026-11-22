@@ -83,6 +83,8 @@ def reschedule_appointment(
         appointment = locked.value
         if AppointmentStatus(appointment.status) not in RESCHEDULABLE_STATUSES:
             return Failure.invalid_transition(appointment.status)
+        if starts_at == appointment.starts_at:
+            return Success(appointment)
         moved = replace_placement(appointment, starts_at, actor)
         if isinstance(moved, Failure):
             return moved

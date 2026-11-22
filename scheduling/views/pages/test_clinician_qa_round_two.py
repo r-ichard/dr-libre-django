@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from django.test import Client
 
-from scheduling.models import Appointment, TimeOff, User
+from scheduling.models import Appointment, AuditLogEntry, Notification, TimeOff, User
 from scheduling.models.builders import Clinic, make, make_clinic
 from scheduling.views import clock
 from scheduling.views.pages.booking_pages_support import NOW, signed_in_patient
@@ -298,3 +298,22 @@ def returns_booked_in_the_history_when_the_book_action_was_audited() -> None:
     )
 
     assert "appointment.book" not in html
+
+
+# --- #39 reschedule to the current start ---
+
+
+def returns_303_without_audit_or_notification_when_clinician_review_posts_current_start() -> None:
+    clinic = make_clinic()
+    appointment = _booked(clinic)
+    review = f"/clinician/appointments/{appointment.pk}/reschedule/review"
+
+    response = browser_post(
+        _clinician_client(clinic), f"{review}?starts_at=2030-01-14T10:00:00Z", {}
+    )
+
+    assert response.status_code == 303
+    assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 0
+    assert (
+        Notification.objects.filter(appointment=appointment, kind="SCHEDULE_CHANGED").count() == 0
+    )

@@ -305,6 +305,22 @@ def returns_rescheduled_notification_and_audit_entry_when_rescheduling() -> None
     assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 1
 
 
+def returns_200_without_audit_entry_or_notification_when_api_reschedules_to_current_start() -> None:
+    clinic = make_clinic()
+    appointment = _make_appointment(clinic, starts_at=NEXT_MONDAY)
+    version_before = appointment.version
+
+    response = _reschedule(_signed_in(clinic.patient), appointment, NEXT_MONDAY)
+
+    appointment.refresh_from_db()
+    assert response.status_code == 200
+    assert appointment.version == version_before
+    assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 0
+    assert (
+        Notification.objects.filter(appointment=appointment, kind="SCHEDULE_CHANGED").count() == 0
+    )
+
+
 # --- status actions ---
 
 

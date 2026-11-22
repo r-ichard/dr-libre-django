@@ -39,7 +39,11 @@ and `mutation-equivalents.txt` only: no product line mutated. `make gate` and es
 - `make mutate` not run by me; the sandbox run is the proof for the domain modules.
 
 ## Blocking
-- `make test` over 30 s (38 to 40 s measured).
+- `make test` over 30 s (38 to 40 s measured). **Outcome: fixed in part.** No new test (a timing
+  target, not behaviour). Hostile-input cost was 47 of 118 call-seconds; the 100 000 character value
+  is now 20 000 (kinds of value kept, the 3 MB body request keeps the size case), and `Makefile`
+  `--maxprocesses=4` is now 8. Measured on a shared host (load 7 to 14): 30.9 s and 32.3 s, was 40 to
+  45 s. Under 30 s is not proven here; it depends on the sandbox core count.
 
 ## Later
 - Fix the flaky `test_api_tokens` test.

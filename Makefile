@@ -13,7 +13,7 @@ setup:
 
 test:
 	uv run --env-file .env.example python scripts/ensure_database.py
-	DB_NAME=drlibre_run_$$$$ uv run --env-file .env.example pytest -n auto --maxprocesses=4
+	DB_NAME=drlibre_run_$$$$ uv run --env-file .env.example pytest -n auto --maxprocesses=8
 
 lint:
 	uv run ruff check .

@@ -34,5 +34,10 @@ when the code works: any type escape hatch (`Any`, `cast`, bare `# type: ignore`
 `# noqa`, §7), a function over 100 lines or a file over 500 (§5), a swallowed error (§9),
 a write without an audit entry in the same transaction (`drlibre-specs.md` section 4),
 authorization read from a payload (§11). Everything else goes to Later and is approved.
+A time, speed or size budget in the task (how long `make test` takes, for example) is
+never a blocker: the sandbox shares its machine with other runs, so a number measured
+here proves nothing. Write the number you measured under Later; the orchestrator
+measures it on a quiet machine. Changing tests, test data or the Makefile to meet such a
+budget is out of scope unless the task is about the budget.
 
 Reply with the verdict and both lists.

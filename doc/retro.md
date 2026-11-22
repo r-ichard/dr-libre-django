@@ -687,3 +687,24 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   correctly. I read the refusal as a defect for a minute. The outcome names the element;
   the message text says only "The request is not valid".
 - 3640 tests, 69 seconds on my machine beside a sandbox and Chrome.
+
+## 2026-11-22 task 21 failed on my time budget; the subscription limit, second time
+
+- Task 21 did everything it was asked and its run failed: three reviews, each blocked
+  only by "`make test` over 30 s". The reviewer was right to hold the task to its words
+  and the words were mine. Two sandboxes shared the host; the same suite measured 22,
+  32, 38 and 52 seconds that night. The run spent 27 of its 49 minutes shrinking test
+  data and raising the worker count to chase a number that could not be met there.
+- Rule, in the review prompt now: a time or size budget is reported, never blocking, and
+  no run changes tests to meet one unless the task is about it. The budget left the task
+  files. The suite's speed gets its own task with its own gate (task 26).
+- For the run already going (23a) I used `fabro steer`: it reaches only the stage that
+  is live, so a background loop offers the note to the review stage until it is taken.
+- At 03:42 UTC both runs stopped with "You've hit your 5-hour limit, resets 5:10am":
+  the window that opened at 00:10 had carried fourteen runs, two at a time. The
+  session then sat idle until the owner came back at 08:36 UTC; the wakeup did not fire
+  while the laptop slept. Lost: five hours of wall time, no work. `fabro rewind <id>
+  <last good stage>` and a second sync launch resumed both.
+- What two runs side by side cost tonight, counted: two sync runs for one-line clashes,
+  one limit stop, one budget failure made of machine load. What they bought: milestones
+  M7 and M8 nearly done in one night. Still worth it; the limit is the price.

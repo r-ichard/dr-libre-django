@@ -70,5 +70,4 @@ audit trail of both through `/fhir`; creates and deletes a hospital with the adm
 token; and records time off with the clinician's token and sees it in the calendar.
 
 Done when `make setup && make lint && make test && make gate && make mutate` and
-`make fhir-validate` pass from a fresh clone, and `make test` stays under 50 seconds on a
-machine that runs nothing else.
+`make fhir-validate` pass from a fresh clone.

@@ -72,6 +72,14 @@ def instant_from(raw: str) -> datetime | None:
     return utc if utc is not None and instant_in_range(utc) else None
 
 
+def is_instant(raw: str) -> bool:
+    """A value with a date, time and offset, in range or not."""
+    try:
+        return datetime.fromisoformat(raw).utcoffset() is not None
+    except ValueError:
+        return False
+
+
 def week_from(raw: str) -> date | None:
     try:
         day = date.fromisoformat(raw)

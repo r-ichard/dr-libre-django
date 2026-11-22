@@ -7,12 +7,19 @@ from zoneinfo import ZoneInfo
 
 from django.http import Http404, HttpRequest, HttpResponse
 
+from scheduling.domain.booking_rules import BookingRule
 from scheduling.domain.failure import Failure
 from scheduling.models import Appointment
 from scheduling.use_cases.appointment_changes import reschedule_appointment
 from scheduling.use_cases.booking_page_data import week_of_slots
 from scheduling.use_cases.request_context import current_request_context
-from scheduling.views.pages.booking_links import clock_label, day_label, instant_from, week_from
+from scheduling.views.pages.booking_links import (
+    clock_label,
+    day_label,
+    instant_from,
+    is_instant,
+    week_from,
+)
 from scheduling.views.pages.booking_times import week_strip
 from scheduling.views.pages.patient_appointments import OwnAppointmentPage
 from scheduling.views.pages.patient_refusal import (
@@ -74,14 +81,23 @@ class RescheduleReviewPage(OwnAppointmentPage):
         blocked = blocked_page_or_none(request, found, self.user, "reschedule")
         if blocked is not None:
             return blocked
-        return self._review(request, found, asked_start(request))
+        starts_at = asked_start(request)
+        if isinstance(starts_at, Failure):
+            times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
+            return change_refused_page(request, starts_at, self.user, times)
+        return self._review(request, found, starts_at)
 
     def post(self, request: HttpRequest, **_path: object) -> HttpResponse:
         assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         found = self.appointment_or_refusal(request)
         if isinstance(found, HttpResponse):
             return found
-        moved = reschedule_appointment(found.pk, asked_start(request), self.user)
+        starts_at = asked_start(request)
+        moved = (
+            starts_at
+            if isinstance(starts_at, Failure)
+            else reschedule_appointment(found.pk, starts_at, self.user)
+        )
         if isinstance(moved, Failure):
             times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
             return change_refused_page(request, moved, self.user, times)
@@ -104,8 +120,12 @@ class RescheduleReviewPage(OwnAppointmentPage):
         return self.page(request, context)
 
 
-def asked_start(request: HttpRequest) -> datetime:
-    starts_at = instant_from(request.GET.get("starts_at", ""))
-    if starts_at is None:
-        raise Http404
-    return starts_at
+def asked_start(request: HttpRequest) -> datetime | Failure:
+    """A time out of range was never offered: a refusal value. A value that is no time is a 404."""
+    raw = request.GET.get("starts_at", "")
+    starts_at = instant_from(raw)
+    if starts_at is not None:
+        return starts_at
+    if is_instant(raw):
+        return Failure.rule_violation([BookingRule.OUTSIDE_AVAILABILITY])
+    raise Http404

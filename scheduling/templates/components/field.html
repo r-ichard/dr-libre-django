@@ -1,8 +1,11 @@
-{% comment %}Parameters: name, label, type, value, hint, error, invalid, error_id, autocomplete, autofocus, max.
+{% comment %}Parameters: name, label, type, value, hint, error, invalid, error_id, autocomplete, autofocus, max, id_prefix.
+id_prefix keeps ids unique when a page holds the same field twice.
 error_id points the field at a message elsewhere on the page, such as the error summary.{% endcomment %}
+{% with field_id=id_prefix|default:""|add:"id_"|add:name %}
 <div class="field{% if error or invalid %} field--invalid{% endif %}">
-  <label class="field__label" for="id_{{ name }}">{{ label }}</label>
-  {% if hint %}<p class="field__hint" id="id_{{ name }}_hint">{{ hint }}</p>{% endif %}
-  {% if error %}<p class="field__error" id="id_{{ name }}_error">{% include "components/icon.html" with kind="error" %}<span><span class="visually-hidden">Error: </span>{{ error }}</span></p>{% endif %}
-  <input class="input" id="id_{{ name }}" name="{{ name }}" type="{{ type|default:'text' }}"{% if value %} value="{{ value }}"{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}{% if max %} max="{{ max }}"{% endif %}{% if hint or error or error_id %} aria-describedby="{% if hint %}id_{{ name }}_hint {% endif %}{% if error %}id_{{ name }}_error{% else %}{{ error_id }}{% endif %}"{% endif %}{% if error or invalid %} aria-invalid="true"{% endif %}{% if autofocus %} data-autofocus{% endif %}>
+  <label class="field__label" for="{{ field_id }}">{{ label }}</label>
+  {% if hint %}<p class="field__hint" id="{{ field_id }}_hint">{{ hint }}</p>{% endif %}
+  {% if error %}<p class="field__error" id="{{ field_id }}_error">{% include "components/icon.html" with kind="error" %}<span><span class="visually-hidden">Error: </span>{{ error }}</span></p>{% endif %}
+  <input class="input" id="{{ field_id }}" name="{{ name }}" type="{{ type|default:'text' }}"{% if value %} value="{{ value }}"{% endif %}{% if autocomplete %} autocomplete="{{ autocomplete }}"{% endif %}{% if max %} max="{{ max }}"{% endif %}{% if hint or error or error_id %} aria-describedby="{% if hint %}{{ field_id }}_hint {% endif %}{% if error %}{{ field_id }}_error{% else %}{{ error_id }}{% endif %}"{% endif %}{% if error or invalid %} aria-invalid="true"{% endif %}{% if autofocus %} data-autofocus{% endif %}>
 </div>
+{% endwith %}

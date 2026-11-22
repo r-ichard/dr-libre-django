@@ -229,3 +229,28 @@ def returns_only_window_rule_when_patient_cancels_and_an_unused_new_start_is_soo
 
 def returns_count_without_booking_that_starts_exactly_now() -> None:
     assert count_open_online_bookings([_summary(starts_at=NOW)], NOW) == 0
+
+
+def returns_start_in_the_past_when_patient_books_before_now() -> None:
+    attempt = replace(BOOK, new_start=NOW - timedelta(days=1))
+
+    assert BookingRule.START_IN_THE_PAST in violated_rules(attempt)
+
+
+def returns_start_in_the_past_when_staff_reschedules_before_now() -> None:
+    attempt = replace(RESCHEDULE, actor_role=Role.CLINICIAN, new_start=NOW - timedelta(minutes=1))
+
+    assert violated_rules(attempt) == [BookingRule.START_IN_THE_PAST]
+
+
+def returns_no_past_rule_when_staff_books_at_now() -> None:
+    attempt = replace(BOOK, actor_role=Role.CLINICIAN, new_start=NOW)
+
+    assert violated_rules(attempt) == []
+
+
+def returns_no_past_rule_when_cancelling_and_an_unused_new_start_is_past() -> None:
+    attempt = replace(
+        CANCEL, new_start=NOW - timedelta(days=1), current_start=NOW + timedelta(days=3)
+    )
+    assert violated_rules(attempt) == []

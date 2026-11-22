@@ -19,7 +19,9 @@ from scheduling.views.pages.clinician_support import (
 )
 from scheduling.views.pages.local_time import errors_by_field, utc_from_local
 
-NOT_A_TIME = "Enter a date and time that exists in the hospital's time zone."
+NOT_A_TIME = (
+    "Enter a date and time that exists in the hospital's time zone; clocks skip one hour in spring."
+)
 FORM_FIELDS = ("starts_at", "ends_at", "reason")
 
 

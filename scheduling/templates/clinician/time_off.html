@@ -3,7 +3,7 @@
 {% block content %}
 {% include "components/workspace_nav.html" with current="time_off" %}
 <h1>Time off</h1>
-<p class="hint">Times are in the hospital's time zone, {{ time_zone }}.</p>
+<p class="hint">Times are in the hospital's time zone, {{ time_zone }}. When clocks go back, an hour happens twice; the first one is used.</p>
 {% include "components/notice.html" with kind="information" text="Time off does not cancel appointments already booked in it." %}
 {% if rows %}
 <div class="table-wrap">
@@ -29,8 +29,8 @@
   <h2 id="check-title">Check a period first</h2>
   <p>See which appointments already fall inside a period before you record it.</p>
   <form class="form" method="get" action="{{ action }}" novalidate>
-    {% include "components/field.html" with name="starts_at" label="From" type="datetime-local" value=values.starts_at %}
-    {% include "components/field.html" with name="ends_at" label="To" type="datetime-local" value=values.ends_at %}
+    {% include "components/field.html" with name="starts_at" label="From" type="datetime-local" value=values.starts_at id_prefix="check_" %}
+    {% include "components/field.html" with name="ends_at" label="To" type="datetime-local" value=values.ends_at id_prefix="check_" %}
     <button class="button button--secondary" type="submit">Check appointments</button>
   </form>
   {% if preview is not None %}

@@ -69,10 +69,15 @@ class RescheduleReviewPage(ClinicianPage):
     template_name = "clinician/reschedule_review.html"
 
     def get(self, request: HttpRequest, **_path: object) -> HttpResponse:
+        assert self.user is not None  # noqa: S101 - allowed_roles guarantees a signed-in user
         found = self.appointment_or_refusal(request)
         if isinstance(found, HttpResponse):
             return found
         starts_at = asked_start(request)
+        if isinstance(starts_at, Failure):
+            times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
+            back = (appointment_path(found.pk), BACK_TEXT)
+            return change_refused_page(request, starts_at, self.user, times, back)
         zone = ZoneInfo(found.appointment_type.department.hospital.time_zone)
         ends_at = starts_at + (found.ends_at - found.starts_at)
         context = {
@@ -91,7 +96,12 @@ class RescheduleReviewPage(ClinicianPage):
         found = self.appointment_or_refusal(request)
         if isinstance(found, HttpResponse):
             return found
-        moved = reschedule_appointment(found.pk, asked_start(request), self.user)
+        starts_at = asked_start(request)
+        moved = (
+            starts_at
+            if isinstance(starts_at, Failure)
+            else reschedule_appointment(found.pk, starts_at, self.user)
+        )
         if isinstance(moved, Failure):
             times = (request.path.removesuffix("/review"), TIMES_ACTION_TEXT)
             back = (appointment_path(found.pk), BACK_TEXT)

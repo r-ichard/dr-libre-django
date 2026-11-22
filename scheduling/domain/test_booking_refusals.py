@@ -28,7 +28,6 @@ def returns_slot_taken_with_link_back_to_times_when_conflict() -> None:
     [
         Failure.no_clinician_available(),
         Failure.no_room_available(),
-        Failure.rule_violation([BookingRule.OUTSIDE_AVAILABILITY]),
     ],
 )
 def returns_slot_taken_when_the_slot_cannot_be_given(failure: Failure) -> None:
@@ -101,7 +100,6 @@ def returns_a_refusal_when_any_failure_code_can_come_from_booking() -> None:
             Failure.rule_violation([BookingRule.CANCELLATION_WINDOW_CLOSED]),
             ("This appointment is too close to change online.", "times", 422),
         ),
-        (Failure.rule_violation([BookingRule.OUTSIDE_AVAILABILITY]), (TAKEN, "times", 409)),
         (Failure.rule_violation([]), (TAKEN, "times", 409)),
     ],
 )
@@ -129,3 +127,23 @@ def returns_slot_taken_when_violated_rules_is_not_a_list() -> None:
 
 def returns_slot_taken_when_violated_rules_are_missing() -> None:
     assert _refusal_for(Failure(FailureCode.RULE_VIOLATION)).message == TAKEN
+
+
+def returns_not_offered_sentence_when_outside_availability() -> None:
+    refusal = _refusal_for(Failure.rule_violation([BookingRule.OUTSIDE_AVAILABILITY]))
+
+    assert (refusal.message, refusal.way_forward, refusal.status) == (
+        "That time is not offered. Choose one from the week.",
+        "times",
+        422,
+    )
+
+
+def returns_passed_sentence_when_start_is_in_the_past() -> None:
+    refusal = _refusal_for(Failure.rule_violation([BookingRule.START_IN_THE_PAST]))
+
+    assert (refusal.message, refusal.way_forward, refusal.status) == (
+        "That time has already passed.",
+        "times",
+        422,
+    )

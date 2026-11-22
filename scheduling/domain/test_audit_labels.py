@@ -9,7 +9,19 @@ def returns_plain_label_when_action_is_known() -> None:
     assert audit_label("appointment.cancel") == "Cancelled"
 
 
-def returns_raw_action_when_action_is_unknown() -> None:
+def returns_generic_words_when_action_is_unknown() -> None:
     from scheduling.domain.audit_labels import audit_label
 
-    assert audit_label("appointment.invented") == "appointment.invented"
+    assert audit_label("appointment.invented") == "Changed the record"
+
+
+def returns_booked_when_action_is_appointment_book() -> None:
+    from scheduling.domain.audit_labels import audit_label
+
+    assert audit_label("appointment.book") == "Booked"
+
+
+def returns_plain_words_when_action_has_no_label() -> None:
+    from scheduling.domain.audit_labels import audit_label
+
+    assert "." not in audit_label("appointment.invented")

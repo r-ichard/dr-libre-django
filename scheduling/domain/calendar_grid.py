@@ -26,12 +26,16 @@ def _minute_of_day(moment: datetime, zone: ZoneInfo) -> int:
 
 
 def place_in_grid(starts_at: datetime, ends_at: datetime, time_zone: str) -> GridPlacement | None:
-    """None when the span starts outside the grid; an end past 19:00 is cut to the last row."""
-    zone = ZoneInfo(time_zone)
-    start_minute = _minute_of_day(starts_at, zone)
-    if not GRID_START_MINUTE <= start_minute < GRID_END_MINUTE:
-        return None
-    first_row = (start_minute - GRID_START_MINUTE) // ROW_MINUTES + 1
+    """Rows the span covers once cut to the grid; None when it does not touch 07:00 to 19:00."""
+    start_minute = _minute_of_day(starts_at, ZoneInfo(time_zone))
     duration_minutes = (ends_at - starts_at).total_seconds() / 60
-    span = max(1, ceil(duration_minutes / ROW_MINUTES))
+    end_minute = start_minute + duration_minutes
+    if start_minute >= GRID_END_MINUTE or (
+        end_minute <= GRID_START_MINUTE and start_minute < GRID_START_MINUTE
+    ):
+        return None
+    shown_start = max(start_minute, GRID_START_MINUTE)
+    shown_end = min(end_minute, GRID_END_MINUTE)
+    first_row = (shown_start - GRID_START_MINUTE) // ROW_MINUTES + 1
+    span = max(1, ceil((shown_end - shown_start) / ROW_MINUTES))
     return GridPlacement(first_row, min(span, ROW_COUNT - first_row + 1))

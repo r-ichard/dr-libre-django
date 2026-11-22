@@ -56,4 +56,6 @@ _RULE_SENTENCES: dict[str, str] = {
     ),
     BookingRule.TYPE_NOT_BOOKABLE_ONLINE: "This appointment type cannot be booked online.",
     BookingRule.CANCELLATION_WINDOW_CLOSED: "This appointment is too close to change online.",
+    BookingRule.START_IN_THE_PAST: "That time has already passed.",
+    BookingRule.OUTSIDE_AVAILABILITY: "That time is not offered. Choose one from the week.",
 }

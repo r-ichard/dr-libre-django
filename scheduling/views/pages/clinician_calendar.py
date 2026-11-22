@@ -11,6 +11,7 @@ from django.utils.cache import patch_cache_control
 
 from scheduling.domain.booking_week import next_week_start, previous_week_start
 from scheduling.domain.calendar_grid import HOUR_LABELS
+from scheduling.domain.period_days import cut_into_days
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.domain.workspace_day import local_day_bounds
 from scheduling.models import Appointment, ClinicianProfile, TimeOff
@@ -51,7 +52,11 @@ class CalendarPage(ClinicianPage):
         asked = week_from(request.GET.get("week", "")) or today
         monday = asked - timedelta(days=asked.weekday())
         blocks = _blocks(profile, monday)
-        days = [_day(monday + timedelta(days=offset), blocks, time_zone) for offset in range(7)]
+        week_days = [monday + timedelta(days=offset) for offset in range(DAYS_PER_WEEK)]
+        off = week_time_off(profile, monday)
+        days = [
+            _day(day, blocks + _time_off_items(off, day, time_zone), time_zone) for day in week_days
+        ]
         last_day = monday + timedelta(days=DAYS_PER_WEEK - 1)
         context = {
             "columns": days,
@@ -68,8 +73,7 @@ class CalendarPage(ClinicianPage):
 def _blocks(profile: ClinicianProfile, monday: date) -> list[GridItem]:
     zone = ZoneInfo(profile.department.hospital.time_zone)
     appointments = [_appointment_item(row, zone) for row in week_appointments(profile, monday)]
-    off = [_time_off_item(row, zone) for row in week_time_off(profile, monday)]
-    return sorted([*appointments, *off], key=lambda item: item.starts_at)
+    return sorted(appointments, key=lambda item: item.starts_at)
 
 
 def _span_text(starts_at: datetime, ends_at: datetime, zone: ZoneInfo) -> str:
@@ -92,12 +96,24 @@ def _appointment_item(row: Appointment, zone: ZoneInfo) -> GridItem:
     )
 
 
-def _time_off_item(row: TimeOff, zone: ZoneInfo) -> GridItem:
-    lines = (_span_text(row.starts_at, row.ends_at, zone), "Time off")
-    return GridItem(
-        row.starts_at, row.ends_at, lines + ((row.reason,) if row.reason else ()), "",
-        "time-grid-off", None,
-    )  # fmt: skip
+def _time_off_items(rows: list[TimeOff], day: date, time_zone: str) -> list[GridItem]:
+    """The part of each period inside this day; the text keeps the real start and end."""
+    zone = ZoneInfo(time_zone)
+    items: list[GridItem] = []
+    for row in rows:
+        for part in cut_into_days(row.starts_at, row.ends_at, [day], time_zone):
+            if part.starts_at == row.starts_at and part.ends_at == row.ends_at:
+                when = _span_text(row.starts_at, row.ends_at, zone)
+            else:
+                when = f"{_dated_clock(row.starts_at, zone)} to {_dated_clock(row.ends_at, zone)}"
+            lines = (when, "Time off") + ((row.reason,) if row.reason else ())
+            items.append(GridItem(part.starts_at, part.ends_at, lines, "", "time-grid-off", None))
+    return items
+
+
+def _dated_clock(instant: datetime, zone: ZoneInfo) -> str:
+    local = instant.astimezone(zone)
+    return f"{local:%a} {local.day} {local:%b} {local:%H:%M}"
 
 
 def _day(day: date, items: list[GridItem], time_zone: str) -> dict[str, object]:

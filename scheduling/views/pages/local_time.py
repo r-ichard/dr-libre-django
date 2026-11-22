@@ -1,5 +1,6 @@
-"""A browser's datetime-local value is a wall-clock time with no zone: read it in the hospital's
-zone. A time that does not exist or happens twice (clock changes) is refused, never guessed."""
+"""A datetime-local value has no zone: read it in the hospital's zone. A skipped time (clocks
+jump forward) is refused. A repeated time (clocks go back) means its first occurrence, summer
+time; the time off page says so beside the fields."""
 
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
@@ -16,9 +17,8 @@ def utc_from_local(raw: str, zone: ZoneInfo) -> datetime | None:
     if wall.tzinfo is not None or not day_in_range(wall.date()):
         return None
     early = wall.replace(tzinfo=zone, fold=0)
-    late = wall.replace(tzinfo=zone, fold=1)
     exists = early.astimezone(UTC).astimezone(zone).replace(tzinfo=None) == wall
-    if not exists or early.utcoffset() != late.utcoffset():
+    if not exists:
         return None
     return early.astimezone(UTC)
 

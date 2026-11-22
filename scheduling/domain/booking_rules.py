@@ -25,6 +25,7 @@ class BookingRule(StrEnum):
     TOO_MANY_OPEN_BOOKINGS = "too_many_open_bookings"
     TYPE_NOT_BOOKABLE_ONLINE = "type_not_bookable_online"
     OUTSIDE_AVAILABILITY = "outside_availability"
+    START_IN_THE_PAST = "start_in_the_past"
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,7 @@ def violated_rules(attempt: BookingAttempt) -> list[BookingRule]:
     booking = action == BookingAction.BOOK
     cancelling = action == BookingAction.CANCEL
     violations = [
+        (not cancelling and _starts_before_now(attempt), BookingRule.START_IN_THE_PAST),
         (patient_rules and not cancelling and _too_soon(attempt), BookingRule.LEAD_TIME_TOO_SHORT),
         (
             patient_rules and not booking and _window_closed(attempt),
@@ -84,6 +86,10 @@ def count_open_online_bookings(appointments: Sequence[BookingSummary], now: date
         and is_active(appointment.status)
         and appointment.source != AppointmentSource.STAFF
     )
+
+
+def _starts_before_now(attempt: BookingAttempt) -> bool:
+    return attempt.new_start is not None and attempt.new_start < attempt.now
 
 
 def _too_soon(attempt: BookingAttempt) -> bool:

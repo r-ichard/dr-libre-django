@@ -26,10 +26,10 @@ def returns_block_at_row_1_when_starts_at_grid_start() -> None:
     )
 
 
-def returns_nothing_when_starts_0630() -> None:
-    from scheduling.domain.calendar_grid import place_in_grid
+def returns_first_row_when_starts_0630_and_ends_0730() -> None:
+    from scheduling.domain.calendar_grid import GridPlacement, place_in_grid
 
-    assert place_in_grid(_berlin(6, 30), _berlin(7, 30), BERLIN) is None
+    assert place_in_grid(_berlin(6, 30), _berlin(7, 30), BERLIN) == GridPlacement(1, 1)
 
 
 def returns_nothing_when_starts_at_grid_end() -> None:
@@ -92,3 +92,46 @@ def returns_labels_every_hour_from_0700_to_1900() -> None:
     assert HOUR_LABELS[0] == "07:00"
     assert HOUR_LABELS[-1] == "19:00"
     assert len(HOUR_LABELS) == 13
+
+
+def returns_rows_one_to_twenty_four_when_span_covers_the_day() -> None:
+    from scheduling.domain.calendar_grid import GridPlacement, place_in_grid
+
+    starts_at = datetime(2030, 1, 6, 23, 0, tzinfo=UTC)
+    ends_at = starts_at + timedelta(hours=24)
+
+    assert place_in_grid(starts_at, ends_at, BERLIN) == GridPlacement(first_row=1, span=24)
+
+
+def returns_first_row_when_span_starts_before_seven_and_ends_at_eight() -> None:
+    from scheduling.domain.calendar_grid import GridPlacement, place_in_grid
+
+    assert place_in_grid(_berlin(1, 0), _berlin(8, 0), BERLIN) == GridPlacement(first_row=1, span=2)
+
+
+def returns_nothing_when_span_ends_at_seven() -> None:
+    from scheduling.domain.calendar_grid import place_in_grid
+
+    assert place_in_grid(_berlin(1, 0), _berlin(7, 0), BERLIN) is None
+
+
+def returns_nothing_when_span_ends_before_seven() -> None:
+    from scheduling.domain.calendar_grid import place_in_grid
+
+    assert place_in_grid(_berlin(1, 0), _berlin(6, 30), BERLIN) is None
+
+
+def returns_last_row_when_span_starts_at_1830_and_ends_after_midnight() -> None:
+    from scheduling.domain.calendar_grid import GridPlacement, place_in_grid
+
+    starts_at = _berlin(18, 30)
+
+    assert place_in_grid(starts_at, starts_at + timedelta(hours=8), BERLIN) == GridPlacement(
+        first_row=24, span=1
+    )
+
+
+def returns_first_row_when_a_zero_length_span_sits_at_grid_start() -> None:
+    from scheduling.domain.calendar_grid import GridPlacement, place_in_grid
+
+    assert place_in_grid(_berlin(7, 0), _berlin(7, 0), BERLIN) == GridPlacement(1, 1)

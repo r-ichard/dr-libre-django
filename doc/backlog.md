@@ -80,7 +80,7 @@ tasks.
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
 | 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | merged `325fcd1` |
-| 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | running |
+| 23 | Schedule, Slot, Patient; the write rules for FHIR | 15.2, 15.4, 15.5 | running `01M80HFKDRHQ` |
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries | 15.2 to 15.6 | todo |
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |

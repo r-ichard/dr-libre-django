@@ -4,7 +4,13 @@ import importlib
 
 from scheduling.domain.failure import Failure, Success
 from scheduling.domain.fhir_capability import capability_statement
-from scheduling.domain.fhir_declaration import FHIR_RESOURCES, declaration_for
+from scheduling.domain.fhir_declaration import (
+    FHIR_RESOURCES,
+    ParameterKind,
+    ResourceDeclaration,
+    SearchParameter,
+    declaration_for,
+)
 from scheduling.domain.fhir_search import parse_search
 
 
@@ -102,3 +108,33 @@ def returns_refusal_when_repeated_include_is_undeclared() -> None:
     assert result.details == {
         "fields": [{"field": "_include", "message": "The value cannot be read."}]
     }
+
+
+def returns_the_exact_sort_documentation_of_each_resource_when_capability_statement_built() -> None:
+    declarations = (
+        ResourceDeclaration("Patient", (SearchParameter("birthdate", ParameterKind.DATE),)),
+        ResourceDeclaration("ValueSet", ()),
+    )
+
+    rest = capability_statement(declarations)["rest"]
+
+    assert isinstance(rest, list)
+    resources = rest[0]["resource"]
+    assert resources[0]["documentation"] == "`_sort` takes: birthdate, -birthdate."
+    assert resources[1]["documentation"] == "`_sort` takes no value."
+
+
+def returns_every_sortable_name_in_both_directions_when_two_parameters_sort() -> None:
+    declaration = ResourceDeclaration(
+        "Appointment",
+        (
+            SearchParameter("date", ParameterKind.DATE),
+            SearchParameter("name", ParameterKind.TEXT),
+        ),
+    )
+
+    rest = capability_statement((declaration,))["rest"]
+
+    assert isinstance(rest, list)
+    documentation = rest[0]["resource"][0]["documentation"]
+    assert documentation == "`_sort` takes: date, -date, name, -name."

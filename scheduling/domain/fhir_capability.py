@@ -39,6 +39,12 @@ def _resource(declaration: ResourceDeclaration) -> Resource:
             for item in declaration.parameters
         ],
     }
+    resource["documentation"] = _sort_documentation(declaration)
     if declaration.includes:
         resource["searchInclude"] = list(declaration.includes)
     return resource
+
+
+def _sort_documentation(declaration: ResourceDeclaration) -> str:
+    values = [f"{prefix}{name}" for name in declaration.sortable for prefix in ("", "-")]
+    return f"`_sort` takes: {', '.join(values)}." if values else "`_sort` takes no value."

@@ -101,7 +101,7 @@ AUDIT_EVENTS = Part(
     visible=lambda: AuditLogEntry.objects.all(),
     everything=lambda: AuditLogEntry.objects.all(),
     id_column="pk",
-    sort_columns={},
+    sort_columns={"date": "created_at"},
     newest_column="created_at",
     filters={
         "agent": _agent,

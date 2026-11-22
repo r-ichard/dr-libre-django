@@ -47,7 +47,7 @@ def search_patients(query: SearchQuery, caller: Caller) -> Result[SearchPage]:
         visible=lambda: readable,
         everything=lambda: readable,
         id_column="pk",
-        sort_columns={"name": "full_name"},
+        sort_columns={"name": "full_name", "birthdate": "date_of_birth"},
         filters={
             "name": lambda rows, value: rows.filter(full_name__icontains=value),
             "email": lambda rows, value: rows.filter(email__iexact=value),

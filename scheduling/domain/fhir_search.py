@@ -116,7 +116,7 @@ def _number(text: str, low: int, high: int) -> int:
 def _read_value(parameter: SearchParameter, value: str) -> tuple[str, ...] | Failure:
     """The alternatives a value names ("either", comma-separated), or the refusal naming it."""
     kind = parameter.kind
-    pieces = [value] if kind in _WHOLE_VALUE_KINDS else value.split(",")
+    pieces = [value] if kind in _WHOLE_VALUE_KINDS else split_alternatives(value)
     read = [_read_piece(kind, piece) for piece in pieces]
     if None in read:
         return _refuse(parameter.name, "The value cannot be read.")
@@ -125,6 +125,25 @@ def _read_value(parameter: SearchParameter, value: str) -> tuple[str, ...] | Fai
     if unknown:
         return _refuse(parameter.name, f"Use one of: {', '.join(parameter.codes)}.")
     return alternatives
+
+
+def split_alternatives(value: str) -> list[str]:
+    """Splits on commas; FHIR's escapes `\\,` and `\\\\` stand for a comma and a backslash."""
+    pieces = [""]
+    index = 0
+    while index < len(value):
+        char = value[index]
+        following = value[index + 1 : index + 2]
+        if char == "\\" and following in (",", "\\"):
+            pieces[-1] += following
+            index += 2
+            continue
+        if char == ",":
+            pieces.append("")
+        else:
+            pieces[-1] += char
+        index += 1
+    return pieces
 
 
 def _read_piece(kind: ParameterKind, value: str) -> str | None:

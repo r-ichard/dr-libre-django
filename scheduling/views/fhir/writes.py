@@ -12,6 +12,7 @@ from scheduling.domain.fhir_common import SPECIALTY_ID, Resource
 from scheduling.domain.fhir_outcome import information_outcome
 from scheduling.domain.fhir_search import parse_id
 from scheduling.domain.fhir_write_shapes import WRITE_SHAPES
+from scheduling.domain.write_body import unsupported_media_type
 from scheduling.use_cases import fhir_resources
 from scheduling.use_cases.fhir_caller import Caller
 from scheduling.use_cases.fhir_specialty_writes import update_specialty_list
@@ -20,10 +21,12 @@ from scheduling.views.fhir.responses import (
     failure_response,
     method_not_allowed_response,
     resource_response,
+    unsupported_media_response,
     weak_etag,
 )
 
 DELETED_MESSAGE = "The record was deleted."
+WRITE_MEDIA_TYPES = ("application/json", "application/fhir+json")
 BODY_PROBLEM = FieldMessage("body", "The request body is not a JSON object.")
 
 
@@ -32,6 +35,8 @@ def write(
 ) -> HttpResponse:
     if caller.user is None:
         return failure_response(Failure.unauthenticated())
+    if _says_not_json(request):
+        return unsupported_media_response()
     refusal = fhir_resources.refusal_before_body(
         resource_type, caller, request.method or "", raw_identifier
     )
@@ -62,6 +67,18 @@ def write(
     if isinstance(result, Failure):
         return failure_response(result)
     return _with_etag(resource_response(result.value), result.value)
+
+
+def _says_not_json(request: HttpRequest) -> bool:
+    return (
+        unsupported_media_type(
+            request.META.get("CONTENT_LENGTH"),
+            request.META.get("HTTP_TRANSFER_ENCODING"),
+            request.content_type or "",
+            WRITE_MEDIA_TYPES,
+        )
+        is not None
+    )
 
 
 def _specialty_list_written(

@@ -9,6 +9,7 @@ import pytest
 
 from scheduling.views.fhir_spec_tables import (
     ADMIN,
+    ADR_ADDITIONS,
     INTERACTIONS,
     PUBLIC,
     ROLES,
@@ -76,6 +77,11 @@ def tokens() -> dict[str, str | None]:
     return {PUBLIC: None, **{role: token_of(role=role.upper()) for role in ROLES[1:]}}
 
 
+def _parameters_served(spec: SpecResource) -> set[str]:
+    added = {item.parameter for item in ADR_ADDITIONS if item.resource == spec.type}
+    return set(spec.parameters) | added
+
+
 def returns_every_resource_interaction_and_parameter_of_the_spec_in_the_capability_statement() -> (
     None
 ):
@@ -86,9 +92,9 @@ def returns_every_resource_interaction_and_parameter_of_the_spec_in_the_capabili
     for spec in SPEC_RESOURCES:
         entry = served[spec.type]
         assert {item["code"] for item in entry["interaction"]} == _served(spec), spec.type
-        assert {item["name"] for item in entry.get("searchParam", [])} == set(spec.parameters), (
-            spec.type
-        )
+        assert {item["name"] for item in entry.get("searchParam", [])} == _parameters_served(
+            spec
+        ), spec.type
         assert set(entry.get("searchInclude", [])) == set(spec.includes), spec.type
 
 
@@ -141,7 +147,7 @@ def returns_no_unsupported_refusal_for_every_parameter_and_include_the_spec_name
     spec: SpecResource,
 ) -> None:
     token = token_of(role="ADMIN")
-    queries = [f"{name}=x" for name in spec.parameters]
+    queries = [f"{name}=x" for name in sorted(_parameters_served(spec))]
     queries += [f"_include={name}" for name in spec.includes]
 
     bodies = {query: get(f"/fhir/{spec.type}?{query}", token).content.decode() for query in queries}
@@ -154,6 +160,13 @@ def returns_400_when_an_include_is_not_in_the_spec() -> None:
     response = get("/fhir/Appointment?_include=Appointment:service", token_of(role="ADMIN"))
 
     assert response.status_code == 400
+
+
+def returns_no_addition_to_the_spec_without_an_existing_adr_that_names_it() -> None:
+    unnamed = [item for item in ADR_ADDITIONS if not _adr_text(item.adr, item.quote)]
+
+    assert ADR_ADDITIONS
+    assert unnamed == []
 
 
 def returns_no_difference_from_the_spec_without_an_existing_adr_and_a_reason() -> None:

@@ -11,6 +11,7 @@ from scheduling.domain.request_limits import (
     json_depth,
     query_field_count,
 )
+from scheduling.domain.write_body import unsupported_media_type
 
 
 def refuse_oversized(request: Request) -> None:
@@ -32,11 +33,11 @@ def refuse_non_json_write(request: Request) -> None:
     wsgiref names its type text/plain when the client sent no header."""
     if request.method in ("GET", "HEAD", "OPTIONS"):
         return
-    # The server drops CONTENT_LENGTH when the client sent none; an empty one is a malformed body.
-    declared = request.META.get("CONTENT_LENGTH")
-    has_body = (declared is not None and declared != "0") or (
-        "HTTP_TRANSFER_ENCODING" in request.META
+    media_type = unsupported_media_type(
+        request.META.get("CONTENT_LENGTH"),
+        request.META.get("HTTP_TRANSFER_ENCODING"),
+        request.content_type,
+        ("application/json",),
     )
-    media_type = request.content_type.split(";")[0].strip().lower()
-    if has_body and media_type != "application/json":
+    if media_type is not None:
         raise UnsupportedMediaType(media_type)

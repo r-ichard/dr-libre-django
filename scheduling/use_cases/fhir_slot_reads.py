@@ -132,7 +132,8 @@ def search_slots(query: SearchQuery, caller: Caller) -> Result[SearchPage]:
     rows = _rule_rows(set(free_by_clinician) | busy_ids)
     grid = Grid(appointment_type, found.value, TimeRange(*window), rows, filters)
     placed = _free_placed(grid, free_by_clinician) + _busy_placed(grid, busy_ids, free_by_clinician)
-    placed.sort(key=lambda item: (item.start, str(item.rule_id)))
+    placed.sort(key=lambda item: str(item.rule_id))
+    placed.sort(key=lambda item: item.start, reverse=query.descending)
     page = placed[query.offset : query.offset + query.count]
     resources = [_resource(item, appointment_type, found.value) for item in page]
     return Success(SearchPage(len(placed), resources, _included(query, page)))

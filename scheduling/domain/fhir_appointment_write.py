@@ -127,7 +127,7 @@ def _moved_element(stored: Resource, body: dict[str, object]) -> str | None:
         return "Appointment.start"
     if body_end is None:
         return "Appointment.end"
-    if body_end != body_start + (stored_end - stored_start):
+    if body_end not in (stored_end, body_start + (stored_end - stored_start)):
         return "Appointment.end"
     names = (set(stored) | set(body)) - set(IGNORED_WHEN_COMPARED)
     return next(

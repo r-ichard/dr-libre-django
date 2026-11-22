@@ -66,7 +66,7 @@ def _booked_part(user: User, role: Role | None) -> Part:
         visible=rows,
         everything=rows,
         id_column="logical_id",
-        sort_columns={},
+        sort_columns={"date": "starts_at"},
         filters={
             "patient": _equals("patient_id"),
             "practitioner": _equals("clinician__user_id"),
@@ -90,7 +90,7 @@ def _waitlist_part(user: User, role: Role | None) -> Part:
         visible=rows,
         everything=rows,
         id_column="pk",
-        sort_columns={},
+        sort_columns={"date": "offered_appointment__starts_at"},
         filters={
             "patient": _equals("patient_id"),
             "practitioner": _preferred_or_offered,
@@ -114,7 +114,7 @@ def _hold_part(user: User, role: Role | None) -> Part:
         visible=rows,
         everything=rows,
         id_column="pk",
-        sort_columns={},
+        sort_columns={"date": "starts_at"},
         filters={
             "patient": _nothing,
             "practitioner": _equals("clinician__user_id"),

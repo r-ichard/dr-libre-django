@@ -33,6 +33,10 @@ from scheduling.use_cases.placement import PlacementCommand, place_appointment
 from scheduling.use_cases.waitlist import JoinCommand, join_waitlist
 
 REFUSED_MESSAGE = "This element cannot be accepted."
+END_MESSAGE = (
+    "The end is never taken from the client: "
+    "leave it as stored or give the start plus the duration."
+)
 ENTRY_ORIGIN = "waitlist"
 
 
@@ -155,4 +159,5 @@ def _clinician_of(practitioner_id: UUID | None, rule_id: UUID | None) -> UUID | 
 
 
 def _refused(name: str) -> Failure:
-    return Failure.invalid_input([FieldMessage(name, REFUSED_MESSAGE)])
+    message = END_MESSAGE if name == "Appointment.end" else REFUSED_MESSAGE
+    return Failure.invalid_input([FieldMessage(name, message)])

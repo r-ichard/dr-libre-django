@@ -13,6 +13,13 @@ pytestmark = pytest.mark.django_db
 SEARCHABLE = sorted(
     declaration.type for declaration in FHIR_RESOURCES if "search-type" in declaration.interactions
 )
+SORTED_SEARCHES = [
+    (declaration.type, f"{prefix}{name}")
+    for declaration in FHIR_RESOURCES
+    if "search-type" in declaration.interactions
+    for name in declaration.sortable
+    for prefix in ("", "-")
+]
 
 
 @pytest.fixture(autouse=True)
@@ -24,8 +31,13 @@ def _path_of(url: str) -> str:
     return "/fhir" + url.split("/fhir", 1)[1]
 
 
-@pytest.mark.parametrize("resource", SEARCHABLE)
-def returns_every_entry_once_when_next_is_followed_to_the_last_page(resource: str) -> None:
+@pytest.mark.parametrize(
+    ("resource", "sort"),
+    [(resource, "") for resource in SEARCHABLE] + SORTED_SEARCHES,
+)
+def returns_every_entry_once_when_next_is_followed_to_the_last_page(
+    resource: str, sort: str
+) -> None:
     clinic = make_clinic(rule_fields={"weekday": 1})
     for _ in range(3):
         make(
@@ -41,7 +53,8 @@ def returns_every_entry_once_when_next_is_followed_to_the_last_page(resource: st
         else ""
     )
     token = token_of(role="ADMIN")
-    response = get(f"/fhir/{resource}?_count=2{extra}", token)
+    order = f"&_sort={sort}" if sort else ""
+    response = get(f"/fhir/{resource}?_count=2{extra}{order}", token)
     assert response.status_code == 200
     total = response.json()["total"]
     seen = [item["resource"]["id"] for item in response.json().get("entry", [])]

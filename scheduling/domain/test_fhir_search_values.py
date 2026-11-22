@@ -5,7 +5,7 @@ import pytest
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.fhir_bundle import page_links
 from scheduling.domain.fhir_declaration import ResourceDeclaration, declaration_for
-from scheduling.domain.fhir_search import SearchQuery, parse_search
+from scheduling.domain.fhir_search import SearchQuery, parse_search, split_alternatives
 
 
 def _declared(name: str) -> ResourceDeclaration:
@@ -109,3 +109,20 @@ def returns_the_alternatives_joined_by_a_comma_in_every_link() -> None:
     url = str(page_links("a", query, 1)[0]["url"])
 
     assert url == "a?status=booked%2Ccancelled&_count=20&_offset=0&_sort=name"
+
+
+@pytest.mark.parametrize(
+    ("value", "pieces"),
+    [
+        ("a,b", ["a", "b"]),
+        ("a\\,b", ["a,b"]),
+        ("a\\\\,b", ["a\\", "b"]),
+        ("a\\\\\\,b", ["a\\,b"]),
+        ("a\\b", ["a\\b"]),
+        ("a\\", ["a\\"]),
+        ("", [""]),
+        (",", ["", ""]),
+    ],
+)
+def returns_the_alternatives_with_fhir_escapes_read(value: str, pieces: list[str]) -> None:
+    assert split_alternatives(value) == pieces

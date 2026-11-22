@@ -74,7 +74,7 @@ def _part(user: User) -> Part:
         visible=rows,
         everything=rows,
         id_column="pk",
-        sort_columns={},
+        sort_columns={"sent": "created_at"},
         filters={
             "recipient": lambda found, value: found.filter(recipient_id=value),
             "category": _kind,

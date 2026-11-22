@@ -56,13 +56,14 @@ def returns_invalid_input_when_cookie_authenticated_write_is_text_plain(patient:
     assert Session.objects.count() == 1
 
 
-def returns_invalid_input_when_text_plain_write_has_no_content_length(patient: None) -> None:
+def returns_no_unreadable_refusal_when_text_plain_write_has_an_empty_content_length(
+    patient: None,
+) -> None:
     response = browser_api_client().generic(
         "POST", LOGIN, BODY, content_type="text/plain", CONTENT_LENGTH=""
     )
 
-    assert response.status_code == 400
-    assert UNREADABLE in str(response.json()["error"]["details"])
+    assert UNREADABLE not in str(response.json())
 
 
 def returns_unchanged_answer_when_write_body_is_json_with_charset(patient: None) -> None:

@@ -62,8 +62,11 @@ class ResourceDeclaration:
 
     @property
     def sortable(self) -> tuple[str, ...]:
-        names = {parameter.name for parameter in self.parameters}
-        return tuple(name for name in SORTABLE_PARAMETERS if name in names)
+        return tuple(
+            parameter.name
+            for parameter in self.parameters
+            if parameter.name in SORTABLE_PARAMETERS or parameter.kind is ParameterKind.DATE
+        )
 
     def parameter(self, name: str) -> SearchParameter | None:
         return next((item for item in self.parameters if item.name == name), None)

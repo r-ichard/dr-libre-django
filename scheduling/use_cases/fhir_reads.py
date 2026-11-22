@@ -211,7 +211,7 @@ SCHEDULE = Part(
     visible=lambda: AvailabilityRule.objects.filter(clinician__in=_listable()),
     everything=lambda: AvailabilityRule.objects.all(),
     id_column="pk",
-    sort_columns={"active": "clinician__user__is_active"},
+    sort_columns={"active": "clinician__user__is_active", "date": "valid_from"},
     filters={
         "actor": _acts_as,
         "date": _horizon_covers,
@@ -313,7 +313,8 @@ def _candidates(
             .values_list("sort_key", "identifier", "part_index")
             .distinct()
         )
-    prefix = "-" if query.descending != any(part.newest_column for part in parts) else ""
+    newest_first = not query.sort and any(part.newest_column for part in parts)
+    prefix = "-" if query.descending != newest_first else ""
     ordering = (f"{prefix}sort_key", f"{prefix}identifier")
     united = selections[0].union(*selections[1:])
     return united.order_by(*ordering)

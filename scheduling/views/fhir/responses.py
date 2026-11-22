@@ -23,6 +23,8 @@ METHOD_NOT_ALLOWED_STATUS = 405
 METHOD_NOT_ALLOWED_MESSAGE = "This interaction is not supported here."
 STALE_MESSAGE = "The record changed since it was read."
 NOT_ACCEPTABLE_MESSAGE = "Only application/fhir+json is served."
+UNSUPPORTED_MEDIA_STATUS = 415
+UNSUPPORTED_MEDIA_MESSAGE = "A write says application/fhir+json or application/json."
 
 
 def resource_response(resource: Resource, status: int = 200) -> HttpResponse:
@@ -46,6 +48,13 @@ def not_acceptable_response() -> HttpResponse:
         "not-supported", NOT_ACCEPTABLE_MESSAGE, current_request_context().correlation_id
     )
     return resource_response(outcome, NOT_ACCEPTABLE_STATUS)
+
+
+def unsupported_media_response() -> HttpResponse:
+    outcome = operation_outcome(
+        "not-supported", UNSUPPORTED_MEDIA_MESSAGE, current_request_context().correlation_id
+    )
+    return resource_response(outcome, UNSUPPORTED_MEDIA_STATUS)
 
 
 def method_not_allowed_response(allowed: tuple[str, ...]) -> HttpResponse:

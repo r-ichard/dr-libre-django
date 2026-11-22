@@ -29,6 +29,20 @@ class Difference:
 
 
 @dataclass(frozen=True)
+class Addition:
+    """A search parameter served that the tables of section 15 do not name: the ADR that adds it
+    and a phrase it must hold."""
+
+    resource: str
+    parameter: str
+    adr: str
+    quote: str
+
+
+ADR_ADDITIONS = (Addition("AuditEvent", "type", "0009", "`AuditEvent?type=<action>`"),)
+
+
+@dataclass(frozen=True)
 class SpecResource:
     type: str
     readers: tuple[str, ...]
@@ -157,6 +171,6 @@ SPEC_RESOURCES = (
         "AuditEvent",
         ADMIN_ONLY,
         {},
-        ("agent", "entity", "entity-type", "action", "type", "date"),
+        ("agent", "entity", "entity-type", "action", "date"),
     ),
 )

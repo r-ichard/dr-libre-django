@@ -78,7 +78,7 @@ tasks.
 | 20 | Appointments, waitlist, audit log, settings | 10 | todo |
 | 21 | Dashboard, reporting, CSV export | 13 | todo |
 | | **M8 FHIR API (#8)** | | |
-| 22 | Tokens, metadata, public read resources, search bundles | 15.1 to 15.5 | todo |
+| 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | running |
 | 23 | Schedule, Slot, Patient, Appointment, booking through FHIR | 15.3 to 15.6 | todo |
 | 24 | AppointmentResponse, Communication, AuditEvent, versions | 15 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |

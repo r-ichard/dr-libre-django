@@ -34,6 +34,9 @@ when the code works: any type escape hatch (`Any`, `cast`, bare `# type: ignore`
 `# noqa`, §7), a function over 100 lines or a file over 500 (§5), a swallowed error (§9),
 a write without an audit entry in the same transaction (`drlibre-specs.md` section 4),
 authorization read from a payload (§11). Everything else goes to Later and is approved.
+When the plan declared a slice, hold the run to the slice, not to the whole task: an
+item under `## Not in this run` is never a blocker. Copy that list into the review under
+`## Left for the orchestrator`, and add any item of the slice the run did not finish.
 A time, speed or size budget in the task (how long `make test` takes, for example) is
 never a blocker: the sandbox shares its machine with other runs, so a number measured
 here proves nothing. Write the number you measured under Later; the orchestrator

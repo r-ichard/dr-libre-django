@@ -15,7 +15,10 @@ Judge the plan against the task and the conventions:
 5. Architecture (§8): thin boundary, wire schema separate from storage, one transaction per
    logical change, expected errors as values (§9).
 6. Scope: does the plan deliver the whole task, including callers, tests and docs it
-   breaks? Anything silently dropped?
+   breaks? Anything silently dropped? A plan may declare a slice ("Slice: items 1 to 6")
+   with the rest under `## Not in this run`: judge whether the slice is coherent, leaves
+   the product whole and is what one green stage can finish. A plan for the whole of a
+   task too large for one run is a reason to revise: ask for a slice.
 
 Then write two things:
 - Append a section `## Architect review` to the plan file with your findings.

@@ -25,6 +25,12 @@ Write no production code and no tests in this stage.
    - trust boundaries crossed and how each is validated and authorized (§7, §11)
    - domain entities used, mapped to the vocabulary in CLAUDE.md (§3)
    - what you will not do: no unrequested abstraction, dependency or refactor
+   - the slice: one run finishes what one green stage can build and test, about fifteen
+     minutes of work. If the task is larger, plan the first coherent slice that leaves the
+     product whole (reads before writes, one page flow before the next), say so in the
+     first line of the plan ("Slice: items 1 to 6"), and list the rest under `## Not in
+     this run` with one line each. Never plan the whole of a task you will not finish:
+     three runs failed that way and their tasks had to be split after the fact.
 4. Write the plan path on a single line into `scratch/plan.path` (create `scratch/`).
 5. If `scratch/plan.verdict` says `revise`, read the architect's reasons below that line
    and address every one before rewriting the plan.

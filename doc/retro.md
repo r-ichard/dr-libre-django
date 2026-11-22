@@ -866,3 +866,15 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The mutation run counts 1165 of 6221 mutants as "no tests": domain code that only
   view tests reach. The gate lets them through. So "pure functions under the mutation
   gate" has been half true for the FHIR write modules. Task 26.
+
+## 2026-11-22 task 25d, run 01M81CC1H60M (21 minutes, merged)
+
+- Sliced by its plan to items 1 to 3; one review bounce for three things the slice had
+  promised (the duplicate-title test, the form really gone from the page, one status
+  table). The reviewer holds a run to its slice as firmly as it held runs to whole tasks.
+- With curl as the demo admin on seven console pages: every title is plain ("Appointments
+  · DrLibre"), no cross-site token outside a form, the export form appears once; a
+  search and a filter that find nothing say so and say what to do; statuses are badges
+  with an icon. 4190 tests.
+- The UX pass is done except one test over every form. Five runs for what I had written
+  as one task.

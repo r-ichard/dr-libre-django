@@ -93,7 +93,7 @@ tasks.
 | 25a | UX pass: the week fits at 1440 px again; small leftovers | 16 | merged `4f6dbec` |
 | 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | merged `1e10ea1` |
 | 25c | UX pass: admin lists at 375 px, the conflict page, confirmations | 10, 16 | merged `e128f6f` |
-| 25d | UX pass: page titles are plain text, status words, empty states, refused forms keep input | 16 | running `01M81CC1H60M` |
+| 25d | UX pass: page titles are plain text, status words, empty states, refused forms keep input | 16 | merged `9785b36` (titles, status words, empty states) |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
 | 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |
 
@@ -168,3 +168,5 @@ Small findings waiting for the next task that touches the same file.
 - Review of 24a, small: `notification.read` maps to `R` though it changes a record; the
   `E` bucket and the `user.*` choices are not in ADR 0007; no test that an absent
   waitlist entry and another patient's are refused alike. Task 24d.
+- Left by task 25d: a test that posts a refused value to every form of the product and
+  checks that what was typed is kept, a password excepted. Task 27, with the QA round.

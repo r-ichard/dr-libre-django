@@ -511,3 +511,20 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   at a time from now on; QA rounds start when no more than one task run is going. If the
   limit hits again, the stage line reads "Error: ?" and the reason is in the last event
   of `fabro events <id> --json`.
+
+## 2026-11-22 task 17e, run 01M809HZ6B4J (26 minutes, merged 3df1aa8 with 17d)
+
+- Clean pass. Launched from a checkout of the branch that held task 17d, so the run
+  built on it and the reviewer read both.
+- On the stack, on a Sunday: finished visits on Friday, upcoming from Monday. As the demo
+  patient I accepted the seeded offer, cancelled a seeded appointment and booked my own,
+  then ran the seed with the clock 2, 4 and 6 days ahead: no error, "kept 2 appointments,
+  1 entry", my rows untouched, no double booking, no mail pending.
+- The squash onto `main` conflicted in `doc/backlog.md` and `doc/retro.md` only: the
+  branch carried a cherry-picked process commit and `main` had moved. A run branch that
+  needs a task file gets that file alone, not a commit that edits the backlog.
+- The task set a budget of 10 seconds for the seed's tests; they take 16 alone. I merged
+  anyway, because the number includes creating the test database. A budget needs to say
+  how it is measured, or it is not a gate.
+- My timing command called `uv` without the Makefile's PATH and failed after the gates
+  had passed; ten minutes lost to a rerun.

@@ -69,8 +69,8 @@ tasks.
 | 17a | QA round 1: no input answers 500 (#10, #12, #13, #14, #18) and a hostile-input test over every route | 4 | merged `e412ecb` |
 | 17b | QA round 1: ten smaller findings (#11, #15 to #17, #19 to #24) and what task 17a left open | 4, 5, 6, 8, 12.3, 16 | running `01M809JSVRXD` |
 | 17c | QA round 2, clinician: time grid alignment, multi-day time off, five smaller (#25 to #31) | 9, 16 | todo |
-| 17d | Demo seed books through the use cases (#32) | 16 | run `01M803CR8PEP` passed, not merged: branch `task/17d-demo-seed`, continued by 17e |
-| 17e | Demo seed survives a person using the demo; merges 17d with it | 16 | running `01M809HZ6B4J` |
+| 17d | Demo seed books through the use cases (#32) | 16 | merged with 17e `3df1aa8` |
+| 17e | Demo seed survives a person using the demo | 16 | merged `3df1aa8` |
 | | **M7 Admin console and reporting (#7)** | | |
 | 18 | Hospitals, specialties, departments, rooms, appointment types | 10 | todo |
 | 19 | Users and clinicians | 10 | todo |
@@ -95,11 +95,6 @@ Small findings waiting for the next task that touches the same file.
   for its use case". Each feature task reads that table.
 - Encryption at rest for clinical notes and visitor details in a hold: open point for the
   security review. Task 26.
-- Demo appointments are written straight through the models: some fall outside the
-  clinician's availability (after 17:00, weekends) and outside the 07:00 to 19:00 calendar
-  grid. Re-seed through the booking use cases on real free slots. Task 17d.
-- Seed review: identify seeded appointments by a marker, not by patient, clinician and
-  type; notifications through the same upsert. Task 17d.
 - Test-only probe views live in `scheduling/views/` (`probe_views.py`, `probe_urls.py`).
   Move them out of the product package when a test support location exists.
 - Start-up lines of `migrate` and the development server are plain text, not JSON. Settle
@@ -142,13 +137,13 @@ Small findings waiting for the next task that touches the same file.
   the appointments without a notice; the notifications page goes from an h1 to h3
   headings; the profile form does not move focus to its first invalid field; notification
   times are shown in UTC while the rest of the portal uses the hospital's zone. Task 25.
-- The demo seed writes notification titles that are not those of section 11. Task 17d.
 - `ClinicalNote` declares itself not exposed through FHIR, but section 15.3 maps clinical
   notes to `Appointment.comment`, returned only to the appointment's clinician. Task 23.
-- The demo seed opens the clinics Sunday to Thursday: it numbers weekdays from Monday
-  while the product counts 0 as Sunday. Task 17d (#32).
 - Section 5.6 puts no time on a status change: a clinician can mark an appointment two
   days ahead as completed or as a no-show (seen in the demo seed of task 17d). Owner to
   confirm whether check in, complete and no-show wait for the day or the start time.
 - Module docstrings name task numbers ("Task 10a: ...", "Task 17a: ..."), which says
   nothing to a reader of the code. Sweep with task 26.
+- Review of 17e, small: any `invalid_input` from `create_time_off` counts as "skipped";
+  the reminder test accepts any unread notification; `test_survives_use.py` is 346
+  lines; the seed's tests take 16 seconds alone. With the next task that touches the seed.

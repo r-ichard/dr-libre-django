@@ -159,6 +159,34 @@ def returns_412_when_patient_put_has_a_stale_if_match() -> None:
     assert response.status_code == 412
 
 
+def returns_412_when_admin_put_has_a_stale_if_match() -> None:
+    patient = _patient()
+    token = token_of(role="ADMIN")
+    body = get(f"/fhir/Patient/{patient.pk}", token).json()
+
+    response = send(
+        "put",
+        f"/fhir/Patient/{patient.pk}",
+        body,
+        token,
+        **{"If-Match": f'W/"{patient.version + 9}"'},
+    )
+
+    assert response.status_code == 412
+
+
+def returns_the_fhir_path_when_a_phone_is_refused() -> None:
+    patient = _patient()
+    token = token_of(patient)
+    body = get(f"/fhir/Patient/{patient.pk}", token).json()
+    body["telecom"] = [*body["telecom"], {"system": "phone", "value": "x"}]
+
+    response = send("put", f"/fhir/Patient/{patient.pk}", body, token)
+
+    assert response.status_code == 400
+    assert response.json()["issue"][0]["expression"] == ["Patient.telecom"]
+
+
 @pytest.mark.parametrize("method", ["post", "delete"])
 def returns_405_when_patient_is_created_or_deleted(method: str) -> None:
     patient = _patient()

@@ -18,6 +18,7 @@ from scheduling.domain.request_limits import MAXIMUM_FIELDS, MAXIMUM_PAGE
 DEFAULT_COUNT = 20
 MAXIMUM_COUNT = 100
 MAXIMUM_TEXT = 100
+DEFAULT_SORT = "name"
 SERVED_FORMATS = ("json", "application/fhir+json")
 
 
@@ -35,7 +36,8 @@ def parse_search(
     declaration: ResourceDeclaration, params: Mapping[str, Sequence[str]]
 ) -> Result[SearchQuery]:
     filters: list[tuple[str, str]] = []
-    count, offset, sort = DEFAULT_COUNT, 0, "name"
+    count, offset = DEFAULT_COUNT, 0
+    sort = DEFAULT_SORT if DEFAULT_SORT in declaration.sortable else ""
     include: list[str] = []
     for name, values in params.items():
         if not values or len(values) > _repeats_allowed(declaration, name):

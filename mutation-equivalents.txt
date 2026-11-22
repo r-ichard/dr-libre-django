@@ -44,7 +44,6 @@ scheduling.domain.fhir_slot_id.x__encode__mutmut_8: the last base32 letter of 16
 scheduling.domain.fhir_dates.x_day_bounds__mutmut_9: the high bound is a midnight or a whole second, so one or two microseconds earlier is the same day
 scheduling.domain.fhir_patient.x__telecom__mutmut_3: a missing telecom gives None, which is not a list, and the isinstance check treats it like []
 scheduling.domain.fhir_patient.x__telecom__mutmut_5: a trailing comma in a call changes nothing
-scheduling.domain.fhir_search.x_parse_search__mutmut_123: "XXXX" does not start with "-", exactly like ""
 scheduling.domain.fhir_search.x__read_value__mutmut_34: rsplit with no limit splits at every bar, and the last part is the same
 scheduling.domain.fhir_search.x__read_value__mutmut_37: a limit of 2 instead of 1 leaves the last part the same
 scheduling.domain.fhir_patient.x_patient_values__mutmut_5: a missing telecom gives None, which is not a list, and the isinstance check treats it like []
@@ -54,3 +53,20 @@ scheduling.domain.fhir_patient.x_patient_values__mutmut_27: a trailing comma in 
 scheduling.domain.fhir_patient.x__birth_date__mutmut_6: the ValueError message is never read, the caller only catches the type
 scheduling.domain.fhir_patient.x__birth_date__mutmut_7: the ValueError message is never read, the caller only catches the type
 scheduling.domain.fhir_patient.x__birth_date__mutmut_8: the ValueError message is never read, the caller only catches the type
+scheduling.domain.fhir_appointment_write.x_decode_update__mutmut_17: unreachable, _moved_element already returned Appointment.start for a missing or naive start
+scheduling.domain.fhir_appointment_write.x_decode_update__mutmut_18: unreachable, _moved_element already returned Appointment.start for a missing or naive start
+scheduling.domain.fhir_appointment_write.x_decode_update__mutmut_19: unreachable, _moved_element already returned Appointment.start for a missing or naive start
+scheduling.domain.fhir_appointment_write.x__service_type__mutmut_27: a missing code becomes the text None, which parse_id rejects like ""
+scheduling.domain.fhir_appointment_write.x__service_type__mutmut_29: a missing code becomes the text None, which parse_id rejects like ""
+scheduling.domain.fhir_appointment_write.x__service_type__mutmut_33: XXXX is not an identifier, parse_id rejects it like ""
+scheduling.domain.fhir_appointment_write.x__actors__mutmut_19: a missing reference becomes None text with no allowed resource type, refused like ""
+scheduling.domain.fhir_appointment_write.x__actors__mutmut_21: a missing reference becomes None text with no allowed resource type, refused like ""
+scheduling.domain.fhir_appointment_write.x__actors__mutmut_24: XXXX has no allowed resource type, refused like ""
+scheduling.domain.fhir_appointment_write.x__actors__mutmut_25: XXXX has no allowed resource type, refused like ""
+scheduling.domain.fhir_appointment_write.x__actors__mutmut_28: partition and rpartition differ only on a reference with more than one slash, which either way has no allowed type or no identifier
+scheduling.domain.fhir_appointment_write.x__slot__mutmut_6: a missing reference becomes the text None, which parse_slot_id rejects like ""
+scheduling.domain.fhir_appointment_write.x__slot__mutmut_8: a missing reference becomes the text None, which parse_slot_id rejects like ""
+scheduling.domain.fhir_appointment_write.x__slot__mutmut_11: XXXX is not a slot id, parse_slot_id rejects it like ""
+scheduling.domain.fhir_appointment_write.x__slot__mutmut_12: XXXX is not a slot id, parse_slot_id rejects it like ""
+scheduling.domain.fhir_appointment_write.x__slot__mutmut_16: partition and rpartition differ only on a reference that fails the Slot/ prefix check or parse_slot_id anyway
+scheduling.domain.fhir_search.x_parse_search__mutmut_126: any sort default that does not start with "-" is ascending, like ""

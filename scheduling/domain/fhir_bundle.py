@@ -39,13 +39,9 @@ def page_links(address: str, query: SearchQuery, total: int) -> list[Resource]:
 
 
 def _address(address: str, query: SearchQuery, offset: int) -> str:
-    sort = f"-{query.sort}" if query.descending else query.sort
-    pairs = [
-        *query.filters,
-        ("_count", str(query.count)),
-        ("_offset", str(offset)),
-        ("_sort", sort),
-    ]
+    pairs = [*query.filters, ("_count", str(query.count)), ("_offset", str(offset))]
+    if query.sort:
+        pairs.append(("_sort", f"-{query.sort}" if query.descending else query.sort))
     pairs += [("_include", item) for item in query.include]
     return f"{address}?{urlencode(pairs)}"
 

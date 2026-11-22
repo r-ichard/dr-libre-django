@@ -48,10 +48,12 @@ def identity_problem(
 
 
 def if_match_version(header: str | None) -> Result[int | None]:
-    """No header: no condition. `W/"3"` or `"3"`: version 3. Anything else cannot be a version."""
+    """No header or version 0: no condition (versions start at 1). `W/"3"` or `"3"`: version 3.
+    Anything else cannot be a version."""
     if header is None:
         return Success(None)
     found = IF_MATCH_PATTERN.fullmatch(header.strip())
     if found is None:
         return Failure.invalid_input([FieldMessage("If-Match", "Use the ETag of the record.")])
-    return Success(int(found.group(1)))
+    version = int(found.group(1))
+    return Success(version or None)

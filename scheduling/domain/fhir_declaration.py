@@ -132,6 +132,21 @@ FHIR_RESOURCES = (
         _parameters(("name", _TEXT), ("email", _TEXT), ("phone", _TEXT), ("birthdate", _DATE)),
         interactions=(*READ_ONLY, "update"),
     ),
+    ResourceDeclaration(
+        "Appointment",
+        (
+            *_parameters(
+                ("patient", _REFERENCE),
+                ("practitioner", _REFERENCE),
+                ("location", _REFERENCE),
+                ("status", _CODE),
+                ("service-type", _CODE),
+            ),
+            SearchParameter("date", ParameterKind.DATE, maximum_repeats=2),
+        ),
+        includes=("Appointment:patient", "Appointment:practitioner", "Appointment:location"),
+        interactions=(*READ_ONLY, "create", "update"),
+    ),
 )
 
 

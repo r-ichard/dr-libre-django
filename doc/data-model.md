@@ -234,7 +234,7 @@ Constraints:
 
 Table `scheduling_clinicalnote`.
 
-FHIR: not exposed, private to the clinician; never in an API body, notification or email
+FHIR: Appointment
 
 | Field | Type | Null | Rule |
 | --- | --- | --- | --- |

@@ -12,7 +12,6 @@ from scheduling.domain.fhir_patient import (
     patient_values,
     refused_changes,
 )
-from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.vocabulary import Role
 from scheduling.use_cases import fhir_loading as loading
 from scheduling.use_cases.admin_records import RecordEdit
@@ -44,19 +43,19 @@ def update_patient(
     if isinstance(values, str):
         return Failure.invalid_input([FieldMessage(values, UNREADABLE_MESSAGE)])
     if caller.role is Role.ADMIN:
-        version = expected_version or _stored_version(stored.value)
+        version = _stored_version(stored.value)
         edit = RecordEdit(
             "user",
             identifier,
             {"full_name": values.full_name, "email": values.email, "is_active": values.is_active},
             version,
         )
-        failure = _failure_of(update_user(edit, user))
+        failure = _failure_of(update_user(edit, user, expected_version))
     else:
         command = ProfileCommand(values.phone, values.birth_date)
         failure = _failure_of(update_profile(command, user, expected_version))
     if failure is not None:
-        return _stale_when_conditional(failure, expected_version)
+        return _named_by_fhir_path(failure)
     return Success(loading.patients([identifier])[0])
 
 
@@ -69,8 +68,26 @@ def _stored_version(stored: Resource) -> int:
     return int(str(meta_block["versionId"])) if isinstance(meta_block, dict) else 0
 
 
-def _stale_when_conditional(failure: Failure, expected_version: int | None) -> Failure:
-    """With `If-Match`, the only conflict is a version that moved under the lock."""
-    if expected_version is not None and failure.code is FailureCode.CONFLICT:
-        return stale_version()
-    return failure
+FHIR_PATH_OF_FIELD = {
+    "phone": "Patient.telecom",
+    "email": "Patient.telecom",
+    "date_of_birth": "Patient.birthDate",
+    "full_name": "Patient.name",
+    "is_active": "Patient.active",
+}
+
+
+def _named_by_fhir_path(failure: Failure) -> Failure:
+    """The use cases name form fields; a FHIR client is told the element of its own body."""
+    raw = failure.details.get("fields")
+    if failure.code is not FailureCode.INVALID_INPUT or not isinstance(raw, list):
+        return failure
+    return Failure.invalid_input(
+        [
+            FieldMessage(
+                FHIR_PATH_OF_FIELD.get(str(item["field"]), str(item["field"])), str(item["message"])
+            )
+            for item in raw
+            if isinstance(item, dict)
+        ]
+    )

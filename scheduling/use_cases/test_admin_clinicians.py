@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 
 from scheduling.domain.failure import Failure, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.search_query import parse_search_query
 from scheduling.models import AuditLogEntry, ClinicianProfile, Department, User
 from scheduling.models.builders import make
@@ -149,6 +150,15 @@ def returns_conflict_when_the_version_is_old() -> None:
     edit = RecordEdit("clinician", profile.pk, {"title": "Late"}, profile.version + 1)
 
     assert _in_context(lambda: update_profile(edit, _an_admin())) == Failure.conflict(["clinician"])
+
+
+def returns_stale_version_when_the_expected_version_is_old() -> None:
+    profile = _profile()
+    edit = RecordEdit("clinician", profile.pk, {"title": "Late"}, profile.version)
+
+    result = _in_context(lambda: update_profile(edit, _an_admin(), expected_version=9))
+
+    assert result == stale_version()
 
 
 @pytest.mark.parametrize("weight", [0, "0", "1.5", "x", -1])

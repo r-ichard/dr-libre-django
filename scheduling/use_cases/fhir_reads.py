@@ -15,7 +15,7 @@ from scheduling.domain.fhir_common import Resource
 from scheduling.domain.fhir_dates import day_bounds
 from scheduling.domain.fhir_declaration import declaration_for
 from scheduling.domain.fhir_near import is_within, parse_near
-from scheduling.domain.fhir_search import SearchQuery
+from scheduling.domain.fhir_search import DEFAULT_SORT, SearchQuery
 from scheduling.models import (
     AppointmentType,
     AvailabilityRule,
@@ -265,12 +265,22 @@ def search_resource(resource_type: str, query: SearchQuery, viewer: Viewer) -> R
 
 def search_part(part: Part, query: SearchQuery) -> SearchPage:
     """One part whose rows the caller has already narrowed to what it may read."""
-    candidates = _candidates((part,), query, Viewer.STAFF)
+    return search_parts((part,), query, lambda _: [])
+
+
+def search_parts(
+    parts: tuple[Part, ...],
+    query: SearchQuery,
+    included: Callable[[list[Resource]], list[Resource]],
+) -> SearchPage:
+    """Parts whose rows the caller has already narrowed; `included` reads the page's resources."""
+    candidates = _candidates(parts, query, Viewer.STAFF)
     page = [
-        Candidate(identifier, 0)
-        for _, identifier, _ in candidates[query.offset : query.offset + query.count]
+        Candidate(identifier, index)
+        for _, identifier, index in candidates[query.offset : query.offset + query.count]
     ]
-    return SearchPage(candidates.count(), _build_page((part,), page, Viewer.STAFF), [])
+    matches = _build_page(parts, page, Viewer.STAFF)
+    return SearchPage(candidates.count(), matches, included(matches) if query.include else [])
 
 
 @dataclass(frozen=True)
@@ -289,7 +299,7 @@ def _candidates(
         for name, value in query.filters:
             refine = part.filters.get(name)
             rows = refine(rows, value) if refine else rows.none()
-        column = part.sort_columns.get(query.sort, "pk")
+        column = part.sort_columns.get(query.sort or DEFAULT_SORT, "pk")
         selections.append(
             rows.annotate(
                 sort_key=Lower(Cast(column, TextField())),

@@ -3,7 +3,8 @@ any use case runs. The first element the server would not have produced is named
 
 import pytest
 
-from scheduling.domain.fhir_body import Shape, exact_elements
+from scheduling.domain.failure import Failure, FieldMessage, Success
+from scheduling.domain.fhir_body import Shape, exact_elements, if_match_version
 
 ALLOWED: Shape = {"resourceType": str, "id": str, "active": bool, "planningHorizon": {"start": str}}
 
@@ -56,3 +57,16 @@ def returns_the_list_name_when_an_item_has_the_wrong_type() -> None:
 
 def returns_the_nested_name_when_an_item_of_a_list_has_an_unknown_element() -> None:
     assert exact_elements({"name": [{"text": "a"}, {"use": "x"}]}, LISTED, "P") == "P.name.use"
+
+
+def returns_no_condition_when_if_match_names_version_zero() -> None:
+    """Versions start at 1, so `W/"0"` is a client's placeholder for no condition."""
+    assert if_match_version('W/"0"') == Success(None)
+    assert if_match_version('"0"') == Success(None)
+    assert if_match_version('W/"3"') == Success(3)
+
+
+def returns_the_if_match_header_and_a_fixed_message_when_the_condition_is_not_a_version() -> None:
+    expected = Failure.invalid_input([FieldMessage("If-Match", "Use the ETag of the record.")])
+
+    assert if_match_version("nonsense") == expected

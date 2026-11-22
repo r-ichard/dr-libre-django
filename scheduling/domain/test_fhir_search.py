@@ -105,7 +105,7 @@ def returns_failure_when_parameter_given_with_no_value() -> None:
 def returns_include_when_declared_for_the_resource() -> None:
     result = _parse(ROLE, _include="PractitionerRole:organization", _format="json")
 
-    assert result == Success(_query(include=("PractitionerRole:organization",)))
+    assert result == Success(_query(sort="", include=("PractitionerRole:organization",)))
 
 
 def returns_failure_when_sort_is_not_a_parameter_of_resource() -> None:
@@ -115,7 +115,7 @@ def returns_failure_when_sort_is_not_a_parameter_of_resource() -> None:
 def returns_lowercase_canonical_id_when_reference_has_resource_prefix() -> None:
     result = _parse(ROLE, practitioner=f"Practitioner/{SOME_ID.upper()}")
 
-    assert result == Success(_query(filters=(("practitioner", SOME_ID),)))
+    assert result == Success(_query(sort="", filters=(("practitioner", SOME_ID),)))
 
 
 def returns_last_part_when_code_has_system_prefix() -> None:
@@ -372,7 +372,7 @@ def returns_refusal_when_near_value_is_unreadable() -> None:
 def returns_last_segment_when_reference_is_a_full_address() -> None:
     result = _parse(ROLE, practitioner=f"http://h/fhir/Practitioner/{SOME_ID}")
 
-    assert result == Success(_query(filters=(("practitioner", SOME_ID),)))
+    assert result == Success(_query(sort="", filters=(("practitioner", SOME_ID),)))
 
 
 def returns_whole_text_when_text_parameter_holds_a_bar() -> None:
@@ -381,9 +381,11 @@ def returns_whole_text_when_text_parameter_holds_a_bar() -> None:
 
 def returns_last_part_of_code_whatever_the_system_prefix() -> None:
     assert _parse(ROLE, specialty="x|y|cardio") == Success(
-        _query(filters=(("specialty", "cardio"),))
+        _query(sort="", filters=(("specialty", "cardio"),))
     )
-    assert _parse(ROLE, specialty="cardio") == Success(_query(filters=(("specialty", "cardio"),)))
+    assert _parse(ROLE, specialty="cardio") == Success(
+        _query(sort="", filters=(("specialty", "cardio"),))
+    )
 
 
 def returns_value_when_text_is_one_or_one_hundred_characters() -> None:

@@ -7,6 +7,7 @@ import pytest
 from django.contrib.auth.hashers import check_password
 
 from scheduling.domain.failure import Failure, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.vocabulary import SessionKind
 from scheduling.models import AuditLogEntry, Session, SignInLink, User
 from scheduling.models.builders import make
@@ -338,3 +339,15 @@ def returns_rolls_back_when_the_audit_entry_cannot_be_written(
         _in_context(lambda: create_user(_values(), admin))
 
     assert not User.objects.filter(email="planted.email@example.org").exists()
+
+
+def returns_stale_version_and_keeps_the_record_when_the_expected_version_is_old() -> None:
+    admin = _an_admin()
+    target = _user(full_name="Original")
+    edit = RecordEdit("user", target.pk, {"full_name": "Changed"}, target.version)
+
+    result = _in_context(lambda: update_user(edit, admin, expected_version=target.version + 1))
+
+    assert result == stale_version()
+    target.refresh_from_db()
+    assert target.full_name == "Original"

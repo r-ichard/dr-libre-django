@@ -12,6 +12,7 @@ from scheduling.domain import user_rules
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.delete_dependents import delete_refusal
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.user_rules import RoleFacts
 from scheduling.domain.vocabulary import Role
 from scheduling.models import Appointment, Notification, Session, SignInLink, User, WaitlistEntry
@@ -50,7 +51,7 @@ def create_user(values: dict[str, object], actor: User) -> Result[UUID]:
         return Success(user.pk)
 
 
-def update_user(edit: RecordEdit, actor: User) -> Result[UUID]:
+def update_user(edit: RecordEdit, actor: User, expected_version: int | None = None) -> Result[UUID]:
     with transaction.atomic():
         locked = lock_users(actor.pk, edit.record_id)
         if locked.admin is None:
@@ -58,6 +59,8 @@ def update_user(edit: RecordEdit, actor: User) -> Result[UUID]:
         if locked.target is None:
             return Failure.not_found()
         target = locked.target
+        if expected_version not in (None, target.version):
+            return stale_version()
         if target.version != edit.version:
             return Failure.conflict(["user"])
         cleaned, messages = cleaned_values(edit.values, creating=False)

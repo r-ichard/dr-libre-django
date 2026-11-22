@@ -15,6 +15,7 @@ from scheduling.domain.appointment_status import (
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.booking_rules import BookingAction, BookingAttempt, violated_rules
 from scheduling.domain.failure import Failure, Result, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.placement_rules import (
     cancelled_notification_text,
     rescheduled_notification_text,
@@ -36,9 +37,13 @@ STATUS_ACTION_NAMES = {
 }
 
 
-def cancel_appointment(appointment_id: UUID, reason: str, actor: User) -> Result[Appointment]:
+def cancel_appointment(
+    appointment_id: UUID, reason: str, actor: User, expected_version: int | None = None
+) -> Result[Appointment]:
     with transaction.atomic():
-        locked = _lock_for_change(appointment_id, actor, AppointmentStatus.CANCELLED)
+        locked = _lock_for_change(
+            appointment_id, actor, AppointmentStatus.CANCELLED, expected_version
+        )
         if isinstance(locked, Failure):
             return locked
         appointment = locked.value
@@ -69,10 +74,10 @@ def cancel_appointment(appointment_id: UUID, reason: str, actor: User) -> Result
 
 
 def reschedule_appointment(
-    appointment_id: UUID, starts_at: datetime, actor: User
+    appointment_id: UUID, starts_at: datetime, actor: User, expected_version: int | None = None
 ) -> Result[Appointment]:
     with transaction.atomic():
-        locked = _lock_for_change(appointment_id, actor, AppointmentStatus.BOOKED)
+        locked = _lock_for_change(appointment_id, actor, AppointmentStatus.BOOKED, expected_version)
         if isinstance(locked, Failure):
             return locked
         appointment = locked.value
@@ -92,10 +97,13 @@ def reschedule_appointment(
 
 
 def change_status(
-    appointment_id: UUID, target: AppointmentStatus, actor: User
+    appointment_id: UUID,
+    target: AppointmentStatus,
+    actor: User,
+    expected_version: int | None = None,
 ) -> Result[Appointment]:
     with transaction.atomic():
-        locked = _lock_for_change(appointment_id, actor, target)
+        locked = _lock_for_change(appointment_id, actor, target, expected_version)
         if isinstance(locked, Failure):
             return locked
         appointment = locked.value
@@ -108,7 +116,7 @@ def change_status(
 
 
 def _lock_for_change(
-    appointment_id: UUID, actor: User, target: AppointmentStatus
+    appointment_id: UUID, actor: User, target: AppointmentStatus, expected_version: int | None
 ) -> Result[Appointment]:
     appointment = (
         Appointment.objects.select_for_update(of=("self",))
@@ -118,7 +126,11 @@ def _lock_for_change(
         .filter(pk=appointment_id)
         .first()
     )
-    return guard_record(appointment, _may_change(actor, target))
+    guarded = guard_record(appointment, _may_change(actor, target))
+    if isinstance(guarded, Failure) or expected_version is None:
+        return guarded
+    seen = guarded.value.inherited_version + guarded.value.version
+    return guarded if seen == expected_version else stale_version()
 
 
 def _may_change(actor: User, target: AppointmentStatus) -> Callable[[Appointment], bool]:

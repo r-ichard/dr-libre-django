@@ -111,7 +111,7 @@ class ClinicalNote(Record):
     """Private to the appointment's clinician, so it lives apart from the Appointment row that
     the API, emails and admin loaders read."""
 
-    fhir_not_exposed = "private to the clinician; never in an API body, notification or email"
+    fhir_resources = ("Appointment",)
     appointment = OneToOneField(Appointment, on_delete=PROTECT)
     clinical_notes = CharField(max_length=CLINICAL_NOTES_MAXIMUM, blank=True, default="")
 

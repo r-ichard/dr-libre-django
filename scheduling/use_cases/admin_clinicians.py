@@ -10,6 +10,7 @@ from django.db.models import Model, ProtectedError, QuerySet
 from scheduling.domain import clinician_rules, record_fields
 from scheduling.domain.audit_metadata import AuditMetadata
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
+from scheduling.domain.fhir_write_failures import stale_version
 from scheduling.domain.vocabulary import Role
 from scheduling.models import (
     AvailabilityRule,
@@ -55,13 +56,17 @@ def attach_profile(values: dict[str, object], actor: User) -> Result[UUID]:
         return Success(profile.pk)
 
 
-def update_profile(edit: RecordEdit, actor: User) -> Result[UUID]:
+def update_profile(
+    edit: RecordEdit, actor: User, expected_version: int | None = None
+) -> Result[UUID]:
     with transaction.atomic():
         if lock_users(actor.pk, None).admin is None:
             return Failure.forbidden()
         profile = ClinicianProfile.objects.select_for_update().filter(pk=edit.record_id).first()
         if profile is None:
             return Failure.not_found()
+        if expected_version not in (None, profile.version):
+            return stale_version()
         if profile.version != edit.version:
             return Failure.conflict(["clinician"])
         cleaned, messages = _cleaned(edit.values, creating=False)

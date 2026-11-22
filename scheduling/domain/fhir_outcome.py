@@ -3,7 +3,7 @@ and the only variable part is the correlation id, so no input or internals can l
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.fhir_common import Resource, extension
-from scheduling.domain.fhir_write_failures import outcome_for
+from scheduling.domain.fhir_write_failures import STALE_VERSION, outcome_for
 
 FAILURE_CODE_EXTENSION = "failure-code"
 
@@ -14,6 +14,7 @@ def operation_outcome(
     correlation_id: str,
     expressions: tuple[str, ...] = (),
     product_code: str = "",
+    details: list[Resource] | None = None,
 ) -> Resource:
     issue: Resource = {
         "severity": "error",
@@ -24,15 +25,34 @@ def operation_outcome(
     if expressions:
         issue["expression"] = list(expressions)
     if product_code:
-        issue["extension"] = [extension(FAILURE_CODE_EXTENSION, "valueCode", product_code)]
+        issue["extension"] = [
+            extension(FAILURE_CODE_EXTENSION, "valueCode", product_code),
+            *(details or []),
+        ]
     return {"resourceType": "OperationOutcome", "issue": [issue]}
 
 
 def failure_outcome(failure: Failure, text: str, correlation_id: str) -> Resource:
     answer = outcome_for(failure)
+    details = [] if answer is STALE_VERSION else _detail_extensions(failure)
     return operation_outcome(
-        answer.issue_code, text, correlation_id, _refused_names(failure), answer.product_code
+        answer.issue_code,
+        text,
+        correlation_id,
+        _refused_names(failure),
+        answer.product_code,
+        details,
     )
+
+
+def _detail_extensions(failure: Failure) -> list[Resource]:
+    """Rule names and conflicting resources are fixed vocabulary, never client input."""
+    found: list[Resource] = []
+    for key, name in (("violated_rules", "violated-rule"), ("resources", "conflicting-resource")):
+        names = failure.details.get(key)
+        if isinstance(names, list):
+            found.extend(extension(name, "valueCode", item) for item in names)
+    return found
 
 
 def _refused_names(failure: Failure) -> tuple[str, ...]:

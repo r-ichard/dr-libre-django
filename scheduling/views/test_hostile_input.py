@@ -367,6 +367,8 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
         ("put", f"/fhir/Patient/{clinic.patient.pk}"),
         ("post", f"/fhir/Patient/{clinic.patient.pk}"),
         ("put", "/fhir/Slot/abc"),
+        ("post", "/fhir/Appointment"),
+        ("put", f"/fhir/Appointment/{uuid.uuid4()}"),
     ]
     client = fhir_client(token)
 
@@ -380,6 +382,39 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
                 "OperationOutcome",
                 "Schedule",
                 "Patient",
+                "Appointment",
             ):
                 failures.append((method, path, response.status_code))
     assert failures == []
+
+
+@pytest.mark.parametrize("resource_type", ["Schedule", "Patient", "Appointment"])
+def returns_400_naming_the_element_when_a_write_body_differs_from_the_address(
+    resource_type: str,
+) -> None:
+    """Task 23a, point 16: `resourceType` and `id` come from the address, never the body."""
+    clinic = make_clinic()
+    with bind_request_context(RequestContext("hostile", clock.now_utc())):
+        token = issue_token(make_user(role="ADMIN"), "Hostile").token
+    address = f"/fhir/{resource_type}/{clinic.patient.pk}"
+    other = uuid.uuid4()
+    attempts = [
+        ("put", address, {"resourceType": "Basic", "id": str(clinic.patient.pk)}, "resourceType"),
+        ("put", address, {"resourceType": resource_type, "id": str(other)}, "id"),
+    ]
+    if resource_type != "Patient":
+        attempts += [
+            ("post", f"/fhir/{resource_type}", {"resourceType": "Basic"}, "resourceType"),
+            ("post", f"/fhir/{resource_type}", {"resourceType": resource_type, "id": "x"}, "id"),
+        ]
+    client = fhir_client(token)
+
+    for method, path, body, element in attempts:
+        response = getattr(client, method)(
+            path, data=json.dumps(body), content_type="application/fhir+json"
+        )
+        issue = response.json()["issue"][0]
+        assert (response.status_code, issue["expression"]) == (
+            400,
+            [f"{resource_type}.{element}"],
+        ), (method, path, body)

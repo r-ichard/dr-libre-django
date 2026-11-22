@@ -79,7 +79,7 @@ tasks.
 | 21 | Dashboard, reporting, CSV export | 13 | todo |
 | | **M8 FHIR API (#8)** | | |
 | 22 | Conventions, tokens, metadata, the seven public resources: read and search | 15.1, 15.2, 15.4, 15.5 | merged `ef6e229` |
-| 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | running |
+| 22a | FHIR hardening: valid R4 proven by the HL7 validator, writes answer FHIR JSON, repeated `_include`, cache headers | 15.1 | running `01M80G2TSWY5` |
 | 23 | Schedule, Slot, Patient, Appointment, booking through FHIR | 15.3 to 15.6 | todo |
 | 24 | AppointmentResponse, Communication, AuditEvent, versions | 15 | todo |
 | | **M9 Hardening and hand-over (#9)** | | |

@@ -922,3 +922,15 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - The run sliced away the Practitioner writes a second time. A slice rule lets a run
   postpone the same item forever. Task 24c3 holds only that item, so there is nothing
   left to slice.
+
+## 2026-11-22 the subscription limit, third time (13:10 UTC, reset 13:30)
+
+- Task 24c3 stopped in its green stage and the access QA run in its filing stage, both
+  with "You've hit your 5-hour limit". The window that opened at 08:36 had carried
+  nineteen runs. The laptop then idled until the owner came back at 15:01 UTC: ninety
+  minutes of wall time lost, no work.
+- 24c3 rewound to `verify_red`. A QA run cannot be rewound usefully: its findings file
+  lives in the sandbox's `scratch/`, outside git, so the filing stage of a new run would
+  find nothing. Launched again from the start, 25 minutes repeated.
+- If the QA tester committed `scratch/qa/findings.md` to its run branch, a rewind would
+  keep it. Not worth a change for two runs left in this round.

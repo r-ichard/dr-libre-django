@@ -120,7 +120,11 @@ fabro run qa --goal-file .fabro/workflows/qa/areas/<area>.md -d       # a QA run
 fabro run repair --target r-ichard/dr-libre-django@task/<branch> --goal-file doc/backlog/<task>.md -d   # approved branch, a last gate fails: tests only, no red stage
 ```
 
-Two runs side by side is the most the subscription carried. Push before launching: the
+Since 2026-11-22 every agent stage runs on Haiku (`ANTHROPIC_MODEL` in each
+`workflow.toml`; `fabro run probe` shows the model in its events) and a run gets one
+finding or one item: `--goal "Item N only of doc/backlog/<file>.md (#issue)"`. The
+orchestrator reviews each diff itself. Three small runs side by side work when their
+files do not overlap. Push before launching: the
 sandbox clones from GitHub.
 
 ### Another harness, another model

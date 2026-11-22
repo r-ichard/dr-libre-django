@@ -32,6 +32,10 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
 - **Specification:** `drlibre-specs.md` is the owner's text. A run never edits it; a
   decision it leaves open goes into an ADR and into the review under "For the owner"
   (task 27d edited section 15.5 to make a test pass).
+- **Owner decisions on the process (2026-11-22):** every agent stage runs on Haiku
+  (`ANTHROPIC_MODEL` in each `workflow.toml`); a task is one finding or one item, small
+  enough that the orchestrator reviews its diff; a commit names the issue it addresses
+  and no other (no milestone number on every commit).
 - **Owner decisions, fixed:** latest stable Django + Django REST Framework; PostgreSQL,
   tests too. Front end: server-rendered Django templates, hand-written CSS, no CSS
   framework, no Node build; specialty icons from healthicons.org vendored as SVG. Local

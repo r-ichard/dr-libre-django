@@ -757,3 +757,14 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   rule needs its neighbour rule: what must still fit after the fix.
 - Split: 25a on the held branch (the week fits, small leftovers), 25b (booking and
   patient pages), 25c (admin lists, conflict page, states).
+
+## 2026-11-22 task 25a, run 01M81899VYVW (12 minutes, merged with 25)
+
+- Clean pass, no bounce: five small items, and the layout one came with its arithmetic
+  in the task (page 1088 px, axis 56, gap 8) and both rules stated. The plan derived
+  8.75rem columns and found the 9 px in the rail and the padding.
+- Measured: at 1440 px the week fits (grid scroll 0, columns 140.6 px) and an
+  appointment's time line beside a band needs 118 px and has 118. At 1024 px the page
+  does not scroll. At 375 px nothing is clipped.
+- Launched with `--target owner/repo@branch --goal-file` from `main`, with the task file
+  alone committed on the held branch: no cherry-picked process commit, no doc conflict.

@@ -84,9 +84,9 @@ tasks.
 | 23a | Appointment: read, search, booking, reschedule, cancel, status, holds and waitlist entries; paging links fixed | 15.2 to 15.6 | merged `849cb98` |
 | 24 | AppointmentResponse, Communication, AuditEvent; admin writes for the public resources; time off through PractitionerRole | 15.2, 15.4 | running `01M8184D89GV` |
 | | **M9 Hardening and hand-over (#9)** | | |
-| 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | run `01M816PEF17N` did 8 of 17 items; held on branch `task/25-ux-pass`, continued by 25a |
-| 25a | UX pass: the week fits at 1440 px again; small leftovers; merges 25 with it | 16 | running `01M81899VYVW` |
-| 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | todo |
+| 25 | Accessibility and UX pass: sign-in, notice cookie, notification times, page quality test | 16 | merged with 25a `4f6dbec` (8 of 17 items; rest in 25b, 25c) |
+| 25a | UX pass: the week fits at 1440 px again; small leftovers | 16 | merged `4f6dbec` |
+| 25b | UX pass: terms and privacy pages, date of birth in three fields, one date format | 7.1, 8, 11, 16 | running |
 | 25c | UX pass: admin lists at 375 px, the conflict page, status words, empty states, confirmations | 10, 16 | todo |
 | 26 | Security review and hardening: start-up checks, cookies, proxy, abuse limits, logs, access table, test time gate, dependency audit | 4, 11, 12 | todo |
 | 27 | QA round 3 fixes, README, smoke test, hand-over | all | todo |
@@ -113,11 +113,6 @@ Small findings waiting for the next task that touches the same file.
   (review of 05). Task 26, sooner if a task touches sign-in.
 - Static files are served by Django's development file server, also with `DEBUG` off.
   Settle with the production server choice. Task 26.
-- The sign-in page sits at the left edge of a wide screen with empty space beside it.
-  Layout polish for single-form pages. Task 25.
-- Review of 05b, small: lockout minutes in the message derived from `LOCKOUT_WINDOW`; a
-  test for cookie renewal on a redirect response; favicon colour is not the primary token.
-  Task 25.
 - Review of 06a, small: the domain import guard does not look into subpackages; a stale
   line in `mutation-equivalents.txt` is printed but does not fail. With the next task that
   touches them.
@@ -130,17 +125,11 @@ Small findings waiting for the next task that touches the same file.
   rate limit (review of 10). Task 26, with the rate limits of task 12 as the mechanism.
 - The network address for rate limits is `REMOTE_ADDR`: behind a proxy every visitor
   shares it (review of 12). Settle with `SECURE_PROXY_SSL_HEADER`. Task 26.
-- The sign-in page shows the password form first; most patients have no password. And
-  the "link not valid" page does not show the signed-in user in its header. Task 25.
 - `background_mail._send` logs a failure without its trace. Task 26.
 - The terms and the privacy notice a visitor accepts have no page to read. And the date of
   birth is a date picker, awkward for a birth date. Task 25.
 - The code page is addressed by the hold id and shows a masked email to whoever has the
   address (review of 12a): consider binding it to the browser that made the hold. Task 26.
-- Patient portal, from the browser check of task 15: accepting a waitlist offer lands on
-  the appointments without a notice; the notifications page goes from an h1 to h3
-  headings; the profile form does not move focus to its first invalid field; notification
-  times are shown in UTC while the rest of the portal uses the hospital's zone. Task 25.
 - Section 5.6 puts no time on a status change: a clinician can mark an appointment two
   days ahead as completed or as a no-show (seen in the demo seed of task 17d). Owner to
   confirm whether check in, complete and no-show wait for the day or the start time.
@@ -164,9 +153,6 @@ Small findings waiting for the next task that touches the same file.
   under 40rem would read better. Task 25.
 - Review of 18, small: the stale-save page offers "saving again replaces theirs" and
   shows no difference between the two versions. Task 25.
-- Time grid, an appointment inside a time off band: its time line needs 114 px and has
-  105 px beside the rail, so the end time ends in an ellipsis ("13:00–13…"). Alone in
-  its column it fits. Task 25.
 - Review of 19, small: the email pattern of `user_rules.py` accepts `a@b`. Task 26.
 - `make test`: 3298 tests, 53 seconds on a loaded machine. Measure it alone, list the
   slowest tests, and decide a budget that is checked by a gate, not by a sentence in a
@@ -178,3 +164,7 @@ Small findings waiting for the next task that touches the same file.
   are found only by scrolling sideways. With the admin lists, task 25.
 - ADR 0006, open points for the owner: whether a busy slot can be read by its id;
   whether a Patient search by email or phone in the address is acceptable.
+- Time grid: two time off periods that overlap each other share the column at 70 px
+  each and their time line ends in an ellipsis. Rare; for the QA round to weigh.
+- `check_email.html` still says "15 minutes" as text (plan of 25a). Task 25b touches
+  the sign-in pages.

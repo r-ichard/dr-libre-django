@@ -161,6 +161,11 @@ on `main`: gates and the container stack run from a clone of that branch, and `m
 gets the squash only with its final message. A work-in-progress commit on `main` goes
 out with the next push of a backlog edit (task 24, commit `e9a419c`).
 
+**Issue numbers in commits:** `fixes`, `closes` or `resolves` in front of `#N` closes the
+issue from any commit that reaches `main`, prose included. Only the commit that lands
+the fix says it; every other message says `Refs #N` or names the issue without those
+words (commit `fa898c8`, a backlog note, closed three issues whose fix was held).
+
 **Hand-applied gaps:** (1) fabro checkpoints carry "Generated with Fabro" and
 `Co-Authored-By: Fabro`; never merge run branch as-is, squash with hand-written message,
 disclose tooling in body. (2) "Red for right reason" judged by agent and reviewer; gate

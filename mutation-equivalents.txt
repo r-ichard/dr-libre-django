@@ -42,8 +42,8 @@ scheduling.domain.fhir_slot_id.x_slot_id__mutmut_3: int() truncates and // floor
 scheduling.domain.fhir_slot_id.x__encode__mutmut_7: the codec name "ASCII" is an alias of "ascii"
 scheduling.domain.fhir_slot_id.x__encode__mutmut_8: the last base32 letter of 16 bytes is one of A E I M Q U Y 4, never X, so stripping X as well removes nothing
 scheduling.domain.fhir_dates.x_day_bounds__mutmut_9: the high bound is a midnight or a whole second, so one or two microseconds earlier is the same day
-scheduling.domain.fhir_patient.x__telecom__mutmut_3: a missing telecom gives None, which is not a list, and the isinstance check treats it like []
-scheduling.domain.fhir_patient.x__telecom__mutmut_5: a trailing comma in a call changes nothing
+scheduling.domain.fhir_patient.x_telecom_by_system__mutmut_3: a missing telecom gives None, which is not a list, and the isinstance check treats it like []
+scheduling.domain.fhir_patient.x_telecom_by_system__mutmut_5: a trailing comma in a call changes nothing
 scheduling.domain.fhir_search.x__read_value__mutmut_34: rsplit with no limit splits at every bar, and the last part is the same
 scheduling.domain.fhir_search.x__read_value__mutmut_37: a limit of 2 instead of 1 leaves the last part the same
 scheduling.domain.fhir_patient.x_patient_values__mutmut_5: a missing telecom gives None, which is not a list, and the isinstance check treats it like []

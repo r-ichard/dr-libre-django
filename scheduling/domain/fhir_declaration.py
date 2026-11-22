@@ -44,6 +44,7 @@ class ResourceDeclaration:
     includes: tuple[str, ...] = ()
     single_id: str = ""
     interactions: tuple[str, ...] = READ_ONLY
+    lists_instance_methods: bool = False
 
     @property
     def sortable(self) -> tuple[str, ...]:
@@ -102,7 +103,12 @@ FHIR_RESOURCES = (
         "CodeSystem", (), single_id="specialty", interactions=(*READ_ONLY, "update")
     ),
     ResourceDeclaration("ValueSet", (), single_id="specialty"),
-    ResourceDeclaration("Practitioner", _parameters(("name", _TEXT), ("active", _FLAG))),
+    ResourceDeclaration(
+        "Practitioner",
+        _parameters(("name", _TEXT), ("active", _FLAG)),
+        interactions=(*READ_ONLY, "update", "delete"),
+        lists_instance_methods=True,
+    ),
     ResourceDeclaration(
         "PractitionerRole",
         _parameters(

@@ -64,6 +64,22 @@ def role_documents(client: Client) -> dict[str, Resource]:
     }
 
 
+def practitioner_documents(client: Client) -> dict[str, Resource]:
+    """The body of a Practitioner update (an admin's read of it, contact included), the answer to
+    a delete, and the refusal of deleting a user that still has a profile."""
+    practitioner = _first(client, "Practitioner")
+    refused = client.delete(
+        f"/fhir/Practitioner/{practitioner['id']}",
+        content_type=FHIR_JSON,
+        SERVER_NAME=SAMPLE_HOST,
+    )
+    return {
+        "Practitioner-update-staff": practitioner,
+        "Practitioner-delete-staff": information_outcome("The record was deleted.", "sample"),
+        "Practitioner-refusal-staff": refused.json(),
+    }
+
+
 def _refusal(client: Client, role: Resource) -> Resource:
     """An admin may not record time off: 15.4 gives it to the clinician."""
     attempt = {**role, "notAvailable": [NOT_AVAILABLE_SAMPLE]}

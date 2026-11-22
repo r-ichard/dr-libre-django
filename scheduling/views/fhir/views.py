@@ -81,7 +81,7 @@ def _answer(request: HttpRequest, rest: str) -> HttpResponse:
         return failure_response(Failure.not_found())
     allowed = _allowed_methods(parts)
     if request.method not in allowed:
-        return method_not_allowed_response(allowed)
+        return method_not_allowed_response(_advertised_methods(parts, allowed))
     if parts == [METADATA]:
         return resource_response(capability_statement(FHIR_RESOURCES))
     if request.method != "GET":
@@ -98,6 +98,14 @@ def _allowed_methods(parts: list[str]) -> tuple[str, ...]:
     if declaration is None:
         return ()
     return _methods_of(declaration, instance=len(parts) == 2)
+
+
+def _advertised_methods(parts: list[str], allowed: tuple[str, ...]) -> tuple[str, ...]:
+    """A type without `create` still tells a client that its records are written one by one."""
+    declaration = declaration_for(parts[0])
+    if declaration is None or len(parts) != 1 or not declaration.lists_instance_methods:
+        return allowed
+    return tuple(dict.fromkeys((*allowed, *_methods_of(declaration, instance=True))))
 
 
 def _methods_of(declaration: ResourceDeclaration, *, instance: bool) -> tuple[str, ...]:

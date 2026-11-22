@@ -40,10 +40,9 @@ def _get(path: str, token: str | None = None) -> "_MonkeyPatchedWSGIResponse":
 
 @pytest.mark.parametrize("method", WRITE_METHODS)
 def returns_405_with_allow_get_and_outcome_when_write_sent_to_known_type(method: str) -> None:
-    clinician, _ = plant_clinic()
     client = _server_client()
 
-    for path in ("/fhir/Practitioner", f"/fhir/Practitioner/{clinician.user_id}", "/fhir/metadata"):
+    for path in ("/fhir/ValueSet", "/fhir/ValueSet/specialty", "/fhir/metadata"):
         response = getattr(client, method)(path, headers={"Authorization": f"Bearer {_token()}"})
 
         assert response.status_code == 405

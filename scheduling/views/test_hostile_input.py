@@ -377,6 +377,13 @@ FHIR_WRITE_BODIES = [
     json.dumps({"resourceType": "PractitionerRole",
                 "extension": [{"url": 1, "valueInteger": "x"}]}),
     json.dumps({"resourceType": "PractitionerRole", "location": [{"reference": "Location/x"}]}),
+    json.dumps({"resourceType": "Practitioner", "name": [{"text": "x" * 100_000}]}),
+    json.dumps({"resourceType": "Practitioner", "name": "x", "active": "yes"}),
+    json.dumps({"resourceType": "Practitioner", "telecom": [{"system": "email", "value": None}]}),
+    json.dumps({"resourceType": "Practitioner", "telecom": [{"system": "phone", "value": 5}] * 50}),
+    json.dumps({"resourceType": "Practitioner", "qualification": [{"code": {"text": 5}}]}),
+    json.dumps({"resourceType": "Practitioner", "qualification": {"code": "x"}}),
+    json.dumps({"resourceType": "Practitioner", "qualification": [{"code": {"text": "x" * 999}}]}),
 ]  # fmt: skip
 
 
@@ -412,6 +419,10 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
         ("post", "/fhir/Appointment"),
         ("put", f"/fhir/Appointment/{uuid.uuid4()}"),
         *_record_paths(clinic.department.pk),
+        ("post", "/fhir/Practitioner"),
+        ("put", f"/fhir/Practitioner/{clinic.clinician.user_id}"),
+        ("delete", f"/fhir/Practitioner/{clinic.clinician.user_id}"),
+        ("delete", f"/fhir/Practitioner/{clinic.clinician.user_id}x"),
         ("post", "/fhir/PractitionerRole"),
         ("put", f"/fhir/PractitionerRole/{clinic.clinician.pk}"),
         ("delete", f"/fhir/PractitionerRole/{clinic.clinician.pk}x"),

@@ -5,6 +5,7 @@ from scheduling.domain.fhir_appointment_write import APPOINTMENT_SHAPE
 from scheduling.domain.fhir_body import Shape
 from scheduling.domain.fhir_communication import COMMUNICATION_SHAPE
 from scheduling.domain.fhir_patient import PATIENT_SHAPE
+from scheduling.domain.fhir_practitioner import PRACTITIONER_SHAPE
 from scheduling.domain.fhir_record_write import (
     LOCATION_SHAPE,
     ORGANIZATION_SHAPE,
@@ -16,6 +17,7 @@ from scheduling.domain.fhir_specialty_write import CODE_SYSTEM_SHAPE
 
 WRITE_SHAPES: dict[str, Shape] = {
     "Schedule": SCHEDULE_SHAPE,
+    "Practitioner": PRACTITIONER_SHAPE,
     "PractitionerRole": ROLE_SHAPE,
     "Patient": PATIENT_SHAPE,
     "Appointment": APPOINTMENT_SHAPE,

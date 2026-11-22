@@ -1,8 +1,7 @@
 # ADR 0009: FHIR `PractitionerRole` writes and time off
 
-Status: accepted, 2026-11-22. Builds on ADR 0006 (write rules) and ADR 0008. Task 24c. This run
-builds the `PractitionerRole` half; the `Practitioner` decisions below are fixed now and built by
-the next run.
+Status: accepted, 2026-11-22. Builds on ADR 0006 (write rules) and ADR 0008. Task 24c built
+the `PractitionerRole` half; task 24c3 the `Practitioner` half below.
 
 ## Decisions
 
@@ -49,3 +48,9 @@ the next run.
   and `DELETE` (409 while the profile exists) go through `update_user`, `deactivate_user`,
   `update_profile` and `delete_user`. A phone that differs is 400: the console cannot edit it. The
   password appears in no FHIR element, answer, log or audit entry.
+- **API tokens of a deactivated user (task 24c3).** Deactivating ends the user's sessions and
+  revokes no `ApiClient` row; the token stays stored but is answered 401 while the user is inactive
+  and works again when the user is reactivated. Silent revocation would make reactivation lose
+  integrations the owner never asked to lose; revoking is its own explicit action.
+- **Collection `Allow`.** A refused `POST /fhir/Practitioner` is 405 and its `Allow` also names
+  `PUT` and `DELETE`, so a client learns that Practitioners are written one by one.

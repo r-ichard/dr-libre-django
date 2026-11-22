@@ -73,7 +73,7 @@ def refused_changes(
         for element in COMPARED_ELEMENTS
         if element not in allowed and body.get(element) != stored.get(element)
     ]
-    stored_telecom, body_telecom = _telecom(stored), _telecom(body)
+    stored_telecom, body_telecom = telecom_by_system(stored), telecom_by_system(body)
     for system in TELECOM_SYSTEMS:
         permission = "telecom" if system == "phone" else "telecom.email"
         if permission not in allowed and stored_telecom.get(system) != body_telecom.get(system):
@@ -83,7 +83,7 @@ def refused_changes(
 
 def patient_values(body: dict[str, object]) -> PatientValues | str:
     """The values a body holds, or the dotted name of the element that cannot be read."""
-    telecom = _telecom(body)
+    telecom = telecom_by_system(body)
     items = body.get("telecom", [])
     if len(telecom) != len(items if isinstance(items, list) else []):
         return "Patient.telecom"
@@ -102,7 +102,7 @@ def patient_values(body: dict[str, object]) -> PatientValues | str:
     )
 
 
-def _telecom(resource: dict[str, object]) -> dict[str, str]:
+def telecom_by_system(resource: dict[str, object]) -> dict[str, str]:
     items = resource.get("telecom", [])
     found: dict[str, str] = {}
     for item in items if isinstance(items, list) else []:

@@ -15,7 +15,11 @@ from scheduling.domain.fhir_outcome import information_outcome
 from scheduling.models import User
 from scheduling.use_cases.api_tokens import issue_token
 from scheduling.views.api_clients import fhir_client
-from scheduling.views.fhir.samples_records import record_documents, role_documents
+from scheduling.views.fhir.samples_records import (
+    practitioner_documents,
+    record_documents,
+    role_documents,
+)
 from scheduling.views.fhir.samples_specialty import specialty_documents
 from scheduling.views.fhir.samples_staff import fetch_document, staff_documents
 
@@ -97,6 +101,7 @@ def _staff_documents(client: Client) -> dict[str, Resource]:
     documents.update(staff_documents(client))
     documents.update(record_documents(client))
     documents.update(role_documents(client))
+    documents.update(practitioner_documents(client))
     documents.update(specialty_documents(client))
     return documents
 

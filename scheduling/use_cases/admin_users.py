@@ -163,13 +163,15 @@ def deactivate_user(user_id: UUID, version: int, actor: User) -> Result[UUID]:
         return Success(target.pk)
 
 
-def delete_user(user_id: UUID, actor: User) -> Result[None]:
+def delete_user(user_id: UUID, actor: User, expected_version: int | None = None) -> Result[None]:
     with transaction.atomic():
         locked = lock_users(actor.pk, user_id)
         if locked.admin is None:
             return Failure.forbidden()
         if locked.target is None:
             return Failure.not_found()
+        if expected_version not in (None, locked.target.version):
+            return stale_version()
         blocked = user_dependents(user_id, actor.pk)
         if blocked:
             return Failure.has_dependents(blocked)

@@ -8,10 +8,12 @@ from scheduling.domain.fhir_common import (
     SPECIALTY_SYSTEM,
     Resource,
     extension,
+    fhir_instant,
     meta,
     reference,
 )
 
+DEFAULT_TIME_OFF_DESCRIPTION = "Time off"
 DAYS_FROM_SUNDAY = ("sun", "mon", "tue", "wed", "thu", "fri", "sat")
 
 
@@ -20,6 +22,14 @@ class RuleHours:
     weekday: int
     start_time: time
     end_time: time
+
+
+@dataclass(frozen=True)
+class TimeOffSource:
+    id: UUID
+    starts_at: datetime
+    ends_at: datetime
+    reason: str
 
 
 @dataclass(frozen=True)
@@ -37,6 +47,7 @@ class RoleSource:
     is_active: bool
     service_ids: tuple[UUID, ...]
     rules: tuple[RuleHours, ...]
+    time_off: tuple[TimeOffSource, ...] = ()
 
 
 def practitioner_role(source: RoleSource) -> Resource:
@@ -67,7 +78,17 @@ def practitioner_role(source: RoleSource) -> Resource:
     }
     if source.default_room_id is not None:
         resource["location"] = [reference("Location", source.default_room_id)]
+    if source.time_off:
+        resource["notAvailable"] = [_not_available(item) for item in source.time_off]
     return resource
+
+
+def _not_available(item: TimeOffSource) -> Resource:
+    return {
+        "id": str(item.id),
+        "description": item.reason or DEFAULT_TIME_OFF_DESCRIPTION,
+        "during": {"start": fhir_instant(item.starts_at), "end": fhir_instant(item.ends_at)},
+    }
 
 
 def available_time(rules: tuple[RuleHours, ...]) -> list[Resource]:

@@ -365,6 +365,18 @@ FHIR_WRITE_BODIES = [
                             {"code": "cardio", "display": "B"}]}),
     json.dumps({"resourceType": "CodeSystem", "count": 99,
                 "concept": [{"code": "a", "display": "A"}]}),
+    json.dumps({"resourceType": "PractitionerRole",
+                "notAvailable": [{"during": {"start": 1}}] * 500}),
+    json.dumps({"resourceType": "PractitionerRole", "notAvailable": [{"id": 5, "during": []}]}),
+    json.dumps({"resourceType": "PractitionerRole", "notAvailable": [{"during": []}]}),
+    json.dumps({"resourceType": "PractitionerRole", "notAvailable": [{"during": {"start": 5}}]}),
+    json.dumps({"resourceType": "PractitionerRole", "notAvailable": {"during": "x"}}),
+    json.dumps({"resourceType": "PractitionerRole", "specialty": [{"coding": [None, 1]}]}),
+    json.dumps({"resourceType": "PractitionerRole", "practitioner": {"reference": "x" * 9_999}}),
+    json.dumps({"resourceType": "PractitionerRole", "availableTime": [{"daysOfWeek": "mon"}]}),
+    json.dumps({"resourceType": "PractitionerRole",
+                "extension": [{"url": 1, "valueInteger": "x"}]}),
+    json.dumps({"resourceType": "PractitionerRole", "location": [{"reference": "Location/x"}]}),
 ]  # fmt: skip
 
 
@@ -400,6 +412,9 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
         ("post", "/fhir/Appointment"),
         ("put", f"/fhir/Appointment/{uuid.uuid4()}"),
         *_record_paths(clinic.department.pk),
+        ("post", "/fhir/PractitionerRole"),
+        ("put", f"/fhir/PractitionerRole/{clinic.clinician.pk}"),
+        ("delete", f"/fhir/PractitionerRole/{clinic.clinician.pk}x"),
     ]
     client = fhir_client(token)
 
@@ -418,6 +433,7 @@ def returns_outcome_and_no_500_when_fhir_gets_hostile_write_bodies(actor: str) -
                 "Location",
                 "HealthcareService",
                 "CodeSystem",
+                "PractitionerRole",
             ):
                 failures.append((method, path, response.status_code))
     assert failures == []

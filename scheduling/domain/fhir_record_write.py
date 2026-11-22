@@ -97,6 +97,14 @@ ELEMENT_OF_FIELD = {
         "capacity": "Location.extension",
         "equipment": "Location.extension",
     },
+    "clinician": {
+        "user": "PractitionerRole.practitioner",
+        "department": "PractitionerRole.organization",
+        "specialty": "PractitionerRole.specialty",
+        "default_room": "PractitionerRole.location",
+        "bio": "PractitionerRole.extension",
+        "round_robin_weight": "PractitionerRole.extension",
+    },
     "appointment_type": {
         "name": "HealthcareService.name",
         "code": "HealthcareService.identifier",
@@ -125,13 +133,13 @@ def derived_difference(body: Mapping[str, object], stored: Mapping[str, object],
 
 
 def organization_values(body: Resource) -> Values | str:
-    if _first_coding_code(body.get("type")) != "dept":
+    if first_coding_code(body.get("type")) != "dept":
         return "Organization.type"
     if body.get("active", True) is not True:
         return "Organization.active"
     values: Values = {"name": _text(body, "name"), "code": _code(body)}
     if "partOf" in body:
-        parent = _reference_id(body.get("partOf"), "Organization")
+        parent = reference_id(body.get("partOf"), "Organization")
         if parent is None:
             return "Organization.partOf"
         values["hospital_id"] = parent
@@ -148,7 +156,7 @@ def site_values(body: Resource) -> Values | str:
     place = address if isinstance(address, dict) else {}
     lines = place.get("line")
     line = str(lines[0]) if isinstance(lines, list) and lines else ""
-    zone = _extension_value(body, "hospital-time-zone", "valueCode") or ""
+    zone = extension_value(body, "hospital-time-zone", "valueCode") or ""
     entries: list[Entry] = [
         _text_entry("street_address", line, 200, "a street address", "Location.address.line"),
         _text_entry("city", _text(place, "city"), 100, "a city", "Location.address.city"),
@@ -181,11 +189,11 @@ def room_values(body: Resource) -> Values | str:
     status = _status(body)
     if not status:
         return "Location.status"
-    parent = _reference_id(body.get("managingOrganization"), "Organization")
+    parent = reference_id(body.get("managingOrganization"), "Organization")
     if parent is None:
         return "Location.managingOrganization"
-    floor = _extension_value(body, "room-floor", "valueString") or ""
-    capacity = _extension_value(body, "room-capacity", "valueInteger")
+    floor = extension_value(body, "room-floor", "valueString") or ""
+    capacity = extension_value(body, "room-capacity", "valueInteger")
     equipment = "\n".join(
         str(item) for item in _extension_values(body, "room-equipment", "valueString")
     )
@@ -201,15 +209,15 @@ def room_values(body: Resource) -> Values | str:
 
 
 def service_values(body: Resource) -> Values | str:
-    parent = _reference_id(body.get("providedBy"), "Organization")
+    parent = reference_id(body.get("providedBy"), "Organization")
     if parent is None:
         return "HealthcareService.providedBy"
     active = body.get("active")
     if not isinstance(active, bool):
         return "HealthcareService.active"
-    duration = _extension_value(body, "service-duration-minutes", "valueInteger")
-    buffer = _extension_value(body, "service-buffer-minutes", "valueInteger")
-    colour = _extension_value(body, "service-colour", "valueString")
+    duration = extension_value(body, "service-duration-minutes", "valueInteger")
+    buffer = extension_value(body, "service-buffer-minutes", "valueInteger")
+    colour = extension_value(body, "service-colour", "valueString")
     extension_path = "HealthcareService.extension"
     entries: list[Entry] = [
         ("duration_minutes", record_fields.check_duration_minutes(str(duration)), extension_path),
@@ -219,8 +227,8 @@ def service_values(body: Resource) -> Values | str:
     values = _collected(entries)
     if isinstance(values, str):
         return values
-    needs_room = _extension_value(body, "service-needs-room", "valueBoolean")
-    bookable = _extension_value(body, "service-bookable-online", "valueBoolean")
+    needs_room = extension_value(body, "service-needs-room", "valueBoolean")
+    bookable = extension_value(body, "service-bookable-online", "valueBoolean")
     return {
         **values,
         **_identity(body),
@@ -291,7 +299,7 @@ def _extension_values(body: Resource, name: str, key: str) -> list[object]:
     ]
 
 
-def _extension_value(body: Resource, name: str, key: str) -> object:
+def extension_value(body: Resource, name: str, key: str) -> object:
     found = _extension_values(body, name, key)
     return found[0] if found else None
 
@@ -305,7 +313,7 @@ def _coordinates(position: object) -> tuple[float | None, float | None] | str:
     return "Location.position" if isinstance(checked, Failure) else checked.value
 
 
-def _reference_id(reference: object, resource_type: str) -> UUID | None:
+def reference_id(reference: object, resource_type: str) -> UUID | None:
     text = reference.get("reference") if isinstance(reference, dict) else None
     prefix = f"{resource_type}/"
     if not isinstance(text, str) or not text.startswith(prefix):
@@ -320,5 +328,5 @@ def _coding_code(concept: object) -> str:
     return _text(first, "code")
 
 
-def _first_coding_code(concepts: object) -> str:
+def first_coding_code(concepts: object) -> str:
     return _coding_code(concepts[0]) if isinstance(concepts, list) and concepts else ""

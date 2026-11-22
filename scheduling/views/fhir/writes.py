@@ -32,7 +32,7 @@ def write(
 ) -> HttpResponse:
     if caller.user is None:
         return failure_response(Failure.unauthenticated())
-    refusal = fhir_resources.refusal_before_body(resource_type, caller)
+    refusal = fhir_resources.refusal_before_body(resource_type, caller, request.method or "")
     if refusal is not None:
         return failure_response(refusal)
     if resource_type == "CodeSystem":

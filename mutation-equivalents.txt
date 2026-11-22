@@ -70,3 +70,5 @@ scheduling.domain.fhir_appointment_write.x__slot__mutmut_11: XXXX is not a slot 
 scheduling.domain.fhir_appointment_write.x__slot__mutmut_12: XXXX is not a slot id, parse_slot_id rejects it like ""
 scheduling.domain.fhir_appointment_write.x__slot__mutmut_16: partition and rpartition differ only on a reference that fails the Slot/ prefix check or parse_slot_id anyway
 scheduling.domain.fhir_search.x_parse_search__mutmut_126: any sort default that does not start with "-" is ascending, like ""
+scheduling.domain.fhir_role_write.x__without_empty__mutmut_4: without_empty of a dict always returns a dict, so the fallback branch is unreachable
+scheduling.domain.fhir_role_write.x_time_off_changes__mutmut_23: stored ids are text keys, so looking one up with a non-text id finds nothing either way

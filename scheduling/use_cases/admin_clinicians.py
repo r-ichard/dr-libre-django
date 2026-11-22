@@ -85,13 +85,17 @@ def update_profile(
         return Success(profile.pk)
 
 
-def delete_profile(record_id: UUID, actor: User) -> Result[None]:
+def delete_profile(
+    record_id: UUID, actor: User, expected_version: int | None = None
+) -> Result[None]:
     with transaction.atomic():
         if lock_users(actor.pk, None).admin is None:
             return Failure.forbidden()
         profile = ClinicianProfile.objects.select_for_update().filter(pk=record_id).first()
         if profile is None:
             return Failure.not_found()
+        if expected_version not in (None, profile.version):
+            return stale_version()
         blocked = profile_dependents(record_id)
         if blocked:
             return Failure.has_dependents(blocked)

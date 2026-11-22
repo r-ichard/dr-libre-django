@@ -20,7 +20,12 @@ from scheduling.domain.fhir_practitioner import (
     PractitionerSource,
     practitioner,
 )
-from scheduling.domain.fhir_practitioner_role import RoleSource, RuleHours, practitioner_role
+from scheduling.domain.fhir_practitioner_role import (
+    RoleSource,
+    RuleHours,
+    TimeOffSource,
+    practitioner_role,
+)
 from scheduling.domain.fhir_schedule import ScheduleSource, schedule_resource
 from scheduling.domain.fhir_service import ServiceSource, healthcare_service
 from scheduling.domain.fhir_specialty import (
@@ -36,6 +41,7 @@ from scheduling.models import (
     Hospital,
     Room,
     Specialty,
+    TimeOff,
     User,
 )
 from scheduling.use_cases.search_catalog import bookable_types
@@ -187,15 +193,17 @@ def practitioners_with_contact(user_ids: list[UUID]) -> list[Resource]:
 
 
 def practitioner_roles(profile_ids: list[UUID]) -> list[Resource]:
-    return _roles(profile_ids, bookable_types())
+    return _roles(profile_ids, bookable_types(), with_time_off=False)
 
 
 def practitioner_roles_with_all_services(profile_ids: list[UUID]) -> list[Resource]:
     """For a staff token: the services it can read itself, so the reference resolves."""
-    return _roles(profile_ids, AppointmentType.objects.all())
+    return _roles(profile_ids, AppointmentType.objects.all(), with_time_off=True)
 
 
-def _roles(profile_ids: list[UUID], service_types: QuerySet[AppointmentType]) -> list[Resource]:
+def _roles(
+    profile_ids: list[UUID], service_types: QuerySet[AppointmentType], *, with_time_off: bool
+) -> list[Resource]:
     profiles = list(
         ClinicianProfile.objects.filter(pk__in=profile_ids).values_list(
             "id",
@@ -216,6 +224,7 @@ def _roles(profile_ids: list[UUID], service_types: QuerySet[AppointmentType]) ->
         clinician_id__in=profile_ids
     ).values_list("clinician_id", "weekday", "start_time", "end_time"):
         rules.setdefault(clinician_id, []).append(RuleHours(weekday, start, end))
+    time_off = _time_off(profile_ids) if with_time_off else {}
     services: dict[UUID, list[UUID]] = {}
     for department_id, type_id in (
         service_types.filter(department_id__in={row[2] for row in profiles})
@@ -229,10 +238,22 @@ def _roles(profile_ids: list[UUID], service_types: QuerySet[AppointmentType]) ->
                 *row,
                 service_ids=tuple(services.get(row[2], ())),
                 rules=tuple(rules.get(row[0], ())),
+                time_off=tuple(time_off.get(row[0], ())),
             )
         )
         for row in profiles
     ]
+
+
+def _time_off(profile_ids: list[UUID]) -> dict[UUID, list[TimeOffSource]]:
+    """Staff only: when a clinician is away is not public (as with busy slots)."""
+    found: dict[UUID, list[TimeOffSource]] = {}
+    rows = TimeOff.objects.filter(clinician_id__in=profile_ids).order_by("starts_at", "id")
+    for clinician_id, row_id, starts_at, ends_at, reason in rows.values_list(
+        "clinician_id", "id", "starts_at", "ends_at", "reason"
+    ):
+        found.setdefault(clinician_id, []).append(TimeOffSource(row_id, starts_at, ends_at, reason))
+    return found
 
 
 def schedules(rule_ids: list[UUID]) -> list[Resource]:

@@ -273,7 +273,13 @@ def returns_every_declared_resource_with_its_parameters_when_capability_built() 
     resources = body["rest"][0]["resource"]  # type: ignore[index]
     assert [item["type"] for item in resources] == [item.type for item in FHIR_RESOURCES]
     role = next(item for item in resources if item["type"] == "PractitionerRole")
-    assert role["interaction"] == [{"code": "read"}, {"code": "search-type"}]
+    assert [item["code"] for item in role["interaction"]] == [
+        "read",
+        "search-type",
+        "create",
+        "update",
+        "delete",
+    ]
     assert role["versioning"] == "versioned"
     assert role["searchInclude"] == list(ROLE.includes)
     assert {"name": "active", "type": "token"} in role["searchParam"]

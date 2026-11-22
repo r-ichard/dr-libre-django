@@ -67,7 +67,7 @@ def create_record_resource(
         return _invalid(values)
     created = create_record(kind, values, admin)
     if isinstance(created, Failure):
-        return _named(created, kind)
+        return named(created, kind)
     return Success(LOADERS[kind]([created.value])[0])
 
 
@@ -93,7 +93,7 @@ def update_record_resource(
         return _invalid(values)
     edited = update_record(RecordEdit(kind, identifier, values, expected_version), admin)
     if isinstance(edited, Failure):
-        return _named(edited, kind)
+        return named(edited, kind)
     return Success(LOADERS[kind]([identifier])[0])
 
 
@@ -129,7 +129,7 @@ def _invalid(element: str, message: str = "This element is not valid.") -> Failu
     return Failure.invalid_input([FieldMessage(element, message)])
 
 
-def _named(failure: Failure, kind: str) -> Failure:
+def named(failure: Failure, kind: str) -> Failure:
     """The console names form fields and a stale record; a FHIR client is told the element of its
     own body and a stale `If-Match`."""
     if failure.code is FailureCode.CONFLICT and failure.details.get("resources") == [kind]:

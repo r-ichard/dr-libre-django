@@ -31,6 +31,12 @@ from scheduling.use_cases.fhir_response_reads import (
     read_response,
     search_responses,
 )
+from scheduling.use_cases.fhir_role_writes import (
+    create_role,
+    delete_role,
+    role_write_refusal,
+    update_role,
+)
 from scheduling.use_cases.fhir_schedule_writes import (
     create_schedule,
     delete_schedule,
@@ -77,6 +83,8 @@ def search(resource_type: str, query: SearchQuery, caller: Caller) -> Result[Sea
 def create(resource_type: str, body: dict[str, object], caller: Caller) -> Result[Resource]:
     if resource_type == "Schedule":
         return create_schedule(body, caller)
+    if resource_type == "PractitionerRole":
+        return create_role(body, caller)
     if resource_type == "Appointment":
         return create_appointment(body, caller)
     if resource_type == "AppointmentResponse":
@@ -95,6 +103,8 @@ def update(
 ) -> Result[Resource]:
     if resource_type == "Schedule":
         return update_schedule(identifier, body, caller, expected_version)
+    if resource_type == "PractitionerRole":
+        return update_role(identifier, body, caller, expected_version)
     if resource_type == "Patient":
         return update_patient(identifier, body, caller, expected_version)
     if resource_type == "Appointment":
@@ -111,6 +121,8 @@ def delete(
 ) -> Result[None]:
     if resource_type == "Schedule":
         return delete_schedule(identifier, caller, expected_version)
+    if resource_type == "PractitionerRole":
+        return delete_role(identifier, caller, expected_version)
     if resource_type in RECORD_TYPES:
         return delete_record_resource(resource_type, identifier, caller, expected_version)
     return Failure.not_found()
@@ -121,7 +133,9 @@ def is_read_only_here(resource_type: str, identifier: UUID) -> bool:
     return is_hospital_organization(resource_type, identifier)
 
 
-def refusal_before_body(resource_type: str, caller: Caller) -> Failure | None:
+def refusal_before_body(resource_type: str, caller: Caller, method: str) -> Failure | None:
+    if resource_type == "PractitionerRole":
+        return role_write_refusal(method, caller)
     if resource_type == "CodeSystem":
         return specialty_write_refusal(caller)
     return write_refusal(resource_type, caller)

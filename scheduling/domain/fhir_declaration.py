@@ -114,6 +114,7 @@ FHIR_RESOURCES = (
             ("active", _FLAG),
         ),
         includes=("PractitionerRole:practitioner", "PractitionerRole:organization"),
+        interactions=(*READ_ONLY, "create", "update", "delete"),
     ),
     ResourceDeclaration(
         "Schedule",

@@ -81,7 +81,8 @@ class PageView(View):
                 return HttpResponseRedirect(f"{SIGN_IN_PATH}?{query}")
             if Role(self.user.role) not in self.allowed_roles:
                 return render_page(request, "errors/403.html", status=403, signed_in_user=self.user)
-        if request.method == "GET" and self.read_scope is not None:
+        # Django serves HEAD with get(), so a HEAD computes the schedule and must count too.
+        if request.method in ("GET", "HEAD") and self.read_scope is not None:
             wait = take_read_hit(self.read_scope, self.user, network_address(request))
             if wait is not None:
                 return self._limited_page(request, wait)

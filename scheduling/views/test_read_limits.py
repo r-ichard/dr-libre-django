@@ -3,7 +3,6 @@
 by user id, never against its address."""
 
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
 import pytest
 from django.test import Client
@@ -15,9 +14,6 @@ from scheduling.views.fhir_test_support import token_of
 from scheduling.views.pages.admin_support import client_of_role
 from scheduling.views.pages.booking_pages_support import details_path, times_path
 from scheduling.views.pages.search_pages_support import plant_clinic
-
-if TYPE_CHECKING:
-    pass
 
 pytestmark = pytest.mark.django_db
 
@@ -194,3 +190,53 @@ def returns_200_when_a_token_holder_reads_while_the_address_counter_is_full() ->
     _fill(fhir_client(), path, FHIR_READS_PER_HOUR)
 
     assert _read(fhir_client(token_of()), path) == 200
+
+
+PAGE_SCHEDULE_ROUTES = [
+    "provider_page", "hospital_page", "specialty_page", "book_services", "book_providers",
+    "book_times", "book_details",
+]  # fmt: skip
+API_SCHEDULE_ROUTES = ["provider_api", "hospital_api", "specialty_api", "slots_api"]
+ANONYMOUS_FHIR_READ = "/fhir/Location"
+
+
+def _heads(client: Client, path: str, count: int) -> list[int]:
+    return [client.head(path).status_code for _ in range(count)]
+
+
+@pytest.mark.parametrize("route", PAGE_SCHEDULE_ROUTES)
+def returns_429_with_retry_after_when_head_requests_fill_the_schedule_counter(route: str) -> None:
+    path = _paths()[route]
+    client = browser_api_client(raise_request_exception=False)
+
+    head_statuses = _heads(client, path, SCHEDULE_READS_PER_HOUR)
+    limited_head = client.head(path)
+    limited_get = client.get(path)
+
+    assert set(head_statuses) == {200}
+    assert limited_head.status_code == 429
+    assert int(limited_head["Retry-After"]) >= 1
+    assert limited_get.status_code == 429
+    assert int(limited_get["Retry-After"]) >= 1
+
+
+@pytest.mark.parametrize("route", API_SCHEDULE_ROUTES)
+def returns_404_and_counts_nothing_when_head_reaches_an_api_schedule_read(route: str) -> None:
+    path = _paths()[route]
+    client = browser_api_client(raise_request_exception=False)
+
+    head_statuses = _heads(client, path, SCHEDULE_READS_PER_HOUR)
+    get_statuses = _fill(client, path, SCHEDULE_READS_PER_HOUR)
+
+    assert set(head_statuses) == {404}
+    assert set(get_statuses) == {200}
+
+
+def returns_405_and_counts_nothing_when_head_reaches_an_anonymous_fhir_read() -> None:
+    client = fhir_client()
+
+    head_statuses = _heads(client, ANONYMOUS_FHIR_READ, FHIR_READS_PER_HOUR)
+    get_statuses = _fill(client, ANONYMOUS_FHIR_READ, FHIR_READS_PER_HOUR)
+
+    assert set(head_statuses) == {405}
+    assert set(get_statuses) == {200}

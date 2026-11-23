@@ -21,46 +21,43 @@ describes.
 
 ## Where it stands
 
-- `main` holds a product that runs: every milestone M1 to M8 of the specification is
+- `main` holds a product that runs: every milestone M1 to M9 of the specification is
   merged (search, booking with a verified email, patient portal, clinician workspace,
-  admin console, waitlist, reminders, audit, the FHIR R4 API). Milestone M9, hardening
-  and hand-over, is open (GitHub issue #9).
-- From a fresh clone of `main`: `make lint`, `make test` (about 4900 tests, 40 to 65
-  seconds; a test phase over 60 s fails it), `make gate`, `make mutate` and
-  `make fhir-validate` (115 samples) pass.
+  admin console, waitlist, reminders, audit, the FHIR R4 API, and the hardening of M9).
+  GitHub issue #9 lists what M9 holds, commit by commit.
+- From a fresh clone of `main`: `make lint`, `make test` (about 5500 tests, two to five
+  minutes; a test phase over 60 s fails it), `make gate`, `make mutate`,
+  `make fhir-validate` (115 samples) and `make audit` (locked dependencies, no known
+  vulnerabilities) pass. Against a running, seeded stack, `make smoke` walks a booking
+  from search to cancellation.
+- Security: `doc/security-review.md` says, rule by rule, where each security rule of the
+  specification is enforced and which test holds it; its access section is generated
+  from three access tables by `make access-table`, and a test fails when the two differ.
+  ADR 0011 (encryption at rest, the development server) and ADR 0012 (readings of the
+  access rules) are proposed, for the owner.
 - Three QA rounds ran; round 3 filed 20 issues, no P0, all closed. No further round
   unless the owner asks for one.
 - Try it: see "Run it" below.
 
-## In flight when this was written
+## How work is done now
 
-Two runs of the build pipeline (`fabro`, see "The pipeline"). Check them with
-`fabro ps -a` and read a finished one with `fabro attach <id>`.
+Since 2026-11-23 (owner's decision) new work goes to Claude Code sub-agents on Haiku, one
+finding or item each, in a git worktree of their own; see "The pipeline". A sub-agent on
+the host has no PostgreSQL: it stops after `make lint` and `make gate`, and the
+orchestrator runs `make test` and the other gates in a container from a fresh clone.
 
-| Run | Task | Base | When it ends |
-|---|---|---|---|
-| `01M82WQ5TCSV`, `01M82WQ6973K`, `01M82WQ6RCFH`, `01M82WQ7755T` | one concern each, on Haiku: the mutation gate fails on a stale entry (26c item 19); `make audit` (26c item 13); the worker deletes old rate limit hits; the second half of #44 | `main` | Read each diff, gates on the batch, land each as its own commit. |
+## What is left, after M9
 
-If a run shows `Error: ?` on an agent stage, the reason is the last event of
-`fabro events <id> --json`. "You've hit your 5-hour limit" means the subscription the
-agent stages run on is spent: wait for the reset and launch the same task again (a run
-that died early), or `fabro rewind <id> <last good stage>` (a run that died late).
+Proposed in issue #9, none of them a known defect:
 
-## What is left, in order
-
-1. The rest of #44 (running). Task 27b is otherwise merged, one finding per commit.
-3. `27b-qa-round-3-pages.md`: the P2 findings about messages, dead ends and one write
-   that should not happen (#34 to #37, #39, #40, #42 to #44, #49).
-4. `27d3-fhir-refusal-messages.md`: a message of its own on every FHIR 400.
-5. `26c-gates-that-hold.md`: a time gate per test, mutants no test reaches, one flaky
-   test, `make audit`, docstrings that name tasks.
-6. `26b3-access-table.md`: every route and caller as one table, tested.
-7. `26d-security-review-written.md`: ADR 0011 and `doc/security-review.md`.
-8. `27c`: README (how to run, a first walk), a smoke test, this document made final.
-   Only a row in `doc/backlog.md` so far: write the task file first.
-
-A run takes a slice it can finish and names the rest under "Left for the orchestrator"
-in its review (`doc/reviews/`): write that rest as a new task file before moving on.
+1. The access walk for the 13 personal FHIR writes (Patient, Appointment, Schedule,
+   PractitionerRole and others): `scheduling/views/test_fhir_access_write_cases.py`
+   lists them in `NOT_WALKED_YET`.
+2. `27d3-fhir-refusal-messages.md`: a message of its own on every FHIR 400.
+3. `26c-gates-that-hold.md` item 11a: about 1165 mutants of `scheduling/domain` that no
+   test reaches; items 17, 18 and 20: tests over every form.
+4. The writer of a stray audit row one test used to see (`doc/backlog.md`).
+5. The owner's questions, below, each with the choice the product makes today.
 
 ## Run it
 
@@ -226,13 +223,25 @@ Verify the sync run's branch like any other.
 
 ## Questions that wait for the owner
 
-Listed in `doc/backlog.md` under "Carried items", each with the choice the product
-makes today. The ones that change behaviour: ADR 0010 (sorting, 415, search values in
-FHIR); a day without a time in a FHIR search is a UTC day; a wrong method on `/api/v1`
-answers 404; check-in and no-show are possible before the day; a patient may join the
-waitlist for a type they cannot book online; changing a hospital's time zone moves the
-local time of its appointments (#36); encryption at rest; the development server in the
-container.
+One list, with the choice the product makes today and the cost of changing it, at the end
+of `doc/security-review.md` ("For the owner"); `doc/backlog.md` "Carried items" holds the
+rest. The ones that change behaviour:
+
+- ADR 0010 (FHIR sorting, 415, search values), ADR 0011 (encryption at rest, the
+  development server), ADR 0012 (readings of the access rules): all "proposed".
+- An admin acts on every user's record (specification "Decisions" item 2), where section
+  12.3 says "forbidden" for another user's record: which rule wins for an admin.
+- "Forbidden" for another user's record and "not found" for a missing one tell a caller
+  whether a record exists (ADR 0012, reading 1).
+- A clinician's or admin's FHIR search of notifications, and a clinician's search of
+  offer answers, answer an empty set, not 403.
+- A hospital's FHIR `Organization` cannot be updated or deleted (405): ADR 0008 writes a
+  hospital through `Location`.
+- A signed-in clinician or admin gets 403 on the public booking details page.
+- A day without a time in a FHIR search is a UTC day; a wrong method on `/api/v1` answers
+  404; check-in and no-show are possible before the day; a patient may join the waitlist
+  for a type they cannot book online; patients are not told when a hospital's time zone
+  changes (#36).
 
 ## Things nobody should do
 

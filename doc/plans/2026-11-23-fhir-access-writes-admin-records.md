@@ -1,109 +1,118 @@
-Slice: write rows of the admin-managed types (Organization, Location, HealthcareService, CodeSystem): 10 of the 23 write rows, 99 requests. The staff and patient write rows follow in the next run (`## Not in this run`).
+Slice: write rows of the admin-managed types (Organization, Location, HealthcareService, CodeSystem): 10 of the 23 write rows, 12 write cases, 123 requests. The staff and patient write rows follow in the next run (`## Not in this run`).
 
 ## Focal point
 
-`test_support/fhir_access_rows.py` lists the answer of every `/fhir` write interaction per caller. One walk, `scheduling/views/test_fhir_access_writes.py`, sends each of the 10 rows as each of four callers (visitor with no token, and a bearer token of a patient, a clinician and an admin). Each write goes to a record made for that write. The walk reads the record back as admin before and after, and checks the answer, the record and the audit log against the row.
+`test_support/fhir_access_rows.py` lists the answer of every `/fhir` write interaction per caller. One walk, `scheduling/views/test_fhir_access_writes.py`, sends each case as each of four callers (visitor with no token, and a bearer token of a patient, a clinician and an admin). Each write goes to a record made for that caller. The walk reads the record back as admin before and after, and checks the answer, the record and the audit log against the row.
+
+This revision answers the architect's reason 1: the hospital Organization PUT and DELETE pair is walked and listed in KNOWN_DIFFERENCES with both answers. `KnownDifference` gains a `record` field, so an entry can name the record kind it holds for.
 
 ## Blocks, in file order
 
-1. **`test_support/fhir_access_rows.py`** (edit, lines 1-3, module docstring). Say the rows are read by the route-coverage test, the reads walk and the writes walk. No row changes in this run.
+1. **`test_support/fhir_access_rows.py`** (edit). Module docstring: read by the route-coverage test, the reads walk and the writes walk. `KnownDifference` gets `record: str = ""` (last field; `""` = every record, otherwise the record kind the pair holds for) and its docstring says so. Add two entries to `KNOWN_DIFFERENCES`: `KnownDifference("Organization", "update", Caller.ADMIN, 200, 405, record="hospital")` and the same for `"delete"`. The seven existing entries do not change. No row changes.
 
-2. **`scheduling/views/test_fhir_access_walk.py`** (edit, lines 42-50 `_expected`). Move `_expected` to `test_fhir_access_requests.py` as `expected_answer` (public), so the writes walk uses the same KNOWN_DIFFERENCES rule. Update the one import in the reads walk (lines 10-17). Behaviour of the reads walk does not change.
+2. **`scheduling/views/test_fhir_access_requests.py`** (edit). Add `expected_answer(row, caller, record="")` (public), moved from `_expected` in the reads walk: returns the product answer of the first `KNOWN_DIFFERENCES` entry whose resource, interaction and caller match and whose `record` is `""` or equals `record`; else `row.answer_for(caller)`. Module docstring: add that it also gives the expected answer of a request. Nothing else changes.
 
-3. **`scheduling/views/test_fhir_access_world.py`** (edit, line 98 `_clients`). Rename to `clients_for` (public). Its caller-to-client map is what the writes walk needs.
+3. **`scheduling/views/test_fhir_access_walk.py`** (edit). Delete `_expected`; call `expected_answer(row, caller)` (import from requests). Reads behaviour does not change.
 
-4. **`scheduling/views/test_fhir_access_write_cases.py`** (new, about 110 lines). Module docstring: the record each write changes, made fresh per write, and the body each caller sends. One `WriteCase` per row: `fresh_record(world)` (make a record, or nothing for create), `body(record, token)` (built from an admin read of the record, or the support builder for create), `path(record)`, and `accepted(...)` (what the record looks like after an accepted write). Each function under 15 lines.
-   - Builders reused: `department_body`, `room_body`, `service_body` (`scheduling/views/fhir_organisation_support.py:32,60,43`); `with_concepts`, `concepts_of`, `concept` (`scheduling/views/fhir_specialty_support.py:36,30,11`); `make_clinic` (`scheduling/models/builders.py:245`) for the hospital and department; `make("Department", hospital=...)`, `make("Room", department=...)`, `make("AppointmentType", department=...)` for the fresh records.
+4. **`scheduling/views/test_fhir_access_write_cases.py`** (new, about 110 lines). Module docstring: the records each write changes, made fresh per caller, the body each caller sends, and that a write without a case fails the walk. One frozen dataclass `WriteCase` per row or hospital variant: `resource`, `interaction`, `record` (`""` or `"hospital"`), `fresh(world, caller)` (makes the record; `None` for create), `path(target)`, `body(admin_client, target)` (an admin read with the change applied; `None` for delete and for create's support body), `accepted(world, target, created_id)` (the record state after an accepted write, as a bool). Each function under 15 lines. Builders reused: `department_body`, `room_body`, `service_body` (`scheduling/views/fhir_organisation_support.py:32,60,43`); `concept` (`scheduling/views/fhir_specialty_support.py:11`); `make("Hospital")`, `make("Department", hospital=...)`, `make("Room", department=...)`, `make("AppointmentType", department=...)` (`scheduling/models/builders.py:206`, defaults at 104-130).
 
-5. **`scheduling/views/test_fhir_access_writes.py`** (new, about 100 lines). Module docstring: the walk of the 10 write rows of this slice; a refused write leaves the record and the audit log as they were; an accepted one changes them. One test: `returns_the_row_answer_and_the_record_state_when_each_caller_writes`. Helpers: `_state(record_path)` (admin GET status, body, ETag; AuditLogEntry count; table count), `_write(...)` (one request through `send` from `fhir_test_support.py:40`), `_mismatches(...)`.
+5. **`scheduling/views/test_fhir_access_writes.py`** (new, about 110 lines). Module docstring: the walk of the 10 write rows as 12 cases, each caller's answer against its row (`expected_answer`), a refused write leaves the record and the audit log as they were, an accepted one changes them. Tests:
+   - `returns_the_row_answer_and_the_record_state_when_each_caller_writes`
+   - `returns_a_case_for_each_listed_write_row_when_the_walk_is_built` (the 10 `(resource, interaction)` pairs of this slice are in a tuple; each has a case; the next run extends the tuple).
+   Helpers, each under 20 lines: `_state(client, path)` (admin GET: status, body, ETag); `_audit_count()` and `_table_count(model)` (ORM); `_write(client, method, path, body, etag)` (one request through the caller's `Client`, see below); `_mismatches(...)`.
+   The walk sends through `world.clients[caller]` (`test_fhir_access_world.py`, built by `client_for(token)`): `client.post/put(path, data=json.dumps(body), content_type=FHIR_JSON, headers=...)`, `client.delete(path, headers=...)` with no body and no Content-Type, as a FHIR client sends a DELETE. `_says_not_json` takes CONTENT_LENGTH 0 as no body (`write_body.py:22`), so no 415.
 
-## The 10 rows and the record each uses
+No change to `test_fhir_access_world.py`: the world already holds the four caller clients, so `_clients` is not renamed.
 
-Every caller gets its own fresh record (make per write), so no write changes another write's record. Admin reads use `token_of(role="ADMIN")`.
+## The 12 cases, the record each caller writes, and the requests
 
-| Row | Record each caller writes | Body each caller sends | Admin (accepted) answer and change |
-| --- | --- | --- | --- |
-| Organization create | none; a new department of the clinic's hospital | `department_body(hospital, code)`, code `cardio-<caller>` | 201; one Department more, with that name; audit +1 |
-| Organization update | fresh Department D (`make("Department", hospital=H)`) | admin read of D's Organization, `name` changed; `If-Match` = that read's ETag | 200; admin read shows the new name; audit +1 |
-| Organization delete | fresh Department D, no dependents | none; `If-Match` = admin read's ETag | 200; admin read 404; Department row gone; audit +1 |
-| Location create | none; a new room of the clinic's department | `room_body(department, code)`, code `room-<caller>` | 201; one Room more; audit +1 |
-| Location update | fresh Room R | admin read of R's Location, `name` changed; `If-Match` | 200; new name read back; audit +1 |
-| Location delete | fresh Room R, unused | none; `If-Match` | 200; admin read 404; audit +1 |
-| HealthcareService create | none; a new appointment type of the clinic's department | `service_body(department, code)`, code `intake-<caller>` | 201; one AppointmentType more; audit +1 |
-| HealthcareService update | fresh AppointmentType T | admin read of T's HealthcareService, `name` changed; `If-Match` | 200; new name read back; audit +1 |
-| HealthcareService delete | fresh AppointmentType T, unused | none; `If-Match` | 200; admin read 404; audit +1 |
-| CodeSystem update | the specialty list (`/fhir/CodeSystem/specialty`), one record, not fresh; callers run in enum order, so the admin writes last | admin read of the list with one concept appended (`concept("cardiology", "Cardiology")`); `If-Match` | 200; list has the new concept; audit +1 |
+Each caller gets its own fresh record, so no write changes another's record. `world` is `_build_world()` (`test_fhir_access_world.py`), which holds a department (`world.room.department`), a hospital (`.hospital`), a room and an appointment type. The admin's read of the record supplies the body and `If-Match`; `If-Match` is the ETag of that read.
 
-Decision on CodeSystem: the list is a singleton and cannot be fresh per write. Refused callers leave it unchanged, so each caller's before-read is the same list; the admin's accepted write is last.
+| # | Row (case) | Record each caller writes | Body each caller sends | Admin accepted answer and change |
+| --- | --- | --- | --- | --- |
+| 1 | Organization create | none; a new department under `world.room.department.hospital` | `department_body(hospital, "cardio-<caller>")` | 201; one more Department with that code; audit +1 |
+| 2 | Location create | none; a new room under `world.room.department` | `room_body(department, "room-<caller>")` | 201; one more Room; audit +1 |
+| 3 | HealthcareService create | none; a new appointment type under `world.room.department` | `service_body(department, "intake-<caller>")` | 201; one more AppointmentType; audit +1 |
+| 4 | Organization update (department) | fresh Department D: `make("Department", hospital=world.room.department.hospital)` | admin read of D's Organization, `name` changed | 200; admin read shows the new name; audit +1 |
+| 5 | Organization update (hospital, `record="hospital"`) | fresh Hospital H: `make("Hospital")` | admin read of H's Organization, `name` changed | 405 with `Allow: GET` for admin (KNOWN_DIFFERENCES); H unchanged; audit unchanged |
+| 6 | Organization delete (department) | fresh Department D, no dependents | none; `If-Match` | 200; admin GET 404; Department row gone; audit +1 |
+| 7 | Organization delete (hospital, `record="hospital"`) | fresh Hospital H | none; `If-Match` | 405 with `Allow: GET` for admin (KNOWN_DIFFERENCES); H unchanged; audit unchanged |
+| 8 | Location update | fresh Room R: `make("Room", department=world.room.department)` | admin read of R's Location, `name` changed | 200; new name read back; audit +1 |
+| 9 | Location delete | fresh Room R, unused | none; `If-Match` | 200; admin GET 404; Room row gone; audit +1 |
+| 10 | HealthcareService update | fresh AppointmentType T: `make("AppointmentType", department=world.room.department)` | admin read of T's HealthcareService, `name` changed | 200; new name read back; audit +1 |
+| 11 | HealthcareService delete | fresh AppointmentType T, unused | none; `If-Match` | 200; admin GET 404; row gone; audit +1 |
+| 12 | CodeSystem update (`specialty`) | the specialty list, one record, not fresh | admin read of the list, `concept` gets one more entry (`concept("cardiology", "Cardiology")`), `count` recomputed | 200; list has `cardiology`; audit +1 |
 
-## Requests
+Row 12 is the one shared record. Refused callers leave the list as it was, so every caller reads the same before-state; the admin is last in `Caller` order (visitor, patient, clinician, admin), so its accepted change comes after every refusal.
 
-Per row and caller:
-- create: one POST; for an accepted (admin) write one read-back GET of the new record. 4 + 1 = 5 per row, 15 for three rows.
-- update and delete: admin GET before (the body and `If-Match` source), the write, admin GET after. 3 per caller, 12 per row. Update rows 3 x 12 = 36, delete rows 3 x 12 = 36, CodeSystem 12.
-- Total: 15 + 36 + 36 + 12 = **99 requests**, in process. The audit log and the table counts are read with the ORM, not requests. Limit: the FHIR scope allows 600 per address (`scheduling/domain/rate_limit_rules.py:39`); one test sends 99, and rate-limit hits roll back per test.
-- Cost: a few seconds (the reads walk sends 132).
+Requests (per caller, the same for each case):
+- create (rows 1 to 3): one POST per caller, and for the admin's accepted write one GET of the new record (`id` from the 201 body). 4 + 1 = 5 per row, **15**.
+- update and delete (rows 4 to 11): admin GET before (body and `If-Match` source), the caller's write, admin GET after. 3 per caller, 12 per case; 8 cases, **96**.
+- CodeSystem (row 12): admin GET before, the write, admin GET after, 3 per caller, **12**.
+- Total: 15 + 96 + 12 = **123 requests** through the test client, in process. Audit count and table counts are read with the ORM. The FHIR scope allows 600 per address (`scheduling/domain/rate_limit_rules.py:39`); 123 is under it, and the test is its own transaction.
+- Cost: a few seconds. The reads walk sends 132.
 
 ## Expected answers
 
-- Row cells as written in `FHIR_ACCESS_ROWS` for the 10 rows. Visitor 401, patient 403, clinician 403 (ADR 0008: admin only; no token 401; non-admin 403, answered before the body is read: `write_refusal`, `fhir_record_writes.py:44`).
-- KNOWN_DIFFERENCES predicted for these rows: none. Reading the code, each admin write answers its row (`update_record`, `create_record`, `delete_record` through `admin_records.py`, `fhir_record_writes.py:53-110`). If the build finds one, it goes into KNOWN_DIFFERENCES with both answers and a "For the owner" line in the review.
-- Refused write (any 4xx): admin read of the record before and after is identical (body and ETag); AuditLogEntry count unchanged; table count unchanged for create.
-- Accepted write (2xx): the state in the table of the rows above; audit count +1 (CLAUDE.md: every write audited).
-
-## Not walked here, and why
-
-- A hospital's Organization: PUT and DELETE answer 405 with `Allow: GET` for every caller with a token (ADR 0008; `writes.py` `is_read_only_here`, pinned by `test_fhir_organisation_writes.py:134`). The row says "admin 200", and the walk uses a department, which is what the row names. The hospital case is a second answer for the same row and cannot be keyed in `KnownDifference` (no record field). Owner decision: keep it pinned by its own test (already there), and list it under "For the owner" in the review. This plan does not add it to KNOWN_DIFFERENCES.
-- Hospital (Location) create, update and delete: the site writes are covered by `test_fhir_organisation_writes.py` (site body, 409 for a site with departments). The walk uses rooms.
+- Row cells from `FHIR_ACCESS_ROWS` for all 10 rows. For every case: visitor 401, patient 403, clinician 403, all answered before the body is read (`refusal_before_body`, `scheduling/use_cases/fhir_resources.py:145`; `is_read_only_here` runs after it, for PUT and DELETE, `writes.py:50-55`). For the hospital cases (5, 7) the visitor and patient/clinician cells are the row's; only admin differs.
+- KNOWN_DIFFERENCES pairs: rows 5 and 7 only, admin 200 (row) and 405 (product). No other difference is expected for this slice; any other mismatch is a finding (the product answers differently), not a red to fix in this run.
+- Refused write (any 4xx or 405): admin GET of the record before and after is identical (status, body, ETag); the AuditLogEntry count taken immediately before and after the write request is unchanged; for create, the table count is unchanged.
+- Accepted write (2xx): the state in the table; audit count +1 around the write.
 
 ## Invariants and blast radius
 
-- Server-side authorization: the walk sends the caller's token and nothing else. Role, user and flags come from the product's `resolve_token`, never from the test.
-- Tokens from `token_of` (`fhir_test_support.py:25`, the `issue_token` use case); no token stored by the test.
-- Audit log is append-only; the test reads it and never deletes from it.
-- Fresh records mean one write cannot change another's record; the CodeSystem singleton is the one exception, handled by ordering.
-- Blast radius: test modules and one docstring. No product file. If the walk finds a product answer that differs, the product is not changed in this run.
+- Server-side authorization: the walk sends the caller's bearer token only. Role, user and flags come from `resolve_token` in the product, never from the test.
+- Tokens come from `token_of` through `world.clients`; the test stores none.
+- The audit log is append-only; the test counts it and never deletes from it. Counts are read around the write only, so an audited read would not skew them. The walk checks reads write no audit entry; if one does, the plan's count rule still holds because no read sits between the two counts.
+- Fresh records mean one write cannot change another's record. The CodeSystem list is the one shared record, handled by ordering.
+- Blast radius: test modules, `test_support/fhir_access_rows.py` (one field, two entries, one docstring), and the reads walk's helper move. No product file. The product is not changed in this run.
 
 ## Trust boundaries crossed
 
 - The FHIR door: bearer token, no cookie, no Origin, cross-site check enforced (`client_for`, `fhir_test_support.py:30`); `/fhir` is csrf-exempt by design (ADR 0005), so the walk sees what a real client sees.
-- Body: sent as `application/fhir+json` (`FHIR_JSON`, `send`). The product checks it against the write shape (`writes.py` `_checked_body`) and the identity of the URL.
-- `If-Match`: sent as the ETag of the admin read (`views.py:136-138` sets it on reads). The product checks it under the record's lock (ADR 0008).
-- Input for create is a support body, not a read; codes are unique per write so a taken code (400) cannot hide an answer.
+- Body: sent as `application/fhir+json`. The product checks it against the write shape (`writes.py` `_checked_body`) and the URL's identity.
+- `If-Match`: the ETag of the admin read, sent by the caller. The product checks it under the record's lock (ADR 0008). A refused caller's `If-Match` is valid, so the refusal is the caller's, not a stale version.
+- Create bodies are support builders, not reads; codes are unique per caller so a taken code (400) cannot hide an answer.
 
 ## Domain entities (CLAUDE.md section 3)
 
 Visitor, Patient, Clinician, Admin (callers); ApiClient (token); Hospital; Department (FHIR Organization of type `dept`); Room (Location `ro`); AppointmentType (HealthcareService); Specialty list (CodeSystem); AuditLogEntry.
 
+## The hospital 405, and what the review says
+
+The product answers a hospital's Organization PUT and DELETE with 405 and `Allow: GET` for an admin (ADR 0008; pinned by `test_fhir_organisation_writes.py:134`). The row says admin 200 and the specification (15.4) says admin. This is a finding: the walk holds the product's 405 in KNOWN_DIFFERENCES with the row's 200 beside it, and the review names both pairs under "For the owner" with the section (15.4). The owner decides whether the spec or the product changes. This run does not change the product or the spec.
+
 ## What I will not do
 
-- No product code, no new dependency, no new abstraction beyond `WriteCase` and the moved `expected_answer`.
-- No xfail or skip on a walked row.
-- No walk of the patient or staff rows (next run).
-- No change to `doc/security-review.md` (item 4), `doc/handover.md`, `doc/backlog/26b3-access-table.md` (the orchestrator updates the backlog).
-- No change to the rows or to the Slot search row (see "Flags").
+- No product code, no new dependency, no new abstraction beyond `WriteCase` and the public `expected_answer`.
+- No xfail or skip on a walked case.
+- No walk of the patient or staff write rows (next run).
+- No change to `test_fhir_access_world.py` (no rename needed), to `doc/security-review.md` (item 4), `doc/handover.md`, or `doc/backlog/26b3-access-table.md` (the orchestrator updates the backlog).
+- No change to the existing KNOWN_DIFFERENCES entries.
 
 ## Failing tests first, and proof they can fail
 
-- Order: write `test_fhir_access_write_cases.py` and the walk; run the walk. Any mismatch is a finding (the product answers differently), not a red to fix in this run. An import error is not the red; the red for the right reason is a mismatch on a named row.
-- Proof the answer check fails: in the walk, set one expectation wrong in a scratch edit (Organization create as patient: 201 instead of 403); expect exactly one mismatch line naming it; revert.
-- Proof the record check fails: in the scratch edit, expect the table count to grow on a refused create; expect a mismatch; revert.
-- Proof the audit check fails: expect the audit count to stay the same on an accepted write; expect a mismatch; revert.
+- Order: write `test_fhir_access_write_cases.py` and the walk; run the walk. A mismatch line names a case and a caller. A mismatch on rows 5 or 7 for the admin is expected to be absent, because the pairs are listed; if it appears, the product answer is not 405 and the entry is wrong.
+- Proof the answer check fails: in a scratch edit, set one expectation wrong (Organization create as patient: 201 instead of 403); expect exactly one mismatch line naming it; revert.
+- Proof the record check fails: in a scratch edit, expect the table count to grow on a refused create; expect a mismatch; revert.
+- Proof the audit check fails: in a scratch edit, expect the audit count to stay the same on an accepted write; expect a mismatch; revert.
+- Proof the coverage check fails: in a scratch edit, drop one case from the list; expect the coverage test to name the row; revert.
 
-Behaviour name (`returns_X_when_Y`), expected values from the specification:
-- `returns_the_row_answer_and_the_record_state_when_each_caller_writes`: each caller's answer equals its row (spec 15.4, ADR 0008); a refused write leaves the record and the audit log unchanged; an accepted write changes the record and adds an audit entry (CLAUDE.md, every write audited).
+Behaviour names (`returns_X_when_Y`), expected values from the specification:
+- `returns_the_row_answer_and_the_record_state_when_each_caller_writes`: each caller's answer equals its row, or its KNOWN_DIFFERENCES pair for the hospital cases (spec 15.4, ADR 0008); a refused write leaves the record and the audit log unchanged; an accepted write changes the record and adds one audit entry (CLAUDE.md, every write audited).
+- `returns_a_case_for_each_listed_write_row_when_the_walk_is_built`: each of the 10 listed rows has a case, so no row is skipped silently.
 
 ## Domain fact checks (read in code)
 
-- `update_record_resource`, `delete_record_resource`, `create_record_resource` (`fhir_record_writes.py:53,74,100`): admin only (`admin_of`, line 112); missing record 404; stale version 412; dependents 409 (`delete_record`, `admin_records.py:80-105`).
-- `delete_record` is a hard delete (`row.delete()`, line 97) with an audit entry (line 104): an accepted delete reads back 404.
-- `update_specialty_list` (`fhir_specialty_writes.py:38`): admin only; takes the list lock; stale version 412.
+- `create_record_resource`, `update_record_resource`, `delete_record_resource` (`scheduling/use_cases/fhir_resources.py`, through `fhir_record_writes`): admin only; missing record 404; stale version 412; dependents 409.
+- `delete_record` is a hard delete with an audit entry, so an accepted delete reads back 404.
+- `update_specialty_list` (`fhir_specialty_writes.py:38`): admin only; takes the list lock; stale version 412; one audit entry per changed specialty.
+- Reads for these records carry an ETag (`views.py:136-138`), so `If-Match` is always available.
 
 ## Flags for the orchestrator (not blocking)
 
-1. Current branch state: the rows file keeps the Slot search cell at 200 and lists four KNOWN_DIFFERENCES (product 400). The reads plan's decision 1 said to correct the row to 400 and add no entry. The reads run took the other route. This run does not change it; the owner decides.
-2. Hospital Organization 405 is not in the rows (see "Not walked").
-3. The `Caller` StrEnum in the rows file has the same name as the use-case `Caller` (`scheduling/use_cases/fhir_caller.py`). Nit; not changed here.
+1. The rows file keeps the Slot search cell at 200 with four KNOWN_DIFFERENCES entries (product 400). The reads plan's decision 1 said to correct the row and add none. Not changed here; the owner decides.
+2. The `Caller` StrEnum in the rows file has the same name as the use-case `Caller` (`scheduling/use_cases/fhir_caller.py`). Nit; not changed here.
 
 ## Not in this run
 
@@ -117,20 +126,8 @@ Behaviour name (`returns_X_when_Y`), expected values from the specification:
   - AppointmentResponse create: fresh waitlist offer per caller; clinician 403.
   - Communication update: recipient only (200); clinician and admin 403.
 - Item 4 of task 26b3 (the access section of `doc/security-review.md`, the generator and the drift test).
+- The review's "For the owner" lines for the hospital 405 pairs are written by the review stage, not by this run's walk.
 
 ## Architect review
 
-Reviewed against CLAUDE.md and the task goal, and against the cited code (`test_fhir_access_walk.py:42-50`, `test_fhir_access_world.py:98`, `fhir_organisation_support.py`, `fhir_specialty_support.py`, `builders.py:245`, `fhir_test_support.py:30-44`, `views.py:136-138`, `test_fhir_organisation_writes.py:134`, ADR 0008). Line references and the 99-request count check out: 15 (create) + 36 + 36 (update and delete on three rows) + 12 (CodeSystem) = 99.
-
-**Revise, reason 1: a product answer that differs from its row is left out of KNOWN_DIFFERENCES.** The task says a pair the product answers differently goes into KNOWN_DIFFERENCES with both answers. The plan, under "Not walked here", declines this for hospital `Organization` PUT and DELETE: the row says admin 200, the product answers 405 with `Allow: GET` (ADR 0008; pinned by `test_fhir_organisation_writes.py:134`). The stated reason is that `KnownDifference` has no record field. That is a reason to extend the key, not to drop the pair. Required: either add an optional record discriminator to `KnownDifference` (hospital or department) and list both pairs, or walk a hospital record for Organization update and delete and key the 405 answer to it. The plan must then state the new request count and the record each case uses. Owner decision on the 405 itself stays as a "For the owner" line in the review.
-
-**Notes, not reasons to revise:**
-- Slice: 10 of 23 write rows, the other 13 under `## Not in this run`. Coherent, and the product stays whole. Task 26b3 item 3 is not complete after this run; the orchestrator should keep it open in `doc/backlog/26b3-access-table.md`.
-- CodeSystem row: the admin's accepted write appends `cardiology`. Each caller's before-read is the same list, and the admin writes last. Ordering is stated; fine. The plan should say the test rolls back so the list is unchanged for the next test.
-- Fresh records per write, and the record each row uses, are stated for all 10 rows. Ownership of each record is clear.
-- Red: the plan defines red as a named-row mismatch, with scratch-edit proofs for the answer, record and audit checks. Adequate. The first failing test is named as a behaviour with values from spec 15.4 and ADR 0008.
-- Security: authorization comes from the bearer token only (`token_of`, `client_for`); no cookie or Origin; the cross-site check is enforced; `If-Match` is the admin read's ETag. Product side: `update_record_resource`, `delete_record_resource`, `create_record_resource` are admin-only; the audit log is append-only and only read. Adequate.
-- Size: the test function sends 99 requests and must stay under 50 lines. Helpers `_state`, `_write`, `_mismatches` carry it. Keep `WriteCase` functions under 15 lines as planned.
-- Entities use the CLAUDE.md vocabulary (Department, Room, AppointmentType, Specialty list, AuditLogEntry, ApiClient, Admin and the other callers).
-
-Verdict written to `scratch/plan.verdict`: `revise`.
+Revised against the architect's reason 1 (hospital Organization PUT and DELETE). Reason 1 is met by a `record` discriminator on `KnownDifference`, two entries, one walked case per hospital pair (cases 5 and 7), and the request count (123, up from 99) with the record each case uses. The 405 is not argued away: it is in KNOWN_DIFFERENCES with the row's 200 beside it, and listed for the owner. Line references checked against `writes.py`, `fhir_resources.py`, `write_body.py:22`, `views.py:136-138`, `builders.py:104-130,206`.

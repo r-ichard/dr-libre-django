@@ -1,6 +1,6 @@
-"""Section 12.3: each page that answers a GET without a record in its address gets, from each
-caller, the answer its row in the access table gives. Pairs the product answers differently are
-listed with the product's answer."""
+"""Section 12.3: a page without a record in its address gets, from each caller, its row's answer.
+Pairs the product answers differently are listed with the product's answer. Record pages are
+walked in test_page_access_records.py."""
 
 from collections.abc import Callable, Iterator
 from typing import Literal
@@ -45,6 +45,20 @@ KNOWN_DIFFERENCES: dict[tuple[str, Caller], tuple[Answer, str]] = {
     ("sign-in", "clinician"): (Answer.OK, "302 /clinician/"),
     ("sign-in", "admin"): (Answer.OK, "302 /admin-console/"),
     ("admin-console/appointments/new/service", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+    ("book/<uuid:appointment_type_id>/details", "clinician"): (Answer.OK, Answer.FORBIDDEN),
+    ("book/<uuid:appointment_type_id>/details", "admin"): (Answer.OK, Answer.FORBIDDEN),
+    ("admin-console/appointments/new/<uuid:appointment_type_id>/provider", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+    ("admin-console/appointments/new/<uuid:appointment_type_id>/times", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+    ("admin-console/appointments/new/<uuid:appointment_type_id>/review", "admin"): (
         Answer.OK,
         "302 /admin-console/appointments/new",
     ),
@@ -166,8 +180,12 @@ def returns_row_answer_when_caller_gets_walked_page() -> None:
 def returns_product_answer_when_pair_is_known_difference() -> None:
     world = make_world()
     clients = _clients(world)
+    record_routes = {row.route for row in _all_rows() if row.names_record}
     mismatches: list[str] = []
     for (route, caller), (_, product_answer) in KNOWN_DIFFERENCES.items():
+        # A record route's pair is checked on its own record by test_page_access_records.py.
+        if route in record_routes:
+            continue
         got = _answer_of(clients[caller].get(path_of(route, world)))
         if got != product_answer:
             mismatches.append(f"{caller} {route}: want {product_answer} got {got}")

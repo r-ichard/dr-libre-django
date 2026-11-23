@@ -4,6 +4,7 @@ per role. Shared by the walking tests, so a new page is covered by all of them."
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -100,6 +101,12 @@ def path_of(route: str, world: World) -> str:
     kind = route.split("/")[1] if "/" in route else ""
     if kind in _record_ids(world):
         ids["record_id"] = _record_ids(world)[kind]
+    return fill_route(route, ids)
+
+
+def fill_route(route: str, ids: Mapping[str, UUID]) -> str:
+    """The address of `route` with each `<uuid:name>` replaced by ids[name]; unknown names get
+    ZERO_UUID, which no record has."""
     return re.sub(
         r"<uuid:(\w+)>", lambda found: str(ids.get(found.group(1), ZERO_UUID)), "/" + route
     )

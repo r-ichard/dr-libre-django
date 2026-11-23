@@ -117,3 +117,20 @@ Behaviour name (`returns_X_when_Y`), expected values from the specification:
   - AppointmentResponse create: fresh waitlist offer per caller; clinician 403.
   - Communication update: recipient only (200); clinician and admin 403.
 - Item 4 of task 26b3 (the access section of `doc/security-review.md`, the generator and the drift test).
+
+## Architect review
+
+Reviewed against CLAUDE.md and the task goal, and against the cited code (`test_fhir_access_walk.py:42-50`, `test_fhir_access_world.py:98`, `fhir_organisation_support.py`, `fhir_specialty_support.py`, `builders.py:245`, `fhir_test_support.py:30-44`, `views.py:136-138`, `test_fhir_organisation_writes.py:134`, ADR 0008). Line references and the 99-request count check out: 15 (create) + 36 + 36 (update and delete on three rows) + 12 (CodeSystem) = 99.
+
+**Revise, reason 1: a product answer that differs from its row is left out of KNOWN_DIFFERENCES.** The task says a pair the product answers differently goes into KNOWN_DIFFERENCES with both answers. The plan, under "Not walked here", declines this for hospital `Organization` PUT and DELETE: the row says admin 200, the product answers 405 with `Allow: GET` (ADR 0008; pinned by `test_fhir_organisation_writes.py:134`). The stated reason is that `KnownDifference` has no record field. That is a reason to extend the key, not to drop the pair. Required: either add an optional record discriminator to `KnownDifference` (hospital or department) and list both pairs, or walk a hospital record for Organization update and delete and key the 405 answer to it. The plan must then state the new request count and the record each case uses. Owner decision on the 405 itself stays as a "For the owner" line in the review.
+
+**Notes, not reasons to revise:**
+- Slice: 10 of 23 write rows, the other 13 under `## Not in this run`. Coherent, and the product stays whole. Task 26b3 item 3 is not complete after this run; the orchestrator should keep it open in `doc/backlog/26b3-access-table.md`.
+- CodeSystem row: the admin's accepted write appends `cardiology`. Each caller's before-read is the same list, and the admin writes last. Ordering is stated; fine. The plan should say the test rolls back so the list is unchanged for the next test.
+- Fresh records per write, and the record each row uses, are stated for all 10 rows. Ownership of each record is clear.
+- Red: the plan defines red as a named-row mismatch, with scratch-edit proofs for the answer, record and audit checks. Adequate. The first failing test is named as a behaviour with values from spec 15.4 and ADR 0008.
+- Security: authorization comes from the bearer token only (`token_of`, `client_for`); no cookie or Origin; the cross-site check is enforced; `If-Match` is the admin read's ETag. Product side: `update_record_resource`, `delete_record_resource`, `create_record_resource` are admin-only; the audit log is append-only and only read. Adequate.
+- Size: the test function sends 99 requests and must stay under 50 lines. Helpers `_state`, `_write`, `_mismatches` carry it. Keep `WriteCase` functions under 15 lines as planned.
+- Entities use the CLAUDE.md vocabulary (Department, Room, AppointmentType, Specialty list, AuditLogEntry, ApiClient, Admin and the other callers).
+
+Verdict written to `scratch/plan.verdict`: `revise`.

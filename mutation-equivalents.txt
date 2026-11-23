@@ -77,7 +77,6 @@ scheduling.domain.fhir_search.x__read_piece__mutmut_14: `rsplit` with no limit g
 scheduling.domain.fhir_search.x__read_piece__mutmut_17: a limit of 2 gives the same last part as a limit of 1
 scheduling.domain.fhir_search.x__read_piece__mutmut_34: `rsplit` with no limit gives the same last part as a limit of 1
 scheduling.domain.fhir_search.x__read_piece__mutmut_37: a limit of 2 gives the same last part as a limit of 1
-scheduling.domain.waitlist_window.x_window_words__mutmut_11: any subtrahend from one to a million microseconds lands on the same day, because the end instant is a local midnight
 scheduling.domain.record_fields.x_check_equipment__mutmut_4: None is falsy like False, so the free-text rule runs unchanged
 scheduling.domain.clinical_note_rules.x_validate_clinical_note__mutmut_5: None is falsy like False, so the free-text rule runs unchanged
 scheduling.domain.time_off_rules.x_time_off_failures__mutmut_16: None is falsy like False, so the free-text rule runs unchanged

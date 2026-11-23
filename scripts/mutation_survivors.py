@@ -24,7 +24,7 @@ def main() -> int:
         print(f"stale entry in {EQUIVALENTS_FILE.name}: {name}")
     for name in report.unlisted:
         print(f"unlisted survivor: {name}")
-    return 1 if report.unlisted else 0
+    return 1 if report.unlisted or report.stale else 0
 
 
 def parse_equivalents(text: str) -> dict[str, str]:

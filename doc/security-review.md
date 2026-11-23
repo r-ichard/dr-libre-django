@@ -174,6 +174,16 @@ Known differences:
 - `/favicon.ico`, patient: table `ok`, product `302 /static/favicon.svg`.
 - `/favicon.ico`, clinician: table `ok`, product `302 /static/favicon.svg`.
 - `/favicon.ico`, admin: table `ok`, product `302 /static/favicon.svg`.
+- `/sign-out`, visitor: table `ok`, product `302 /sign-in`.
+- `/sign-out`, patient: table `ok`, product `302 /sign-in`.
+- `/sign-out`, clinician: table `ok`, product `302 /sign-in`.
+- `/sign-out`, admin: table `ok`, product `302 /sign-in`.
+- `/sign-in/email-link`, visitor: table `ok`, product `303 /sign-in/check-email`.
+- `/sign-in/email-link`, patient: table `ok`, product `303 /sign-in/check-email`.
+- `/sign-in/email-link`, clinician: table `ok`, product `303 /sign-in/check-email`.
+- `/sign-in/email-link`, admin: table `ok`, product `303 /sign-in/check-email`.
+- `/patient/notifications/read-all`, patient: table `ok`, product `303 /patient/notifications?page=1`.
+- `/admin-console/settings/reminders`, admin: table `ok`, product `303 /admin-console/settings`.
 - `/sign-in`, patient: table `ok`, product `302 /patient/`.
 - `/sign-in`, clinician: table `ok`, product `302 /clinician/`.
 - `/sign-in`, admin: table `ok`, product `302 /admin-console/`.

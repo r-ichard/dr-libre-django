@@ -1,6 +1,6 @@
-"""Section 12.3: a page without a record in its address gets, from each caller, its row's answer.
-Pairs the product answers differently are listed with the product's answer. Record pages are
-walked in test_page_access_records.py."""
+"""Section 12.3: a page without a record in its address gets its row's answer from each caller,
+or the product's where a pair is listed. Record pages: test_page_access_records.py. Form-only
+pages: test_page_access_form_walk.py."""
 
 from collections.abc import Callable, Iterator
 from urllib.parse import urlsplit
@@ -26,8 +26,9 @@ CALLERS: tuple[Caller, ...] = ("visitor", "patient", "clinician", "admin")
 
 pytestmark = pytest.mark.django_db
 
-# Sign-out and the form-only pages answer a GET with 405 or nothing; their walk sends the form.
-LEFT_FOR_LATER_RUN = frozenset(
+# Routes that answer no GET. test_page_access_form_walk.py posts their forms. Their redirects
+# (for example "302 /sign-in") are not SIGN_IN to _answer_of, so their pairs are compared as sent.
+FORM_WALKED_ROUTES = frozenset(
     {
         "sign-out",
         "sign-in/email-link",
@@ -73,7 +74,7 @@ def _walked_rows() -> list[Row]:
         row
         for row in _all_rows()
         if not row.names_record
-        and row.route not in LEFT_FOR_LATER_RUN
+        and row.route not in FORM_WALKED_ROUTES
         and (settings.DEBUG or not row.debug_only)
     ]
 
@@ -130,7 +131,7 @@ def returns_every_get_route_in_walk_when_resolver_lists_it() -> None:
         for route, callback in _page_callbacks().items()
         if route not in record_routes and _answers_get(callback)
     }
-    expected = resolver_routes - LEFT_FOR_LATER_RUN
+    expected = resolver_routes - FORM_WALKED_ROUTES
     walked = {row.route for row in _walked_rows()}
     missing = sorted(expected - walked)
     extra = sorted(walked - expected)
@@ -156,8 +157,9 @@ def returns_product_answer_when_pair_is_known_difference() -> None:
     record_routes = {row.route for row in _all_rows() if row.names_record}
     mismatches: list[str] = []
     for (route, caller), (_, product_answer) in KNOWN_DIFFERENCES.items():
-        # A record route's pair is checked on its own record by test_page_access_records.py.
-        if route in record_routes:
+        # A record route's pair is checked on its own record by test_page_access_records.py. A
+        # form route answers a GET with 405, so its pair is posted by test_page_access_form_walk.py.
+        if route in record_routes or route in FORM_WALKED_ROUTES:
             continue
         got = _answer_of(clients[caller].get(path_of(route, world)))
         if got != product_answer:

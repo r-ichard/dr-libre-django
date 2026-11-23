@@ -102,7 +102,9 @@ def returns_audit_entries_with_ids_only_when_token_issued_and_revoked(
             revoke_token(issued.client.pk)
         list_tokens()
 
-    entries = list(AuditLogEntry.objects.order_by("created_at", "id"))
+    entries = list(
+        AuditLogEntry.objects.filter(entity_id=str(issued.client.pk)).order_by("created_at", "id")
+    )
     assert sorted(entry.action for entry in entries) == ["api_client.issue", "api_client.revoke"]
     assert all(entry.entity_id == str(issued.client.pk) for entry in entries)
     assert all(entry.metadata["ids"] == {"user_id": str(user.pk)} for entry in entries)

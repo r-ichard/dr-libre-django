@@ -25,7 +25,7 @@ was found untrue or unchecked. No product behaviour changes.
     mutant without a test unless `mutation-equivalents.txt` explains it, and the domain
     modules get tests of their own until it passes. Start with the modules that decide
     access or what a write may change.
-12. `test_api_tokens.py::returns_audit_entries_with_ids_only_when_token_issued_and_revoked`
+12. `scheduling/use_cases/test_api_tokens.py::returns_audit_entries_with_ids_only_when_token_issued_and_revoked`
     failed once in four full runs. Find the cause and fix it; a rerun is not a fix.
 13. `make audit`: checks the pinned dependencies against known vulnerabilities with a
     pinned tool, and fails on one. Run by the orchestrator at hand-over, not by `make test`.

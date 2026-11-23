@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import URLPattern, path
 
 from scheduling.domain.failure import Failure
+from scheduling.domain.request_limits import EARLIEST_INSTANT, LATEST_INSTANT
 from scheduling.domain.vocabulary import Role, WaitlistStatus
 from scheduling.models import AppointmentType, WaitlistEntry
 from scheduling.use_cases.admin_waitlist import active_patient, list_waitlist, search_patients
@@ -42,7 +43,9 @@ STATUSES = {status.value: status.value.capitalize() for status in WaitlistStatus
 CHOOSE_PATIENT = "Choose a patient."
 CHOOSE_TYPE = "Choose a service."
 WRONG_PROVIDER = "That provider does not offer this service."
-REAL_MOMENT = "Enter a date and a time."
+REAL_MOMENT = (
+    f"Enter a date and a time between {EARLIEST_INSTANT.year} and {LATEST_INSTANT.year - 1}."
+)
 BACK_TO_LIST = (LIST_PATH, "Back to the waitlist")
 FORM_FIELDS = ("patient", "appointment_type", "preferred_clinician", "earliest_at", "latest_at")
 

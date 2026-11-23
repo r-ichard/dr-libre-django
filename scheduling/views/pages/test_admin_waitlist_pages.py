@@ -81,6 +81,24 @@ def returns_303_and_a_waiting_entry_when_an_admin_adds_a_patient() -> None:
     assert WaitlistEntry.objects.get().status == "WAITING"
 
 
+def returns_422_and_the_accepted_years_when_latest_is_after_2099() -> None:
+    clinic = make_clinic()
+    values = {
+        "patient": str(clinic.patient.pk),
+        "appointment_type": str(clinic.appointment_type.pk),
+        "preferred_clinician": "",
+        "earliest_at": "2030-05-01T09:00",
+        "latest_at": "2130-05-01T09:00",
+    }
+
+    response = admin_post(admin_client(), f"{LIST}/new", values)
+
+    html = response.content.decode()
+    assert response.status_code == 422
+    assert "Enter a date and a time between 2000 and 2099." in html
+    assert WaitlistEntry.objects.count() == 0
+
+
 def returns_the_offered_entry_when_an_admin_offers_a_waiting_entry() -> None:
     clinic = make_clinic()
     freed = _cancelled_slot(clinic)

@@ -27,8 +27,7 @@ describes.
   and hand-over, is open (GitHub issue #9).
 - From a fresh clone of `main`: `make lint`, `make test` (about 4900 tests, 40 to 65
   seconds), `make gate`, `make mutate` and `make fhir-validate` (115 samples) pass.
-- Three QA rounds ran. Round 3 filed 20 issues, no P0. Open, all P2: #34 to #37, #39,
-  #40, #42 to #44, #49.
+- Three QA rounds ran. Round 3 filed 20 issues, no P0. Open: #44, its second half.
 - Try it: see "Run it" below.
 
 ## In flight when this was written
@@ -38,7 +37,7 @@ Two runs of the build pipeline (`fabro`, see "The pipeline"). Check them with
 
 | Run | Task | Base | When it ends |
 |---|---|---|---|
-| `01M82M5WGW9E`, `01M82M5X750Q`, `01M82M5XTYZ3` | items 1+2, 6 and 7 of `doc/backlog/27b-qa-round-3-pages.md` (#34, #35, #42, #49), one run each, on Haiku | `main` | Review each diff, gates, land one by one. |
+| `01M82WQ5TCSV`, `01M82WQ6973K`, `01M82WQ6RCFH`, `01M82WQ7755T` | one concern each, on Haiku: the mutation gate fails on a stale entry (26c item 19); `make audit` (26c item 13); the worker deletes old rate limit hits; the second half of #44 | `main` | Read each diff, gates on the batch, land each as its own commit. |
 
 If a run shows `Error: ?` on an agent stage, the reason is the last event of
 `fabro events <id> --json`. "You've hit your 5-hour limit" means the subscription the
@@ -47,7 +46,7 @@ that died early), or `fabro rewind <id> <last good stage>` (a run that died late
 
 ## What is left, in order
 
-1. The findings of `27b-qa-round-3-pages.md`, one or two per run (three runs in flight).
+1. The rest of #44 (running). Task 27b is otherwise merged, one finding per commit.
 3. `27b-qa-round-3-pages.md`: the P2 findings about messages, dead ends and one write
    that should not happen (#34 to #37, #39, #40, #42 to #44, #49).
 4. `27d3-fhir-refusal-messages.md`: a message of its own on every FHIR 400.

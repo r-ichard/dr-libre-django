@@ -1071,3 +1071,22 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
   `verify/27a`, put local `main` back on `origin/main`.
 - Recipe now: `git switch -C verify/<task> main`, and the wip commit only runs when the
   current branch is the verify branch. `set -e` did not stop the script.
+
+## 2026-11-23 Haiku runs, one finding each: eleven landed in four hours
+
+- Owner's decision on 2026-11-22: every stage on Haiku, tasks cut to one finding, the
+  orchestrator reads every product line. Since then: #34 and #35, #36, #37, #39, #40,
+  #42, #43, #49, the first half of #44, and two fixes for defects my own late reading
+  found in merges I had not read (`ac99dd7`: HEAD walked around the read limit;
+  `4078bbd`: a refusal quoted part of a password).
+- Product diffs were 2 to 69 lines. A run takes 20 to 45 minutes; three or four run side
+  by side; a batch of two shares one gate pass and lands as two commits whose tree is
+  compared with the gated one.
+- Three runs failed at the plan: each time my goal carried a second concern or a
+  sentence of the task file that was out of scope (a query count for a change that
+  adds no query). The Haiku architect holds a plan to every sentence. One concern per
+  goal, and say what is not in the run.
+- One squash conflicted in product code (`page_view.py`); the sync workflow merged it.
+- What reading found in Haiku diffs: nothing blocking. Wording to revisit: "That date
+  does not exist" without a full stop or a way forward; a fixed sentence for any export
+  failure; the 405 page's text when the address is not a form.

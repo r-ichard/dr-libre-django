@@ -174,8 +174,10 @@ Small findings waiting for the next task that touches the same file.
 - The reason of a booking is one line on the pages and free text in `/api/v1` and FHIR
   (review of 27a2). Owner to confirm which; tightening the API would refuse text that
   clients may send today.
-- `RateLimitHit` rows are never deleted: up to 1200 an hour for an address since task
-  26b2. A small task: the worker deletes hits older than the window.
+- The container image installs the dev group (`uv sync --locked`): test tools and, with
+  `make audit`, pip-audit and its 20 packages sit in the running container. Right for a
+  local product whose tests run in the container; a deployment image would leave them
+  out. For the security review (26d, item 17).
 - A signed-in caller is limited per user (1200 schedule reads, 600 FHIR, 120 searches an
   hour). Owner to say if staff integrations need more.
 - A wrong method on a route of `/api/v1` answers 404 `not_found`, never 405 (QA round 3,

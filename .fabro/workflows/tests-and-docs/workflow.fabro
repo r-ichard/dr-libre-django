@@ -1,0 +1,46 @@
+digraph TestsAndDocs {
+    graph [
+        goal="Pass the task with --goal or --goal-file.",
+        on_failure="exit",
+        max_node_visits=8
+    ]
+    rankdir=LR
+
+    start [shape=Mdiamond, label="Start"]
+    exit  [shape=Msquare, label="Exit"]
+
+    setup [label="Toolchain", script="make setup"]
+
+    // For a task that changes no behaviour of the product: tests the code already passes,
+    // documents, gates, docstrings. The red gate of conventions-auto cannot pass for them;
+    // the prove stage still shows that each new test can fail.
+    subgraph agents {
+        node [backend="acp", acp.command="npx -y @agentclientprotocol/claude-agent-acp@0.109.0"]
+
+        understand  [retry_target="understand", label="Understand and plan", prompt="@prompts/understand.md", max_visits=3, timeout="3600s"]
+        plan_review [retry_target="plan_review", label="Architect reviews the plan", prompt="@prompts/plan-review.md", max_visits=3, timeout="3600s"]
+        write       [retry_target="write", label="Write tests or documents", prompt="@prompts/write.md", max_visits=4, timeout="5400s"]
+        prove       [retry_target="prove", label="Prove the tests guard", prompt="@prompts/prove.md", timeout="3600s"]
+        review      [retry_target="review", label="Second reader reviews the diff", prompt="@prompts/review.md", max_visits=3, timeout="3600s"]
+        address     [retry_target="address", label="Address blocking findings", prompt="@prompts/address.md", max_visits=4, timeout="3600s"]
+    }
+
+    plan_gate   [label="Plan approved?", script="sh scripts/verdict.sh scratch/plan.verdict", on_failure="route"]
+    check       [label="Lint, tests, comment gate", script="make lint && make test && make gate", on_failure="route"]
+    review_gate [label="Review approved?", script="sh scripts/verdict.sh scratch/review.verdict", on_failure="route"]
+    final_gates [label="Mutation and FHIR gates", script="sh scripts/final_gates.sh", on_failure="route"]
+
+    start -> setup -> understand -> plan_review -> plan_gate
+    plan_gate -> write      [label="Approved", condition="outcome=succeeded"]
+    plan_gate -> understand [label="Revise"]
+    write -> check
+    check -> prove  [label="Clean", condition="outcome=succeeded"]
+    check -> write  [label="Fix"]
+    prove -> review
+    review -> review_gate
+    review_gate -> final_gates [label="Approved", condition="outcome=succeeded"]
+    review_gate -> address     [label="Blocking findings"]
+    final_gates -> exit    [label="Clean", condition="outcome=succeeded"]
+    final_gates -> address [label="A gate failed"]
+    address -> check
+}

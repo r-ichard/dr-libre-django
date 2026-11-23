@@ -1,0 +1,1 @@
+../../conventions-auto/prompts/prove.md

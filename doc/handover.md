@@ -106,6 +106,7 @@ caffeinate -i -s fabro wait <id>                                      # blocks u
 fabro attach <id>                                                     # stage lines, only after wait returned
 fabro run qa --goal-file .fabro/workflows/qa/areas/<area>.md -d       # a QA run: tests, then files issues
 fabro run repair --target r-ichard/dr-libre-django@task/<branch> --goal-file doc/backlog/<task>.md -d   # approved branch, a last gate fails: tests only, no red stage
+fabro run tests-and-docs --goal "..." -d                            # no behaviour change: tests, documents, gates
 ```
 
 Since 2026-11-22 every agent stage runs on Haiku (`ANTHROPIC_MODEL` in each

@@ -1,0 +1,1 @@
+../../conventions-auto/prompts/understand.md

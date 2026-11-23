@@ -166,6 +166,11 @@ on `main`: gates and the container stack run from a clone of that branch, and `m
 gets the squash only with its final message. A work-in-progress commit on `main` goes
 out with the next push of a backlog edit (task 24, commit `e9a419c`).
 
+**A task that changes no behaviour** (tests the code already passes, documents, gates,
+docstrings) runs on `fabro run tests-and-docs`: plan, write, prove, review, last gates,
+no red gate. The task workflow's red gate cannot pass for it (27a3). Its shared prompts
+are links to `conventions-auto/prompts/`.
+
 **Issue numbers in commits:** `fixes`, `closes` or `resolves` in front of `#N` closes the
 issue from any commit that reaches `main`, prose included. Only the commit that lands
 the fix says it; every other message says `Refs #N` or names the issue without those

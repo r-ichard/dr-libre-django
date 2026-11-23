@@ -34,7 +34,7 @@ def returns_distinct_generated_ids_when_no_header_is_sent() -> None:
 def returns_correlation_id_header_when_response_is_success_unknown_path_or_500(
     path: str, settings: object
 ) -> None:
-    settings.ROOT_URLCONF = "scheduling.views.probe_urls"  # type: ignore[attr-defined]
+    settings.ROOT_URLCONF = "test_support.probe_urls"  # type: ignore[attr-defined]
 
     response = browser_api_client(raise_request_exception=False).get(
         path, headers={"x-correlation-id": "cid-9"}

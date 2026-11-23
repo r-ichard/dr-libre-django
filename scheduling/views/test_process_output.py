@@ -14,7 +14,7 @@ CHILD_PROGRAM = "\n".join(
         "from django.test.utils import setup_test_environment",
         "from django.conf import settings",
         "setup_test_environment()",
-        'settings.ROOT_URLCONF = "scheduling.views.probe_urls"',
+        'settings.ROOT_URLCONF = "test_support.probe_urls"',
         'settings.ALLOWED_HOSTS = ["testserver"]',
         "client = Client(raise_request_exception=False)",
         'client.get("/api/v1/unknown/jane@example.test?token=x")',

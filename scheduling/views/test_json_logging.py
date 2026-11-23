@@ -90,7 +90,7 @@ def returns_request_line_with_method_route_pattern_status_and_duration_when_requ
 def returns_route_pattern_without_path_or_query_when_request_has_identifier_and_token(
     log_lines: list[dict[str, object]], settings: object
 ) -> None:
-    settings.ROOT_URLCONF = "scheduling.views.probe_urls"  # type: ignore[attr-defined]
+    settings.ROOT_URLCONF = "test_support.probe_urls"  # type: ignore[attr-defined]
 
     browser_api_client().get(f"/api/v1/probe/patients/{EMAIL}?token={TOKEN}&email={EMAIL}")
     browser_api_client().get(f"/api/v1/missing/{EMAIL}?token={TOKEN}")

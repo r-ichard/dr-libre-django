@@ -9,7 +9,7 @@ from scheduling.domain.request_context import RequestContext
 from scheduling.use_cases.request_context import bind_request_context
 from scheduling.views.api_clients import browser_api_client
 from scheduling.views.failure_response import failure_response
-from scheduling.views.probe_views import SENSITIVE_MESSAGE
+from test_support.probe_views import SENSITIVE_MESSAGE
 
 INSTANT = datetime(2026, 3, 1, 9, 30, tzinfo=UTC)
 

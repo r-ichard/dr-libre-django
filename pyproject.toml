@@ -55,7 +55,7 @@ django_settings_module = "drlibre.settings"
 
 [tool.mutmut]
 source_paths = ["scheduling/domain/"]
-also_copy = ["scheduling/__init__.py", "scheduling/models", "scheduling/identifiers.py", "scheduling/use_cases", "scheduling/views", "scheduling/management", "scheduling/templates", "drlibre", "manage.py", ".env.example"]
+also_copy = ["scheduling/__init__.py", "scheduling/models", "scheduling/identifiers.py", "scheduling/use_cases", "scheduling/views", "test_support", "scheduling/management", "scheduling/templates", "drlibre", "manage.py", ".env.example"]
 do_not_mutate = ["*/test_*.py", "*/__init__.py"]
 pytest_add_cli_args = ["-p", "no:xdist", "-p", "no:cacheprovider"]
 pytest_add_cli_args_test_selection = ["scheduling/domain/"]

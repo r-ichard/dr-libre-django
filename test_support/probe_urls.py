@@ -1,7 +1,7 @@
 from django.urls import path
 
-from scheduling.views import probe_views
 from scheduling.views.health import HealthView
+from test_support import probe_views
 
 urlpatterns = [
     path("api/v1/health", HealthView.as_view()),

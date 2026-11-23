@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2: an appointment type as a HealthcareService."""
+"""An appointment type as a HealthcareService, spec 15.2."""
 
 from dataclasses import dataclass
 from datetime import datetime

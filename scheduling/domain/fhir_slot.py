@@ -1,4 +1,4 @@
-"""Task 23, spec 15.2 and 15.6: a free or busy start of a schedule as a `Slot`. A slot is computed
+"""A free or busy start of a schedule as a `Slot`, spec 15.2 and 15.6. A slot is computed
 and never stored; it names its schedule and service, never a patient or an appointment."""
 
 from dataclasses import dataclass

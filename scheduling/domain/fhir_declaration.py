@@ -1,4 +1,4 @@
-"""Task 22, spec 15.4 and 15.5: the one declaration the routes, the search parser and the
+"""The one declaration (spec 15.4 and 15.5) that the routes, the search parser and the
 CapabilityStatement all read, so none of them can name what another does not."""
 
 from dataclasses import dataclass

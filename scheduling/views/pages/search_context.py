@@ -1,4 +1,4 @@
-"""Task 10a: the view-model of the search page. Every link is rebuilt from the parsed query."""
+"""View-model of the search page. Every link is rebuilt from the parsed query."""
 
 from uuid import UUID
 

@@ -1,4 +1,4 @@
-"""Task 12a, details and review: the visitor's form that creates the hold, and the signed-in
+"""The booking details and review: the visitor's form that creates the hold, and the signed-in
 patient's one-page review that books."""
 
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect

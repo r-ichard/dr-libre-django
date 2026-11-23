@@ -1,4 +1,4 @@
-"""Task 16: what every clinician page shares: the role guard, the clinician's own profile, the
+"""What every clinician page shares: the role guard, the clinician's own profile, the
 record rule of one appointment, and the words of a status."""
 
 from django.http import Http404, HttpRequest, HttpResponse

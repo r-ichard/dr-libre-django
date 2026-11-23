@@ -1,4 +1,4 @@
-"""Task 14: one appointment as the words and links of a list row, in the hospital's zone."""
+"""One appointment as the words and links of a list row, in the hospital's zone."""
 
 from datetime import datetime
 from zoneinfo import ZoneInfo

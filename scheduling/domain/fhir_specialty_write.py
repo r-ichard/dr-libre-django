@@ -1,4 +1,4 @@
-"""Task 24b2, spec 15.4: a PUT of the specialty CodeSystem is the whole list. This reads the body
+"""A PUT of the specialty CodeSystem, spec 15.4, is the whole list. This reads the body
 into concepts and diffs them against the stored list; the use case applies the changes."""
 
 import re

@@ -1,4 +1,4 @@
-"""Task 26b2: the hit an API read takes before it computes anything."""
+"""The hit an API read takes before it computes anything."""
 
 from rest_framework.request import Request
 

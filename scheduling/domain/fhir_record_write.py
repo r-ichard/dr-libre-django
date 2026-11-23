@@ -1,4 +1,4 @@
-"""Task 24b, spec 15.4: an admin write body read as the fields of one console record. A reader
+"""An admin write body read as the fields of one console record, spec 15.4. A reader
 returns the values the console use cases take, or the dotted name of the first element it cannot
 read. The field checks are the console's."""
 

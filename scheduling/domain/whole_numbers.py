@@ -1,4 +1,4 @@
-"""Task 27a: one rule for every whole number a write accepts, with the bounds of its column."""
+"""One rule for every whole number a write accepts, with the bounds of its column."""
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 

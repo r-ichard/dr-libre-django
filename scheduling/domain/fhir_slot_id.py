@@ -1,4 +1,4 @@
-"""Task 23, spec 15.6: a slot id is `<schedule>.<type>.<minutes>`: the rule and the type as
+"""The slot id `<schedule>.<type>.<minutes>`, spec 15.6: the rule and the type as
 26 letters of lower-case base32 of the UUID bytes, the start as minutes since the Unix epoch.
 Stable, and it tells nothing beyond those three."""
 

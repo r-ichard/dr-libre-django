@@ -1,4 +1,4 @@
-"""Task 14: a refused cancel or reschedule as a page with the reason and a way forward."""
+"""A refused cancel or reschedule as a page with the reason and a way forward."""
 
 from django.http import HttpRequest, HttpResponse
 

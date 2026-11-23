@@ -1,4 +1,4 @@
-"""Task 22a: FHIR forbids an empty array, object or string and a null. Every response passes
+"""Removes what FHIR forbids (empty arrays, objects and strings, nulls). Every response passes
 through this one function, so no mapper has to remember the rule."""
 
 

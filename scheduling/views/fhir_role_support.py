@@ -1,4 +1,4 @@
-"""Task 24c: request bodies and helpers the PractitionerRole write tests share."""
+"""Request bodies and helpers the PractitionerRole write tests share."""
 
 from datetime import datetime
 from uuid import UUID

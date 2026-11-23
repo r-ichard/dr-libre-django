@@ -1,4 +1,4 @@
-"""Task 16, calendar: a week of the clinician's active appointments and time off. The markup is
+"""The clinician's calendar: a week of active appointments and time off. The markup is
 a list of days of blocks, so it reads in order for a screen reader and at 375 px; wide screens
 lay the same lists out as a grid with static row classes."""
 

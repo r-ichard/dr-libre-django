@@ -1,4 +1,4 @@
-"""Task 11, section 6.6: provider, hospital and specialty pages. Open to everyone; an id search
+"""Provider, hospital and specialty pages, spec 6.6. Open to everyone; an id search
 would not list answers not found."""
 
 from uuid import UUID

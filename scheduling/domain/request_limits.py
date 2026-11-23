@@ -1,4 +1,4 @@
-"""Task 17a/17b: the sizes and ranges a request may have. Pure, so mutation testing covers them."""
+"""The sizes and ranges a request may have. Pure, so mutation testing covers them."""
 
 from datetime import UTC, date, datetime
 

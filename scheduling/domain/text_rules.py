@@ -1,4 +1,4 @@
-"""Task 27a: one rule for every text a write accepts."""
+"""One rule for every text a write accepts."""
 
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 

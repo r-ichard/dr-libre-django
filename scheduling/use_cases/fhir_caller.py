@@ -1,4 +1,4 @@
-"""Task 23, spec 15.4: who is asking through /fhir. The viewer decides what a read may show; the
+"""Who is asking through /fhir, spec 15.4. The viewer decides what a read may show; the
 user, when a token named one, decides whose records a write or a patient read may touch."""
 
 from dataclasses import dataclass

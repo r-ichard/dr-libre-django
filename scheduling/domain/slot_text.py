@@ -1,4 +1,4 @@
-"""Task 10a: the text of one slot in the hospital's zone, as it reads on screen."""
+"""The text of one slot in the hospital's zone, as it reads on screen."""
 
 from datetime import datetime
 from zoneinfo import ZoneInfo

@@ -1,4 +1,4 @@
-"""Task 10a: a specialty maps to one vendored icon file, the fallback when it has none."""
+"""Maps a specialty to one vendored icon file, with the fallback when it has none."""
 
 FALLBACK_ICON = "fallback.svg"
 VENDORED_CODES = frozenset(

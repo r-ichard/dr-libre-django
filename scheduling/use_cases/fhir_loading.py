@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2: rows to FHIR resources, a fixed number of queries for a whole page.
+"""Rows to FHIR resources, spec 15.2, a fixed number of queries for a whole page.
 Explicit field lists only, so a column added to a model never reaches a body by default."""
 
 from datetime import UTC, datetime

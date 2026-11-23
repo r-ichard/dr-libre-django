@@ -1,4 +1,4 @@
-"""Task 22, spec 15.1: the CapabilityStatement, built from the declaration that routes the
+"""The CapabilityStatement, spec 15.1, built from the declaration that routes the
 resources, so it cannot name what is not served."""
 
 from collections.abc import Sequence

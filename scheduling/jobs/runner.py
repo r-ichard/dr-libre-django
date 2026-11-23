@@ -1,4 +1,4 @@
-"""Task 09: one job run = its own correlation id, its own instant, one JSON log line with the
+"""One job run: its own correlation id, its own instant, one JSON log line with the
 counts. A failing job is logged and swallowed, so it never reaches the worker or another job."""
 
 import logging

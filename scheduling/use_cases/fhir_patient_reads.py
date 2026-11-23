@@ -1,4 +1,4 @@
-"""Task 23, spec 12.3, 15.4, 15.5: who may read which `Patient`. The readable set is built from
+"""Who may read which `Patient`, spec 12.3, 15.4 and 15.5. The readable set is built from
 the caller first (patient: self; clinician: own appointments; admin: all); a search only narrows
 it, so no count, link or error says whether another one exists."""
 

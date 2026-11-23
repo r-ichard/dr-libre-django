@@ -1,4 +1,4 @@
-"""Task 15: a patient's own notifications, read and marked as read."""
+"""A patient's own notifications, read and marked as read."""
 
 from dataclasses import dataclass
 from uuid import UUID

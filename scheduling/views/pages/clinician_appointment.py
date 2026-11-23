@@ -1,4 +1,4 @@
-"""Task 16, appointment: details, history, the clinical note and the cancel step. Status changes,
+"""The clinician's appointment page: details, history, the clinical note. Status changes,
 cancel and reschedule go through the task 08 use cases; the note through its own use case."""
 
 from datetime import date, datetime

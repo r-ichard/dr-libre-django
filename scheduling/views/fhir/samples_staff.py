@@ -1,4 +1,4 @@
-"""Task 24a: samples of Appointment, AppointmentResponse, Communication and AuditEvent: each status
+"""Samples of Appointment, AppointmentResponse, Communication and AuditEvent: each status
 or kind the seed serves, every include, each write body and one refusal. Communication belongs
 to its recipient, so its client holds the recipient's token."""
 

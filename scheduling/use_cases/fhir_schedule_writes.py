@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1, 15.2: Schedule writes. Each goes through the use case the clinician's
+"""Schedule writes, spec 15.1 and 15.2. Each goes through the use case the clinician's
 screen calls (overlap rule, room, audit, version) after the body is read as the fields of one
 rule. Only the clinician the schedule is for may write it."""
 

@@ -1,4 +1,4 @@
-"""Task 24, spec 4, 15.4: read and search `AuditEvent`, for an admin only. The log only grows, so
+"""Reads and searches `AuditEvent`, spec 4 and 15.4, for an admin only. The log only grows, so
 a search is one counted, ordered page of keys and the rows are loaded after."""
 
 from functools import reduce

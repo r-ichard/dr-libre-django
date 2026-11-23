@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.3: rows of the three origins as `Appointment` resources, a fixed number of
+"""Rows of the three origins as `Appointment` resources, spec 15.3, a fixed number of
 queries for a page. The clinical note is read only for the rows whose clinician is the viewer."""
 
 from uuid import UUID

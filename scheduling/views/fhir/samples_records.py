@@ -1,4 +1,4 @@
-"""Task 24b: samples of the organisation writes: the body of each create and update for a
+"""Samples of the organisation writes: the body of each create and update for a
 department, site, room and appointment type, the answer to a delete, and the refusal of deleting
 a hospital that still has departments."""
 

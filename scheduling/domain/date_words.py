@@ -1,4 +1,4 @@
-"""Task 27a: a day as a person reads it."""
+"""A day as a person reads it."""
 
 from datetime import date
 

@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2: a clinician profile as a PractitionerRole."""
+"""A clinician profile as a PractitionerRole, spec 15.2."""
 
 from dataclasses import dataclass
 from datetime import datetime, time

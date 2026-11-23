@@ -1,4 +1,4 @@
-"""Task 15: the patient's waitlist: join form, own entries and accepting an offer. The patient
+"""The patient's waitlist: join form, own entries and accepting an offer. The patient
 comes from the session; the record rule answers 404 for a missing entry and 403 for another's."""
 
 from zoneinfo import ZoneInfo

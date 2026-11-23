@@ -1,4 +1,4 @@
-"""Task 24, spec 15.2, 15.4, 15.5: a booked waitlist entry as an `AppointmentResponse` with
+"""An `AppointmentResponse` for a booked waitlist entry, spec 15.2, 15.4 and 15.5, with
 participant status `accepted`, and the body that accepts an offer. Declining is not in the
 specification, so no other status is ever shown or accepted."""
 

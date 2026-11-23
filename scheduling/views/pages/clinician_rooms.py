@@ -1,4 +1,4 @@
-"""Task 17, rooms: one day of the department's active rooms on the shared time grid. The
+"""The department's rooms: one day of its active rooms on the shared time grid. The
 use case decides what a cell may say; this view only formats it."""
 
 from datetime import date, timedelta

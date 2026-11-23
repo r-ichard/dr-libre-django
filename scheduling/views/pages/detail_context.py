@@ -1,4 +1,4 @@
-"""Task 11: the view-models of the provider, hospital and specialty pages. Every link is built from
+"""View-models of the provider, hospital and specialty pages. Every link is built from
 ids the use case returned, never from the request."""
 
 from datetime import date

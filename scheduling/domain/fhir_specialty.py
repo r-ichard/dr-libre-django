@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2: the specialty list as one CodeSystem and one ValueSet."""
+"""The specialty list as one CodeSystem and one ValueSet, spec 15.2."""
 
 from dataclasses import dataclass
 from datetime import datetime

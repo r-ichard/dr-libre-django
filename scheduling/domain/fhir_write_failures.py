@@ -1,4 +1,4 @@
-"""Task 23, spec 4 and 15.1: the one table that gives every failure its HTTP status and the
+"""The one table, spec 4 and 15.1, giving every failure its HTTP status and the
 OperationOutcome issue code, for reads and writes alike. The product code travels with it so a
 client can tell two conflicts apart."""
 

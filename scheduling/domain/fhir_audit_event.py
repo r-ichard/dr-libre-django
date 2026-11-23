@@ -1,4 +1,4 @@
-"""Task 24, spec 4, 15.2, 15.5: an audit log entry as an `AuditEvent`. The metadata holds only ids,
+"""An audit log entry as an `AuditEvent`, spec 4, 15.2 and 15.5. The metadata holds only ids,
 counts, status values, field names and an email domain (section 4), so each key becomes one
 `entity.detail` and nothing else of a person can appear."""
 

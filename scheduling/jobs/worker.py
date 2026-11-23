@@ -1,4 +1,4 @@
-"""Task 09: the worker's schedule. Every job is idempotent, so a restart that runs them all on
+"""The worker's schedule. Every job is idempotent, so a restart that runs them all on
 its first tick does no harm."""
 
 from dataclasses import dataclass

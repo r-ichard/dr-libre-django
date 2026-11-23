@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1, 15.4, 15.5: Patient update. A patient changes phone and birth date by the
+"""Updates a `Patient`, spec 15.1, 15.4 and 15.5. A patient changes phone and birth date by the
 profile page rules; an admin name, email and active as the console does. Any other element
 that differs from the stored record is refused and named."""
 

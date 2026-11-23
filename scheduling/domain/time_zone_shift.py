@@ -1,4 +1,4 @@
-"""Task 27b item 10, issue #36: which appointments show another local time after a zone change."""
+"""Which appointments show another local time after a zone change."""
 
 from collections.abc import Sequence
 from datetime import datetime

@@ -1,4 +1,4 @@
-"""Task 16, reschedule for the patient: the week of free slots, then a review. The use case
+"""Reschedule for the patient: the week of free slots, then a review. The use case
 decides; staff are not bound by the patient rules, so a refusal is a conflict or a status."""
 
 from datetime import UTC, date, datetime

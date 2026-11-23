@@ -1,4 +1,4 @@
-"""Task 14: the first two booking steps, service and provider, leading into the times step."""
+"""The first two booking steps, service and provider, leading into the times step."""
 
 from django.http import Http404, HttpRequest, HttpResponse
 

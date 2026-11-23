@@ -1,4 +1,4 @@
-"""Task 22, spec 15.5: the `near` search parameter, `latitude|longitude|distance|unit`."""
+"""The `near` search parameter, spec 15.5: `latitude|longitude|distance|unit`."""
 
 import math
 from dataclasses import dataclass

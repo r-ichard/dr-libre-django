@@ -1,4 +1,4 @@
-"""Task 22 and 23, spec 15.1 and 15.4: the /fhir door. One entry point routes by the declaration;
+"""The /fhir door, spec 15.1 and 15.4. One entry point routes by the declaration;
 the view only parses the address, calls a use case and formats the answer."""
 
 import logging

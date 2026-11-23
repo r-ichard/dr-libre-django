@@ -1,4 +1,4 @@
-"""Task 19, sections 3.2 and 10: the clinician profile rules that need no stored data."""
+"""Clinician profile rules that need no stored data, spec 3.2 and 10."""
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass

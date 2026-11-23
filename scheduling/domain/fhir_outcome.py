@@ -1,4 +1,4 @@
-"""Task 22, spec 15.1 and 4: every failure under /fhir as an OperationOutcome. The text is fixed
+"""Every failure under /fhir as an OperationOutcome, spec 15.1 and 4. The text is fixed
 and the only variable part is the correlation id, so no input or internals can leak."""
 
 from scheduling.domain.failure import Failure

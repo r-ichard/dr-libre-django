@@ -1,4 +1,4 @@
-"""Task 23, spec 15.5: why a start of a clinician's grid is not free. Time off first, then an
+"""Why a start of a clinician's grid is not free, spec 15.5. Time off first, then an
 appointment (its buffer applied), then a booking hold; none of them means the start is free."""
 
 from collections.abc import Sequence

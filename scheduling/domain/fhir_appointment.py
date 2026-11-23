@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.3: one `Appointment` resource type for three origins (ADR 0003): a booked
+"""The FHIR `Appointment` for three origins, spec 15.3: a booked
 appointment, a waitlist entry and a booking hold. The clinical note is added only when the
 caller says the viewer is that appointment's clinician."""
 

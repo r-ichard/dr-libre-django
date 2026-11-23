@@ -1,4 +1,4 @@
-"""Task 14: reschedule steps: the week of free slots for the same provider and type, then a
+"""Reschedule steps: the week of free slots for the same provider and type, then a
 review of the old and the new time. The use case decides; these pages only ask."""
 
 from datetime import UTC, date, datetime

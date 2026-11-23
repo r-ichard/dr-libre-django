@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2 and 15.4: a clinician user as a Practitioner. A public caller's source has
+"""A clinician user as a Practitioner, spec 15.2 and 15.4. A public caller's source has
 no contact, so a public body cannot carry email or phone; birth date is never given."""
 
 from dataclasses import dataclass

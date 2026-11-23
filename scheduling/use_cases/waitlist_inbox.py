@@ -1,4 +1,4 @@
-"""Task 15: a patient's own waitlist entries and the record rule on one of them."""
+"""A patient's own waitlist entries and the record rule on one of them."""
 
 from uuid import UUID
 

@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1: the write side of /fhir. The body is read as JSON, checked as a FHIR resource
+"""The write side of /fhir, spec 15.1. The body is read as JSON, checked as a FHIR resource
 of the URL's type and id, and handed to a use case; the answer says what happened as FHIR JSON."""
 
 import json

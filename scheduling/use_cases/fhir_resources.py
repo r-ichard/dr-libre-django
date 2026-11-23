@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1: the one place `/fhir` turns a type name into a use case. A type with its
+"""The one place `/fhir` turns a type name into a use case, spec 15.1. A type with its
 own rules (Slot, Patient, and the writes) is routed here; the rest read through `fhir_reads`."""
 
 from uuid import UUID

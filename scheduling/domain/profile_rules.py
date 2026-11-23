@@ -1,4 +1,4 @@
-"""Task 15: the format rules of the patient profile and of a new password."""
+"""The format rules of the patient profile and of a new password."""
 
 import re
 from datetime import date

@@ -1,4 +1,4 @@
-"""Task 17a: the sizes an API request may have, checked before any parser or schema sees it."""
+"""The sizes an API request may have, checked before any parser or schema sees it."""
 
 from rest_framework.exceptions import UnsupportedMediaType, ValidationError
 from rest_framework.request import Request

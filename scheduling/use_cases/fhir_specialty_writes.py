@@ -1,4 +1,4 @@
-"""Task 24b2, spec 15.4: an admin writes the whole specialty list as one CodeSystem. Each change
+"""Writes the whole specialty list as one CodeSystem, spec 15.4. Each change
 goes through the console's use cases, so checks and audit entries are the console's; one
 transaction, and the first refusal undoes every change before it."""
 

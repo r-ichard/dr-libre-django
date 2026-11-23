@@ -1,4 +1,4 @@
-"""Task 24, spec 15.2, 15.4, 15.5: a notification as a `Communication`, and what an update of it
+"""A notification as a `Communication`, spec 15.2, 15.4 and 15.5, and what an update of it
 may do: set `received` once. Every other change is refused and named."""
 
 from dataclasses import dataclass

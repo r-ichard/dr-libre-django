@@ -1,4 +1,4 @@
-"""Task 10a: the root path is the public search, a plain GET form over the search use case."""
+"""The root path: the public search, a plain GET form over the search use case."""
 
 from django.http import HttpRequest, HttpResponse
 

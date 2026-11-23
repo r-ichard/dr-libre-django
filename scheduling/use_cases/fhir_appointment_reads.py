@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.2 to 15.4: read and search `Appointment`. Visible rows are built from the
+"""Reads and searches `Appointment`, spec 15.2 to 15.4. Visible rows are built from the
 caller first (patient: own, clinician: own calendar and holds, admin: all); a search only narrows
 them, so no count or link reveals what else exists."""
 

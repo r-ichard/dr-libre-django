@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.6: an `Appointment` write body read as one command for the use cases the
+"""Reads an `Appointment` write body as one command, spec 15.6, for the use cases the
 screens call. The first element the server will not take is named by its FHIR path; the end is
 never taken from the client (5.2)."""
 

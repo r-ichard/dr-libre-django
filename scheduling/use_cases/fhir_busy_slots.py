@@ -1,4 +1,4 @@
-"""Task 24a: what blocks a clinician inside a window: time off, booked appointments, live holds."""
+"""What blocks a clinician inside a window: time off, booked appointments, live holds."""
 
 from collections.abc import Collection
 from datetime import datetime, timedelta

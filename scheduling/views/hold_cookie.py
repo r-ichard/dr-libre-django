@@ -1,4 +1,4 @@
-"""Task 26a item 6: the code page belongs to the browser that made the hold. The cookie is proof of
+"""The code page belongs to the browser that made the hold. The cookie is proof of
 that browser only, never an identity: the mailed code is still needed to book."""
 
 import hmac

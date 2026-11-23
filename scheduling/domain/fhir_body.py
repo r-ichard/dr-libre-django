@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1: a write body is checked as a FHIR resource of the URL's type and id before
+"""Checks a write body as a FHIR resource of the URL's type and id, spec 15.1, before
 any use case runs. The first element the server would not have produced is named."""
 
 import re

@@ -1,4 +1,4 @@
-"""Task 22a: one sample of everything /fhir can answer, as the public and as a staff token,
+"""One sample of everything /fhir can answer, as the public and as a staff token,
 read through the real routes. `make fhir-validate` hands them to the HL7 validator and a test
 walks them for empty values."""
 

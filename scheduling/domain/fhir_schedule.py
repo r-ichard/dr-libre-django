@@ -1,4 +1,4 @@
-"""Task 23, spec 15.2 and 15.4: an availability rule as a `Schedule`, and a `Schedule` body back
+"""An availability rule as a `Schedule`, spec 15.2 and 15.4, and a `Schedule` body back
 into the fields of a rule. Weekday, times and step travel as extensions of our own."""
 
 from dataclasses import dataclass

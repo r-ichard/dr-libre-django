@@ -1,4 +1,4 @@
-"""Task 23, spec 15.5, 15.6: `Slot` is never stored. Free slots come from `find_free_slots`, the
+"""Reads of `Slot`, never stored, spec 15.5 and 15.6. Free slots come from `find_free_slots`, the
 use case `GET /api/v1/slots` runs. A clinician sees busy slots of their own schedules, an admin
 of all; nobody else sees one or learns that one exists."""
 

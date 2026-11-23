@@ -1,4 +1,4 @@
-"""Task 24d: sections 15.2, 15.4 and 15.5 of drlibre-specs.md as data, a copy independent of
+"""Spec 15.2, 15.4 and 15.5 of drlibre-specs.md as data, a copy independent of
 `scheduling/domain/fhir_declaration.py`. A departure from the letter is a `Difference`
 that names the ADR giving the reason."""
 

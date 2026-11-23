@@ -1,4 +1,4 @@
-"""Task 14: a patient's own appointments, upcoming and past, and the record rule on one of them."""
+"""A patient's own appointments, upcoming and past, and the record rule on one of them."""
 
 from datetime import datetime
 from uuid import UUID

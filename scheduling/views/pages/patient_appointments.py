@@ -1,4 +1,4 @@
-"""Task 14: the patient's appointment lists and the cancel step. The patient comes from the
+"""The patient's appointment lists and the cancel step. The patient comes from the
 session; the record rule answers 404 for a missing appointment and 403 for someone else's."""
 
 from math import ceil

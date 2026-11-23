@@ -1,4 +1,4 @@
-"""Task 24, spec 15.4: read, search and update `Communication`. The recipient reads the own
+"""Reads, searches and updates `Communication`, spec 15.4. The recipient reads the own
 notifications and nobody else's, an admin included. An update only marks as read, through the
 use case of task 15."""
 

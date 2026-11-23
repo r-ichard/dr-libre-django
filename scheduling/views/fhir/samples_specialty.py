@@ -1,4 +1,4 @@
-"""Task 24b2: samples of the specialty list write: the whole-list body that adds, renames,
+"""Samples of the specialty list write: the whole-list body that adds, renames,
 deactivates and removes one concept, the answer to a write, and the two refusals that change
 nothing (a used specialty removed, a stale `If-Match`)."""
 

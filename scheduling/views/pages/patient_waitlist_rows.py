@@ -1,4 +1,4 @@
-"""Task 15: one waitlist entry as the words and links of a list card, in the hospital's zone."""
+"""One waitlist entry as the words and links of a list card, in the hospital's zone."""
 
 from zoneinfo import ZoneInfo
 

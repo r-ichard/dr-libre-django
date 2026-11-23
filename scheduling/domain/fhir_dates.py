@@ -1,4 +1,4 @@
-"""Task 23, spec 15.5: a `date` search value with its prefix (`eq`, `ge`, `gt`, `le`, `lt`),
+"""A `date` search value with its prefix (`eq`, `ge`, `gt`, `le`, `lt`), spec 15.5,
 normalised once at the edge and read back as the half-open range it names."""
 
 import re

@@ -1,4 +1,4 @@
-"""Task 22, spec 15.1: a searchset Bundle with total and paging links."""
+"""A searchset Bundle with total and paging links, spec 15.1."""
 
 from collections.abc import Sequence
 from urllib.parse import urlencode

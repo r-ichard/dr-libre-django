@@ -1,4 +1,4 @@
-"""Task 15: the waitlist form speaks days, the use case speaks instants."""
+"""The waitlist form speaks days, the use case speaks instants."""
 
 from datetime import UTC, date, datetime, time, timedelta
 from zoneinfo import ZoneInfo

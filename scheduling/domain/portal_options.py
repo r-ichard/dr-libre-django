@@ -1,4 +1,4 @@
-"""Task 14: what a patient may do with an appointment, and the plain words when not."""
+"""What a patient may do with an appointment, and the plain words when not."""
 
 from dataclasses import dataclass
 from datetime import datetime

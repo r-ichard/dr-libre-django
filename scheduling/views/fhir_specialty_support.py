@@ -1,4 +1,4 @@
-"""Task 24b2: request bodies and helpers the specialty list write tests share."""
+"""Request bodies and helpers the specialty list write tests share."""
 
 from scheduling.models import AuditLogEntry, Specialty
 from scheduling.models.builders import make

@@ -1,4 +1,4 @@
-"""Task 24, spec 15.4: read, search and create `AppointmentResponse`. One exists per booked
+"""Reads, searches and creates `AppointmentResponse`, spec 15.4. One exists per booked
 waitlist entry; a patient sees the own, an admin all. Creating one runs `accept_offer`, so the
 refusals are the use case's (5.8)."""
 

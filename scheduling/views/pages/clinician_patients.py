@@ -1,4 +1,4 @@
-"""Task 17, patients: the clinician's own patients with a name search. The use case builds the
+"""The clinician's own patients with a name search. The use case builds the
 set from the clinician's appointments, so the search text can only narrow it."""
 
 from datetime import datetime

@@ -1,4 +1,4 @@
-"""Task 24a: R4 requires `AuditEvent.action` to be one code of the value set AuditEventAction. The
+"""The `AuditEvent.action` code of an audit action: R4 takes one code of AuditEventAction. The
 product's own action name stays in `AuditEvent.type`; this maps it to the code."""
 
 from dataclasses import dataclass

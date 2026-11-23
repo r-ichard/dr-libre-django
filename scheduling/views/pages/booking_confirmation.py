@@ -1,4 +1,4 @@
-"""Task 12a, confirmation and calendar file: only the appointment's patient may open either."""
+"""The booking confirmation and calendar file: only the appointment's patient may open either."""
 
 from zoneinfo import ZoneInfo
 

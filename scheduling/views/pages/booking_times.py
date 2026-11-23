@@ -1,4 +1,4 @@
-"""Task 12a, times: a week of free slots in the hospital's zone."""
+"""The booking times step: a week of free slots in the hospital's zone."""
 
 from collections.abc import Callable
 from datetime import date, datetime, timedelta

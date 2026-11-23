@@ -1,4 +1,4 @@
-"""Task 25d, item 2: the one table of status words. A badge pairs a kind (colour and icon) with
+"""The one table of status words. A badge pairs a kind (colour and icon) with
 a word, so colour is never the only signal."""
 
 from scheduling.domain.vocabulary import AppointmentStatus, WaitlistStatus

@@ -1,4 +1,4 @@
-"""Task 15: the patient's own profile and password, each write audited."""
+"""The patient's own profile and password, each write audited."""
 
 from dataclasses import dataclass
 from datetime import date

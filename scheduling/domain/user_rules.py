@@ -1,4 +1,4 @@
-"""Task 19, sections 3.1, 4, 10 and 12: the user rules that need no stored data."""
+"""User rules that need no stored data, spec 3.1, 4, 10 and 12."""
 
 from dataclasses import dataclass
 

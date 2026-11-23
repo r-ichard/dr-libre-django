@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.6: `Appointment` create and update. The body is read as one command and the
+"""Creates and updates `Appointment`, spec 15.6. The body is read as one command and the
 use case the screens call runs it, so the booking rules, locks, audit entries, notifications and
 emails are the same. No second way to book."""
 

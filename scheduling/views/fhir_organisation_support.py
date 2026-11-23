@@ -1,4 +1,4 @@
-"""Task 24b: request bodies the organisation write tests send."""
+"""Request bodies the organisation write tests send."""
 
 from scheduling.domain.fhir_common import LOCATION_TYPE_SYSTEM, ORGANIZATION_TYPE_SYSTEM
 from scheduling.models import Department, Hospital

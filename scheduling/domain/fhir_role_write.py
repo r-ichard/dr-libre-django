@@ -1,4 +1,4 @@
-"""Task 24c, spec 15.2 and 15.4: a PractitionerRole write body read as the fields of a clinician
+"""A PractitionerRole write body, spec 15.2 and 15.4, read as the fields of a clinician
 profile and as changes of its time off. Pure: the console's field checks stay in the use cases."""
 
 from dataclasses import dataclass

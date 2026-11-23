@@ -1,4 +1,4 @@
-"""Task 24c, spec 15.2 and 15.4: PractitionerRole writes. An admin writes a profile through the
+"""PractitionerRole writes, spec 15.2 and 15.4. An admin writes a profile through the
 console's use cases; a clinician records and removes the own time off through theirs. Their
 checks, refusals, audit entries and versions apply."""
 

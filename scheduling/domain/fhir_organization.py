@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2: a hospital and a department as an Organization."""
+"""A hospital and a department as an Organization, spec 15.2."""
 
 from dataclasses import dataclass
 from datetime import datetime

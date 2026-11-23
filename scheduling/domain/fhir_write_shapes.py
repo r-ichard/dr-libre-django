@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1: the shape of every body a write accepts, one entry per writable type."""
+"""The shape of every body a write accepts, spec 15.1, one entry per writable type."""
 
 from scheduling.domain.fhir_appointment_response import RESPONSE_SHAPE
 from scheduling.domain.fhir_appointment_write import APPOINTMENT_SHAPE

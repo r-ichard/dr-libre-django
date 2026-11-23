@@ -1,4 +1,4 @@
-"""Task 22, spec 15.5: read a FHIR search against the declaration. Anything not declared, repeated
+"""Reads a FHIR search against the declaration, spec 15.5. Anything not declared, repeated
 or unreadable is refused and named, so a search never returns more than was asked for."""
 
 from collections.abc import Mapping, Sequence

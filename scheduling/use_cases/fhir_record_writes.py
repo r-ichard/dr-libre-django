@@ -1,4 +1,4 @@
-"""Task 24b, spec 15.4: FHIR admin writes for a department, a hospital site, a room and an
+"""FHIR admin writes, spec 15.4, for a department, a hospital site, a room and an
 appointment type. Each goes through the console's use cases in `admin_records`, so checks,
 refusals, audit entry and version are the console's."""
 

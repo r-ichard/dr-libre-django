@@ -1,4 +1,4 @@
-"""Task 15: the patient's notification list and marking as read. Both writes are use cases that
+"""The patient's notification list and marking as read. Both writes are use cases that
 touch only the patient's own rows; the record rule answers 404 or 403 for a foreign id."""
 
 from math import ceil

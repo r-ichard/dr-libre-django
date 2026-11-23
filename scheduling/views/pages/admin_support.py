@@ -1,4 +1,4 @@
-"""Task 18: signed-in clients of the admin page tests, and the form posts of a browser."""
+"""Signed-in clients of the admin page tests, and the form posts of a browser."""
 
 from typing import TYPE_CHECKING
 

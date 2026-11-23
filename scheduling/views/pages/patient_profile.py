@@ -1,4 +1,4 @@
-"""Task 15: the patient's profile (phone, date of birth) and change password. The patient is the
+"""The patient's profile (phone, date of birth) and change password. The patient is the
 session's user; a passwordless patient gets 404 for the password page."""
 
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseRedirect

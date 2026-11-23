@@ -1,4 +1,4 @@
-"""Task 22, spec 15: the names and small builders every FHIR mapper shares."""
+"""Names and small builders every FHIR mapper shares, spec 15."""
 
 from datetime import UTC, datetime
 from uuid import UUID

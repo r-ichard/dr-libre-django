@@ -1,4 +1,4 @@
-"""Task 17f: blocks that share a column of the time grid get side by side lanes."""
+"""Blocks that share a column of the time grid get side by side lanes."""
 
 from dataclasses import dataclass
 

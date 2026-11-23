@@ -1,4 +1,4 @@
-"""Task 12a, code: the visitor proves the email and the held slot becomes an appointment."""
+"""The visitor's code step: proves the email, then the held slot becomes an appointment."""
 
 from uuid import UUID
 

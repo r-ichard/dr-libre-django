@@ -1,4 +1,4 @@
-"""Task 17, time off: list, record, delete. Recording never cancels an appointment, and the page
+"""The clinician's time off: list, record, delete. Recording never cancels an appointment; the page
 says so. A period typed into the check form lists the appointments inside it before anything is
 recorded: two plain forms, no script."""
 

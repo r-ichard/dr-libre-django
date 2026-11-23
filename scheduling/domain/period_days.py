@@ -1,4 +1,4 @@
-"""Task 17c, #26: a period cut into the part that falls in each local day."""
+"""A period cut into the part that falls in each local day."""
 
 from collections.abc import Iterable
 from dataclasses import dataclass

@@ -1,4 +1,4 @@
-"""Task 22, spec 15.1: every answer under /fhir is FHIR JSON carrying an OperationOutcome on
+"""Every answer under /fhir, spec 15.1, is FHIR JSON carrying an OperationOutcome on
 failure, never the application API's error body and never an HTML page."""
 
 import json

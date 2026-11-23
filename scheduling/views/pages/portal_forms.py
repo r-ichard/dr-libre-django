@@ -1,4 +1,4 @@
-"""Task 15: what the portal's forms share: error values for the templates and strict parsers."""
+"""What the portal's forms share: error values for the templates and strict parsers."""
 
 import re
 from datetime import date

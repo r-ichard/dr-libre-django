@@ -1,4 +1,4 @@
-"""Task 22, spec 15.4: what a caller without a token reads and searches through /fhir.
+"""What a caller without a token reads and searches through /fhir, spec 15.4.
 A part is the rows of one table answering for a resource type (a hospital is an Organization
 and a Location). Visibility reuses `search_catalog`, the application API rule."""
 

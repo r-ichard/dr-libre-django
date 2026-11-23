@@ -1,4 +1,4 @@
-"""Task 23, spec 15.2, 15.4 and 15.5: a patient as a `Patient`, and what a write may change.
+"""A patient as a `Patient`, spec 15.2, 15.4 and 15.5, and what a write may change.
 A patient changes phone and birth date; an admin name, email and active, as the screens do."""
 
 import re

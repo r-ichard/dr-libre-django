@@ -1,4 +1,4 @@
-"""Task 16, today: the agenda of one day in the hospital's zone, and the status actions."""
+"""The clinician's agenda for one day in the hospital's zone, and the status actions."""
 
 from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo

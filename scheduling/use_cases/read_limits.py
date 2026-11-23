@@ -1,4 +1,4 @@
-"""Task 26b2: hourly counters of public reads that cost work. A signed-in caller is counted by
+"""Hourly counters of public reads that cost work. A signed-in caller is counted by
 user id, so staff behind one network address do not use up each other's allowance."""
 
 from scheduling.domain.rate_limit_rules import RateLimitScope

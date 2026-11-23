@@ -5,9 +5,9 @@ from datetime import UTC, date, datetime, time, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from scheduling.domain.booking_rules import LEAD_TIME
 from scheduling.domain.free_slots import TimeRange
 
-LEAD_TIME = timedelta(minutes=120)
 HORIZON = timedelta(days=90)
 WINDOW_DAYS = {"3_days": 3, "7_days": 7}
 NOON = time(12, 0)

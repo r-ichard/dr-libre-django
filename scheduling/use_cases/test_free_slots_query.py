@@ -19,6 +19,9 @@ pytestmark = pytest.mark.django_db
 
 NOW = datetime(2030, 1, 7, 6, 0, tzinfo=UTC)
 MONDAY = TimeRange(datetime(2030, 1, 7, 0, 0, tzinfo=UTC), datetime(2030, 1, 8, 0, 0, tzinfo=UTC))
+# 08:00 to 10:00 Berlin is 07:00 to 09:00 UTC: the 07:00 and 07:30 starts fall inside
+# the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
+LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 HOUR_OF_SLOTS = {"start_time": time(11, 0), "end_time": time(12, 0), "slot_step_minutes": 30}
 
 
@@ -182,3 +185,33 @@ def returns_same_query_count_when_ten_clinicians() -> None:
         find_free_slots(many.appointment_type.pk, None, MONDAY, online_only=False)
 
     assert len(for_ten) == len(for_two)
+
+
+def returns_no_start_60_minutes_away_when_caller_is_online_only() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=True
+    )
+
+    assert isinstance(result, Success)
+    assert _starts(result.value.offers) == [
+        datetime(2030, 1, 7, 8, 0, tzinfo=UTC),
+        datetime(2030, 1, 7, 8, 30, tzinfo=UTC),
+    ]
+
+
+def returns_start_60_minutes_away_when_caller_is_staff() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+
+    result = find_free_slots(
+        clinic.appointment_type.pk, clinic.clinician.pk, MONDAY, online_only=False
+    )
+
+    assert isinstance(result, Success)
+    assert _starts(result.value.offers) == [
+        datetime(2030, 1, 7, 7, 0, tzinfo=UTC),
+        datetime(2030, 1, 7, 7, 30, tzinfo=UTC),
+        datetime(2030, 1, 7, 8, 0, tzinfo=UTC),
+        datetime(2030, 1, 7, 8, 30, tzinfo=UTC),
+    ]

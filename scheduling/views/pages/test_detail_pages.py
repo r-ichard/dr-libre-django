@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, datetime
+from datetime import UTC, datetime, time
 from html import unescape
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -12,7 +12,7 @@ from uuid import uuid4
 import pytest
 
 from scheduling.models import ClinicianProfile
-from scheduling.models.builders import add_clinician, make
+from scheduling.models.builders import add_clinician, make, make_clinic
 from scheduling.models.organisation import AppointmentType
 from scheduling.views import clock
 from scheduling.views.pages.booking_pages_support import no_inline_code
@@ -33,6 +33,10 @@ if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse
 
 pytestmark = pytest.mark.django_db
+
+# 08:00 to 10:00 Berlin is 07:00 to 09:00 UTC: the 07:00 and 07:30 starts fall inside
+# the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
+LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 
 PRIVATE_VALUES = (PLANTED_EMAIL, PLANTED_PHONE, PLANTED_BIRTH, PLANTED_PATIENT, PLANTED_REASON)
 NO_SLOTS_TEXT = "No availability in the next 90 days"
@@ -396,3 +400,12 @@ def returns_week_of_first_free_time_on_provider_page_when_current_week_has_none(
     previous = re.search(r'href="([^"]+)" rel="prev"', html)
     assert following is not None and "week=2030-01-21" in following.group(1)
     assert previous is not None and "week=2030-01-07" in previous.group(1)
+
+
+def returns_no_time_inside_lead_time_on_the_provider_page_for_a_visitor() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+
+    html = _html(f"/providers/{clinic.clinician.pk}")
+
+    assert "starts_at=2030-01-07T07:00:00Z" not in html
+    assert "starts_at=2030-01-07T08:00:00Z" in html

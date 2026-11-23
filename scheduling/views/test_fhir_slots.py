@@ -12,6 +12,9 @@ from scheduling.views.pages.search_pages_support import update_row
 
 pytestmark = pytest.mark.django_db
 
+# 08:00 to 10:00 Berlin is 07:00 to 09:00 UTC: the 07:00 and 07:30 starts fall inside
+# the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
+LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 HOURS = {"start_time": time(11, 0), "end_time": time(13, 0), "slot_step_minutes": 30}
 MONDAY = "start=ge2030-01-07T00:00:00Z&start=lt2030-01-08T00:00:00Z"
 FIRST = datetime(2030, 1, 7, 10, 0, tzinfo=UTC)
@@ -185,3 +188,30 @@ def returns_schedule_with_both_actors_and_the_extensions_when_read_by_anyone() -
     assert body["planningHorizon"] == {"start": "2030-01-01"}
     assert body["actor"][0]["reference"] == f"Practitioner/{clinic.clinician.user_id}"
     assert response["ETag"].startswith('W/"')
+
+
+def returns_no_slot_inside_lead_time_for_an_anonymous_caller() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+
+    starts = [slot["start"] for slot in _search(clinic)]
+
+    assert starts == ["2030-01-07T08:00:00Z", "2030-01-07T08:30:00Z"]
+
+
+def returns_no_slot_inside_lead_time_for_a_patient_token() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+
+    starts = [slot["start"] for slot in _search(clinic, token=token_of(role="PATIENT"))]
+
+    assert starts == ["2030-01-07T08:00:00Z", "2030-01-07T08:30:00Z"]
+
+
+def returns_404_when_anonymous_caller_reads_a_slot_inside_lead_time() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+    staff_view = _search(clinic, token=token_of(role="ADMIN"))
+    lead_slots = [slot for slot in staff_view if slot["start"] == "2030-01-07T07:00:00Z"]
+    assert len(lead_slots) == 1
+
+    response = get(f"/fhir/Slot/{lead_slots[0]['id']}")
+
+    assert response.status_code == 404

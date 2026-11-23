@@ -88,6 +88,11 @@ def count_open_online_bookings(appointments: Sequence[BookingSummary], now: date
     )
 
 
+def earliest_offered_start(now: datetime, online_only: bool) -> datetime:
+    """Spec 5.3 and 6.2: online callers are offered only starts booking would accept."""
+    return now + LEAD_TIME if online_only else now
+
+
 def _starts_before_now(attempt: BookingAttempt) -> bool:
     return attempt.new_start is not None and attempt.new_start < attempt.now
 

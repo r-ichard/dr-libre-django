@@ -14,6 +14,7 @@ from scheduling.domain.booking_rules import (
     BookingRule,
     BookingSummary,
     count_open_online_bookings,
+    earliest_offered_start,
     violated_rules,
 )
 from scheduling.domain.vocabulary import AppointmentSource, AppointmentStatus, Role
@@ -254,3 +255,11 @@ def returns_no_past_rule_when_cancelling_and_an_unused_new_start_is_past() -> No
         CANCEL, new_start=NOW - timedelta(days=1), current_start=NOW + timedelta(days=3)
     )
     assert violated_rules(attempt) == []
+
+
+def returns_earliest_start_120_minutes_ahead_when_caller_is_online_only() -> None:
+    assert earliest_offered_start(NOW, online_only=True) == NOW + timedelta(minutes=120)
+
+
+def returns_now_as_earliest_start_when_caller_is_staff() -> None:
+    assert earliest_offered_start(NOW, online_only=False) == NOW

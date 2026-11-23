@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time
 
 import pytest
 from django.test import Client
@@ -13,6 +13,10 @@ from scheduling.views import clock
 from scheduling.views.pages.booking_pages_support import NOW, no_inline_code, times_path
 
 pytestmark = pytest.mark.django_db
+
+# 08:00 to 10:00 Berlin is 07:00 to 09:00 UTC: the 07:00 and 07:30 starts fall inside
+# the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
+LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 
 
 @pytest.fixture(autouse=True)
@@ -135,3 +139,13 @@ def returns_week_of_first_free_time_when_current_week_has_none_and_week_is_not_n
 
     assert "Mon 14 Jan" in html
     assert "week=2030-01-21" in html
+
+
+def returns_no_time_inside_lead_time_on_the_times_page_for_a_visitor() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+    provider = clinic.clinician.pk
+
+    html = Client().get(times_path(clinic, f"?provider={provider}")).content.decode()
+
+    assert "starts_at=2030-01-07T07:00:00Z" not in html
+    assert "starts_at=2030-01-07T08:00:00Z" in html

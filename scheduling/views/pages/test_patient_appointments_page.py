@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import time, timedelta
 
 import pytest
 
@@ -14,6 +14,10 @@ from scheduling.views.pages.browser_support import OTHER_SITE_ORIGIN, browser_po
 from scheduling.views.pages.search_pages_support import update_row
 
 pytestmark = pytest.mark.django_db
+
+# 08:00 to 10:00 Berlin is 07:00 to 09:00 UTC: the 07:00 and 07:30 starts fall inside
+# the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
+LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 
 LIST_PATH = "/patient/appointments"
 NEXT_WEEK = STARTS_AT + timedelta(days=7)
@@ -373,3 +377,16 @@ def returns_422_and_keeps_time_when_patient_posts_reschedule_for_type_not_bookab
     assert response.status_code == 422
     assert (appointment.starts_at, appointment.ends_at) == original_times
     assert AuditLogEntry.objects.filter(action="appointment.reschedule").count() == 0
+
+
+def returns_no_time_inside_lead_time_when_patient_reschedules() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+    appointment = _later(clinic)
+
+    response = signed_in_patient(clinic.patient).get(
+        f"{LIST_PATH}/{appointment.pk}/reschedule?week=2030-01-07"
+    )
+
+    html = response.content.decode()
+    assert "starts_at=2030-01-07T07:00:00Z" not in html
+    assert "starts_at=2030-01-07T08:00:00Z" in html

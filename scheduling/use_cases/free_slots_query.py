@@ -5,6 +5,7 @@ from datetime import timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from scheduling.domain.booking_rules import earliest_offered_start
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
 from scheduling.domain.free_slots import TimeRange
 from scheduling.domain.slot_search import (
@@ -48,7 +49,10 @@ def find_free_slots(
         return Failure.not_found()
     now = current_request_context().now
     schedules = load_schedules(clinician_ids, slot_type, window, now)
-    offers = free_slots_by_start(schedules, slot_type, window, now, ZoneInfo(time_zone_name))
+    earliest_start = earliest_offered_start(now, online_only)
+    offers = free_slots_by_start(
+        schedules, slot_type, window, earliest_start, ZoneInfo(time_zone_name)
+    )
     if isinstance(offers, QueryTooWide):
         return _too_wide()
     return Success(FoundSlots(offers, slot_type.duration, time_zone_name))

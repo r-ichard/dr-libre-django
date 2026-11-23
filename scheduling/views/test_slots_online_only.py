@@ -16,6 +16,9 @@ pytestmark = pytest.mark.django_db
 
 SLOTS = "/api/v1/slots"
 NOW = datetime(2030, 1, 7, 6, 0, tzinfo=UTC)
+# 08:00 to 10:00 Berlin is 07:00 to 09:00 UTC: the 07:00 and 07:30 starts fall inside
+# the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
+LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 HOUR_OF_SLOTS = {"start_time": time(11, 0), "end_time": time(12, 0), "slot_step_minutes": 30}
 MONDAY = "from=2030-01-07T00:00:00Z&to=2030-01-08T00:00:00Z"
 
@@ -132,3 +135,12 @@ def returns_201_when_admin_books_a_clinician_the_public_search_hides() -> None:
     )
 
     assert response.status_code == 201
+
+
+def returns_no_slot_inside_lead_time_for_a_visitor() -> None:
+    clinic = make_clinic(rule_fields=LEAD_TIME_RULE)
+
+    response = browser_api_client().get(_slots_path(clinic))
+
+    starts = [slot["starts_at"] for slot in response.json()["slots"]]
+    assert starts == ["2030-01-07T08:00:00Z", "2030-01-07T08:30:00Z"]

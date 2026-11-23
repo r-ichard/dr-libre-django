@@ -1,9 +1,17 @@
-"""Access of each /fhir resource type and interaction for no token, a patient, a clinician and an
-admin, by drlibre-specs.md 15.4 and ADRs 0005 to 0010. Data only, own record only.
+"""/fhir access per interaction and caller, by drlibre-specs.md 15.4 and ADRs 0005 to 0010.
+Read by the route-coverage test and the reads-and-searches walk. Data only.
 
 No test_ prefix: pytest must not collect this data module."""
 
 from dataclasses import dataclass
+from enum import StrEnum
+
+
+class Caller(StrEnum):
+    VISITOR = "visitor"
+    PATIENT = "patient"
+    CLINICIAN = "clinician"
+    ADMIN = "admin"
 
 
 @dataclass(frozen=True)
@@ -15,6 +23,26 @@ class FhirAccessRow:
     clinician: int
     admin: int
     basis: str
+
+    def answer_for(self, caller: Caller) -> int:
+        answers = {
+            Caller.VISITOR: self.visitor,
+            Caller.PATIENT: self.patient,
+            Caller.CLINICIAN: self.clinician,
+            Caller.ADMIN: self.admin,
+        }
+        return answers[caller]
+
+
+@dataclass(frozen=True)
+class KnownDifference:
+    """Both answers for one caller and interaction. The walk asserts the product's answer."""
+
+    resource: str
+    interaction: str
+    caller: Caller
+    row_answer: int
+    product_answer: int
 
 
 # Cells are HTTP statuses. Basis cites drlibre-specs.md 15.4 and the ADR that fills it in.
@@ -118,4 +146,16 @@ FHIR_ACCESS_ROWS: tuple[FhirAccessRow, ...] = (
     FhirAccessRow("Communication", "update", 401, 200, 403, 403, "15.4 recipient; ADR 0005 owner"),
     FhirAccessRow("AuditEvent", "read", 401, 403, 403, 200, "15.4 admin; ADR 0007"),
     FhirAccessRow("AuditEvent", "search-type", 401, 403, 403, 200, "15.4 admin; ADR 0007"),
+)
+
+# Pairs the product answers otherwise than its row. Each is a finding for the review's "For the
+# owner" section; the walk holds the product's answer until the owner decides.
+KNOWN_DIFFERENCES: tuple[KnownDifference, ...] = (
+    KnownDifference("Slot", "search-type", Caller.VISITOR, 200, 400),
+    KnownDifference("Slot", "search-type", Caller.PATIENT, 200, 400),
+    KnownDifference("Slot", "search-type", Caller.CLINICIAN, 200, 400),
+    KnownDifference("Slot", "search-type", Caller.ADMIN, 200, 400),
+    KnownDifference("Communication", "search-type", Caller.CLINICIAN, 403, 200),
+    KnownDifference("Communication", "search-type", Caller.ADMIN, 403, 200),
+    KnownDifference("AppointmentResponse", "search-type", Caller.CLINICIAN, 403, 200),
 )

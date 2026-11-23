@@ -10,6 +10,7 @@ from scheduling.views.test_fhir_access_requests import (
     OTHER_USER_PATHS,
     READ_INTERACTION,
     SEARCH_INTERACTION,
+    _expected_answer,
     _path_of,
     _send,
 )
@@ -39,23 +40,12 @@ def _row_of(resource: str, interaction: str) -> FhirAccessRow:
     )
 
 
-def _expected(row: FhirAccessRow, caller: Caller) -> int:
-    for difference in KNOWN_DIFFERENCES:
-        if (difference.resource, difference.interaction, difference.caller) == (
-            row.resource,
-            row.interaction,
-            caller,
-        ):
-            return difference.product_answer
-    return row.answer_for(caller)
-
-
 def _walk_mismatches(world: World) -> list[str]:
     mismatches: list[str] = []
     for row in WALKED_ROWS:
         path = _path_of(row, world)
         for caller in Caller:
-            expected = _expected(row, caller)
+            expected = _expected_answer(row, caller)
             got = _send(world, caller, path).status_code
             if got != expected:
                 mismatches.append(f"GET {path} as {caller}: expected {expected}, got {got}")

@@ -249,6 +249,8 @@ Known differences:
 - `Communication search-type`, clinician: table `403`, product `200`.
 - `Communication search-type`, admin: table `403`, product `200`.
 - `AppointmentResponse search-type`, clinician: table `403`, product `200`.
+- `Organization update`, admin: table `200`, product `405`.
+- `Organization delete`, admin: table `200`, product `405`.
 
 ## Section 4: rules that apply everywhere
 

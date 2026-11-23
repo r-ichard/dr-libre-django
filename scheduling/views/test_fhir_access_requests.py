@@ -1,12 +1,13 @@
-"""The request each /fhir read and parameterless search receives from each caller, sent as a FHIR
-client sends it: a bearer token or none, no cookie, no Origin (client_for)."""
+"""The request each /fhir read and search receives from each caller, sent as a FHIR client sends
+it: a bearer token or none, no cookie, no Origin. Also the answer owed for a request
+(`_expected_answer`)."""
 
 from collections.abc import Callable
 
 from django.http import HttpResponseBase
 
 from scheduling.views.test_fhir_access_world import World
-from test_support.fhir_access_rows import Caller, FhirAccessRow
+from test_support.fhir_access_rows import KNOWN_DIFFERENCES, Caller, FhirAccessRow
 
 READ_INTERACTION = "read"
 SEARCH_INTERACTION = "search-type"
@@ -49,3 +50,16 @@ def _path_of(row: FhirAccessRow, world: World) -> str:
 
 def _send(world: World, caller: Caller, path: str) -> HttpResponseBase:
     return world.clients[caller].get(path)
+
+
+def _expected_answer(row: FhirAccessRow, caller: Caller, record: str = "") -> int:
+    """The product's answer for a request about a record of kind `record` ("" for any record)."""
+    for difference in KNOWN_DIFFERENCES:
+        same_request = (difference.resource, difference.interaction, difference.caller) == (
+            row.resource,
+            row.interaction,
+            caller,
+        )
+        if same_request and difference.record in ("", record):
+            return difference.product_answer
+    return row.answer_for(caller)

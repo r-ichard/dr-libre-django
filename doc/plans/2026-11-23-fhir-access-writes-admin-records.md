@@ -131,3 +131,18 @@ Behaviour names (`returns_X_when_Y`), expected values from the specification:
 ## Architect review
 
 Revised against the architect's reason 1 (hospital Organization PUT and DELETE). Reason 1 is met by a `record` discriminator on `KnownDifference`, two entries, one walked case per hospital pair (cases 5 and 7), and the request count (123, up from 99) with the record each case uses. The 405 is not argued away: it is in KNOWN_DIFFERENCES with the row's 200 beside it, and listed for the owner. Line references checked against `writes.py`, `fhir_resources.py`, `write_body.py:22`, `views.py:136-138`, `builders.py:104-130,206`.
+
+## Architect review (round 2)
+
+Reason 1 of round 1 is met: the hospital pairs are in KNOWN_DIFFERENCES with the row's 200 beside the product's 405, and ADR 0008 (accepted 2026-11-22) is the decision behind the 405. Verified in code: `writes.py:50-55` (405 with `Allow: GET` after `refusal_before_body`), `test_fhir_organisation_writes.py:134`, `fhir_resources.py:145`, `write_body.py` (`unsupported_media_type` returns None on no body), `builders.py:104-130,206`, the `department_body`/`room_body`/`service_body`/`concept` signatures. Request arithmetic checks: 15 + 96 + 12 = 123.
+
+Reason 2 (new, blocking): the first test does not hold the invariant the plan states. The module docstring says "a write without a case fails the walk" and the plan says "no row is skipped silently", but `returns_a_case_for_each_listed_write_row_when_the_walk_is_built` only checks the 10-pair tuple against the cases. The 13 other write rows of `FHIR_ACCESS_ROWS` (Practitioner, PractitionerRole, Schedule, Patient, Appointment, AppointmentResponse, Communication) pass unwalked and nothing fails. Fix: the test compares every write row of `FHIR_ACCESS_ROWS` to the walked pairs plus a named `NOT_WALKED_YET` set in the walk's file that lists the 13 pairs, so an unlisted write row fails and the next run only shrinks the set.
+
+Non-blocking:
+- Slice is coherent: 10 of 23 write rows, 4 callers, 123 requests, tests only, no product file. The goal asked for all create, update and delete rows; the orchestrator decides whether the slice stands.
+- Red stage: this changes no behaviour (tests the product already passes). Per CLAUDE.md it belongs on `fabro run tests-and-docs`, not the task workflow; the mutation proofs at the end of the plan carry the "can fail" evidence.
+- Row 5/7 `basis` says "ADR 0008" for admin 200, but ADR 0008 says hospital PUT/DELETE are 405. The plan's KNOWN_DIFFERENCES handles it; the owner decides between spec 15.4 and ADR 0008. Name it under "For the owner".
+- Row 12 ordering rationale ("admin last") is not needed: refusals return before the body, so each caller's before-read is independent. Harmless.
+- `Caller` name collision with `scheduling/use_cases/fhir_caller.py` (already flagged, nit).
+
+Verdict: revise. Reason 2 is the only blocker.

@@ -52,6 +52,7 @@ class ReschedulePage(OwnAppointmentPage):
             found.clinician_id,
             week_from(request.GET.get("week", "")),
             online_only=True,
+            open_on_first_free=True,
         )
         if isinstance(loaded, Failure):
             return message_page(request, self.user, TIMES_UNAVAILABLE, LIST_ACTION, 404)

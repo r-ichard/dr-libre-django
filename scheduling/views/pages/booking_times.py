@@ -38,6 +38,7 @@ class TimesPage(PageView):
             provider_id,
             week_from(request.GET.get("week", "")),
             online_only_for(self.user),
+            open_on_first_free=True,
         )
         if isinstance(loaded, Failure):
             raise Http404

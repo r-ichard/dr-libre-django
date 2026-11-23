@@ -6,10 +6,13 @@ from uuid import UUID
 from zoneinfo import ZoneInfo
 
 from scheduling.domain.booking_codes import MAXIMUM_ATTEMPTS, code_is_usable
+from scheduling.domain.booking_rules import LEAD_TIME
 from scheduling.domain.booking_week import group_by_local_day, week_range
 from scheduling.domain.email_mask import mask_email
 from scheduling.domain.failure import Failure, Result, Success
 from scheduling.domain.free_slots import TimeRange
+from scheduling.domain.search_matching import HORIZON
+from scheduling.domain.slot_search import MAXIMUM_QUERY_DAYS
 from scheduling.domain.vocabulary import AppointmentStatus
 from scheduling.models import (
     Appointment,
@@ -67,17 +70,34 @@ def slot_choice(
 
 
 def week_of_slots(
-    appointment_type_id: UUID, clinician_id: UUID | None, asked_week: date | None, online_only: bool
+    appointment_type_id: UUID,
+    clinician_id: UUID | None,
+    asked_week: date | None,
+    online_only: bool,
+    *,
+    open_on_first_free: bool = False,
 ) -> Result[WeekOfSlots]:
     choice = slot_choice(appointment_type_id, clinician_id, online_only)
     if choice is None:
         return Failure.not_found()
     time_zone = ZoneInfo(choice.appointment_type.department.hospital.time_zone)
     week_start = _week_shown(asked_week, time_zone)
-    window = week_range(week_start, time_zone)
-    found = find_free_slots(appointment_type_id, clinician_id, window, online_only)
+    found = find_free_slots(
+        appointment_type_id, clinician_id, week_range(week_start, time_zone), online_only
+    )
     if isinstance(found, Failure):
         return found
+    if open_on_first_free and asked_week is None and not found.value.offers:
+        first_free = _first_free_start(appointment_type_id, clinician_id, online_only)
+        if isinstance(first_free, Failure):
+            return first_free
+        if first_free.value is not None:
+            week_start = _week_shown(first_free.value.astimezone(time_zone).date(), time_zone)
+            found = find_free_slots(
+                appointment_type_id, clinician_id, week_range(week_start, time_zone), online_only
+            )
+            if isinstance(found, Failure):
+                return found
     starts = [offer.start for offer in found.value.offers]
     days = group_by_local_day(starts, time_zone)
     return Success(WeekOfSlots(choice, time_zone, week_start, days))
@@ -131,6 +151,28 @@ def _week_shown(asked_week: date | None, time_zone: ZoneInfo) -> date:
     if asked_week is None or not earliest <= asked_week <= latest:
         return today - timedelta(days=today.weekday())
     return asked_week - timedelta(days=asked_week.weekday())
+
+
+def _first_free_start(
+    appointment_type_id: UUID, clinician_id: UUID | None, online_only: bool
+) -> Result[datetime | None]:
+    """The earliest free start in the booking horizon, searched in chunks of at most 31 days."""
+    now = current_request_context().now
+    horizon_end = now + HORIZON
+    chunk_start = now + LEAD_TIME
+    while True:
+        chunk_end = min(chunk_start + timedelta(days=MAXIMUM_QUERY_DAYS), horizon_end)
+        found = find_free_slots(
+            appointment_type_id, clinician_id, TimeRange(chunk_start, chunk_end), online_only
+        )
+        if isinstance(found, Failure):
+            return found
+        if found.value.offers:
+            return Success(found.value.offers[0].start)
+        if chunk_end >= horizon_end:
+            return Success(None)
+        # A slot that starts in the last duration of this chunk can end in the next one.
+        chunk_start = chunk_end - found.value.duration
 
 
 @dataclass(frozen=True)

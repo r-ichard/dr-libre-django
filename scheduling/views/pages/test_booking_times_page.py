@@ -123,3 +123,15 @@ def returns_empty_state_with_next_week_link_when_week_has_no_slots() -> None:
 
     assert "No free times this week" in html
     assert "week=2030-01-21" in html
+
+
+def returns_week_of_first_free_time_when_current_week_has_none_and_week_is_not_named(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(clock, "now_utc", lambda: datetime(2030, 1, 13, 12, 0, tzinfo=UTC))
+    clinic = make_clinic()
+
+    html = Client().get(times_path(clinic)).content.decode()
+
+    assert "Mon 14 Jan" in html
+    assert "week=2030-01-21" in html

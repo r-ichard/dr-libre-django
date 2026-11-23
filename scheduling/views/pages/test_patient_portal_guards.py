@@ -3,7 +3,7 @@ sends them. Each test states the behaviour in words, not the shape of the code."
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
@@ -174,6 +174,22 @@ def returns_week_of_slots_linking_to_review_when_rescheduling() -> None:
     html = response.content.decode()
     assert response.status_code == 200
     assert f"{LIST_PATH}/{appointment.pk}/reschedule/review?starts_at=2030-01-21T10:00:00Z" in html
+
+
+def returns_week_of_first_free_time_when_rescheduling_and_week_is_not_named(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Monday 14 January is the first free Monday; the strip's next link is the week after it.
+    monkeypatch.setattr(clock, "now_utc", lambda: datetime(2030, 1, 13, 12, 0, tzinfo=UTC))
+    clinic = make_clinic()
+    appointment = _booked(clinic, IN_TWO_WEEKS, "Knee")
+
+    response = signed_in_patient(clinic.patient).get(f"{LIST_PATH}/{appointment.pk}/reschedule")
+
+    html = response.content.decode()
+    assert response.status_code == 200
+    assert "Mon 14 Jan" in html
+    assert "week=2030-01-21" in html
 
 
 def returns_old_and_new_time_on_review_and_404_without_a_start() -> None:

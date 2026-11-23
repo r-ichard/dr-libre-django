@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import re
+from datetime import UTC, datetime
 from html import unescape
 from typing import TYPE_CHECKING
 from uuid import uuid4
@@ -381,3 +382,17 @@ def returns_hospital_meta_description_and_empty_state_when_no_provider_is_bookab
     assert "No providers to book online" in quiet
     assert "First available" not in quiet
     assert 'class="card result"' not in quiet
+
+
+def returns_week_of_first_free_time_on_provider_page_when_current_week_has_none(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(clock, "now_utc", lambda: datetime(2030, 1, 13, 12, 0, tzinfo=UTC))
+    clinician, _ = _planted()
+
+    html = _html(f"/providers/{clinician.pk}")
+
+    following = re.search(r'href="([^"]+)" rel="next"', html)
+    previous = re.search(r'href="([^"]+)" rel="prev"', html)
+    assert following is not None and "week=2030-01-21" in following.group(1)
+    assert previous is not None and "week=2030-01-07" in previous.group(1)

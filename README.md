@@ -1,8 +1,68 @@
 # DrLibre
 
-Appointment scheduling for several hospitals. Setup and the working rules are in `CLAUDE.md`.
+DrLibre is an appointment scheduling product for hospitals. Anyone can search hospitals, clinicians and specialties, see the next free appointment times, and book one without signing in or choosing a password.
 
-Run `make audit` before a hand-over and after any change to `uv.lock`. It queries a vulnerability service over the network, so it is not part of `make test`.
+## Start it
+
+Needs Docker and git. The stack runs in containers: the application, a PostgreSQL database and a mail inbox.
+
+```sh
+git clone https://github.com/r-ichard/dr-libre-django.git drlibre-try && cd drlibre-try
+docker compose up --wait                           # migrates; returns when the app answers
+docker compose exec web python manage.py seed_demo # demo data; safe to run again
+```
+
+Then open:
+
+- the product at `http://127.0.0.1:8000`;
+- the mail inbox at `http://127.0.0.1:8025`, which shows every email the product sends.
+
+Compose reads `.env.example` directly, so there is nothing to copy. Health: `curl 127.0.0.1:8000/api/v1/health`.
+
+## Demo accounts
+
+- `admin@example.test`
+- `clinician@example.test`
+- `patient@example.test`
+
+All three use the password named by `DEMO_PASSWORD` in `.env.example`. Sign in at `http://127.0.0.1:8000/sign-in`.
+A visitor needs no account: search, pick a time, type an email address, read the code in the inbox.
+
+## First walk
+
+Walked by hand on commit `6d98501` (2026-11-22); the steps were not re-run for this README. Needs Docker.
+
+1. As `admin@example.test`, in the admin console, create a hospital with its time zone.
+2. Add a specialty.
+3. Add a department of the hospital.
+4. Add a room of the department.
+5. Add an appointment type of the department. Type its colour, like `#2f6f6a`, and tick "Bookable online".
+6. Add a user with the role Clinician and a temporary password.
+7. Under "Clinicians", attach a profile to that user: department, specialty, room.
+8. Sign out. Sign in as the clinician. Under "Availability", add one rule per weekday.
+9. Sign out. On the start page, the clinician, the hospital and the specialty are found. Pick a time, fill in the details, take the code from the inbox at `http://127.0.0.1:8025`, and confirm.
+10. Sign in as the clinician again. The calendar shows the appointment.
+
+## Stop and forget
+
+```sh
+docker compose down -v
+```
+
+`down` alone stops the containers and keeps the data. `-v` also deletes the database volume, so the demo data and everything made in it are gone. Needs Docker.
+
+## Checks
+
+- `make setup`, once on the host: installs uv if it is missing, syncs the locked dependencies, and makes sure a PostgreSQL answers, starting a local one where it can.
+- `make test`: the test suite, on the host, against PostgreSQL.
+- `make lint`: ruff and mypy.
+- `make gate`: the comment cap, the escape-hatch scan and the size caps.
+- `make mutate`: mutation testing of `scheduling/domain`; slow.
+- `docker compose exec web make test`: the suite inside the container. Needs Docker.
+- `make fhir-validate`: seeds a throwaway database and runs the HL7 validator over `/fhir`. Needs network and Java. When Java is absent it installs `default-jre-headless` with `apt-get`, so it needs root.
+- `make audit`: checks the pinned packages in `uv.lock` against a vulnerability service. Needs network. Run it before a hand-over and after any change to `uv.lock`. It is not part of `make test`.
+
+The working rules for changes to this repository are in `CLAUDE.md`.
 
 ## FHIR API
 

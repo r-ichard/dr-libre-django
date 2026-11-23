@@ -174,6 +174,10 @@ Small findings waiting for the next task that touches the same file.
 - The reason of a booking is one line on the pages and free text in `/api/v1` and FHIR
   (review of 27a2). Owner to confirm which; tightening the API would refuse text that
   clients may send today.
+- Now and then a test sees an audit row it did not write, committed in its worker's
+  database during its window (task 26c item 12, plan of run 01M83SV35WVA). The token
+  test now reads only its own rows; the writer is not named. A thread a test leaves
+  behind is the likeliest source (`test_reminders_overlap.py` joins with a timeout).
 - The container image installs the dev group (`uv sync --locked`): test tools and, with
   `make audit`, pip-audit and its 20 packages sit in the running container. Right for a
   local product whose tests run in the container; a deployment image would leave them

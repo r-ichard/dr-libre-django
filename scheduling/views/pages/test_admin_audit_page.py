@@ -3,6 +3,7 @@
 import re
 import time
 from datetime import UTC, datetime
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 import pytest
@@ -13,6 +14,16 @@ from scheduling.domain.audit_labels import AUDIT_LABELS
 from scheduling.models import AuditLogEntry
 from scheduling.models.builders import make
 from scheduling.views.pages.admin_support import admin_client, admin_post
+from scheduling.views.pages.browser_support import (
+    CSRF_COOKIE,
+    OTHER_SITE_ORIGIN,
+    SITE_ORIGIN,
+    TOKEN_SOURCE_PATH,
+    browser_client,
+)
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse
 
 pytestmark = pytest.mark.django_db
 
@@ -91,6 +102,15 @@ def returns_only_the_actor_asked_when_filtered() -> None:
     assert "from-mine" in html and "from-other" not in html
 
 
+def returns_staff_but_no_patients_as_actor_choices_when_the_log_is_opened() -> None:
+    make("User", role="PATIENT", full_name="Pat Patient")
+    make("User", role="CLINICIAN", full_name="Sam Staffer")
+
+    html = admin_client().get(PATH).content.decode()
+
+    assert "Sam Staffer" in html and "Pat Patient" not in html
+
+
 def returns_whole_days_when_the_range_starts_and_ends_on_the_edges() -> None:
     edges = {
         "before-start": datetime(2030, 1, 9, 23, 59, 59, tzinfo=UTC),
@@ -123,12 +143,22 @@ def returns_the_first_page_when_the_page_number_has_too_many_digits() -> None:
     assert html.count("corr-") == PAGE_SIZE
 
 
+def _browser_request(method: str) -> "_MonkeyPatchedWSGIResponse":
+    """A same-site request with the token a browser form carries, so the view answers it."""
+    visitor = browser_client()
+    visitor.get(TOKEN_SOURCE_PATH)
+    token = visitor.cookies[CSRF_COOKIE].value
+    client = admin_client()
+    client.cookies[CSRF_COOKIE] = token
+    headers = {"Origin": SITE_ORIGIN, "X-CSRFToken": token}
+    return client.generic(method.upper(), PATH, headers=headers)
+
+
 @pytest.mark.parametrize("method", ["post", "put", "patch", "delete"])
 def returns_405_when_the_log_route_is_asked_to_change_something(method: str) -> None:
-    client = admin_client()
     _fill(1)
 
-    response = getattr(client, method)(PATH)
+    response = _browser_request(method)
 
     assert response.status_code == 405
     assert AuditLogEntry.objects.count() == 1
@@ -145,6 +175,16 @@ def returns_no_store_headers_and_a_get_form_only_when_the_log_is_opened() -> Non
 
 def returns_the_post_refusal_with_the_csrf_flow_of_a_browser_when_posting_to_the_log() -> None:
     assert admin_post(admin_client(), PATH, {}).status_code == 405
+
+
+def returns_403_when_the_log_is_posted_from_another_site() -> None:
+    response = admin_post(admin_client(), PATH, {}, origin=OTHER_SITE_ORIGIN)
+
+    assert response.status_code == 403
+
+
+def returns_200_when_an_admin_opens_the_log_with_the_cross_site_check_enforced() -> None:
+    assert admin_client().get(PATH).status_code == 200
 
 
 def returns_every_page_inside_the_budget_and_two_queries_when_the_log_holds_50000() -> None:

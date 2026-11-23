@@ -5,7 +5,6 @@ from datetime import UTC, datetime, time, timedelta
 
 from django.http import HttpRequest, HttpResponse
 from django.urls import URLPattern, path
-from django.views.decorators.csrf import csrf_exempt
 
 from scheduling.domain.audit_entity_types import AUDITED_ENTITY_TYPES
 from scheduling.domain.audit_labels import audit_label
@@ -83,5 +82,4 @@ def _row(entry: AuditLogEntry) -> dict[str, str]:
 
 
 def admin_audit_routes() -> list[URLPattern]:
-    # Exempt so a write method meets the 405, not a token check: the view reads and nothing else.
-    return [path("admin-console/audit", csrf_exempt(AuditPage.as_view()))]
+    return [path("admin-console/audit", AuditPage.as_view())]

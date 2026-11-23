@@ -50,5 +50,12 @@ Carried from tasks 27a and 27a2, tests that claim more than they check:
     `/api/v1` and the FHIR element accept: the three agree, or the difference is
     listed with its reason.
 
+19. `scripts/mutation_survivors.py` prints "stale entry in mutation-equivalents.txt" and
+    exits 0. An entry is stale when a test now kills the mutant it called equivalent:
+    the claim was wrong, and the line stays. The gate fails on a stale entry. One is
+    there now: `scheduling.domain.waitlist_window.x_window_words__mutmut_11`.
+20. From task 27b: no two links of an error summary read the same, asserted over every
+    form the product renders, submitted empty.
+
 Done when `make setup && make lint && make test && make gate && make mutate` and
 `make fhir-validate` and `make audit` pass from a fresh clone.

@@ -152,3 +152,22 @@ Behaviour names (`returns_X_when_Y`), expected values from the specification:
 - Round 1 (architect): the hospital Organization PUT and DELETE pair was walked but not listed. Addressed: `record` discriminator on `KnownDifference`, two entries, one case per hospital pair.
 - Round 2 (architect, verdict `revise`): the coverage test checked only the 10 walked pairs, so the 13 unlisted write rows passed unwalked. Addressed in this revision: `NOT_WALKED_YET` names the 13 pairs; the coverage test requires the write rows to equal walked plus pending, with no overlap; two proofs of that test. Also: the cited paths corrected to their real files; the read-back rule now reads audit pks, not only a count; `expected_answer` matches a record with `record in ("", record)`; the CodeSystem sharing and the `tests-and-docs` process are stated as decisions.
 - Non-blocking round 2 notes taken: the owner note on the hospital 405 (section above); the `Caller` nit (flag 2); the admin-last ordering is dropped because refusals return before the body.
+- Round 3 (architect, verdict `approve`): the round-2 reason is met. The 13 pending pairs are named in `NOT_WALKED_YET`, and the coverage test holds write rows = walked + pending with no overlap.
+
+## Architect review
+
+Verdict: `approve` (`scratch/plan.verdict`). Read against the code: `test_support/fhir_access_rows.py` (23 write rows; the 10 walked pairs plus 13 pending give 23), `scheduling/views/test_fhir_access_walk.py` (`_expected`, `_difference_problems`), `scheduling/views/test_fhir_access_requests.py`, `scheduling/views/test_fhir_access_world.py` (`_clients` :98, `_build_world` :107), `scheduling/views/fhir/writes.py` (refusal order, `_checked_body` :102), `scheduling/use_cases/fhir_record_writes.py`, `scheduling/use_cases/fhir_specialty_writes.py`, `scheduling/views/fhir_organisation_support.py` (builders :32, :43, :60), `scheduling/views/fhir_specialty_support.py` (`concept` :11), `scheduling/models/builders.py` (`make` :206, defaults), `drlibre-specs.md` 15.4, ADR 0008.
+
+1. Ladder: no product change, no dependency. New abstractions are `WriteCase`, `NOT_WALKED_YET` and public `expected_answer`, all named in the plan. Each has a second caller within this run (the reads walk and the writes walk use `expected_answer`). Ok.
+2. Plan knowledge: each block states its purpose in one sentence. Vocabulary matches CLAUDE.md §3 (Department, Room, AppointmentType, Specialty list, Hospital). Ok.
+3. Test first: two named behaviour tests, expected values from spec 15.4 and the rows table. Proofs that the answer, record, audit and coverage checks each fail are listed. Ok.
+4. Security: the walk sends only the caller's bearer token or none; role comes from `resolve_token`. Refusals are checked before the body (`refusal_before_body`). Audit log is read and never deleted. Ok. The staff and patient rows, where the IDOR threat lives, are deferred and named.
+5. Architecture: test-only change, no product layer touched. Ok.
+6. Scope: the goal asked for all create, update and delete rows (23). The plan walks 10 rows as 12 cases and names the 13 others in `NOT_WALKED_YET` and `## Not in this run`. A coherent slice: the admin-only resources, one shared-record exception (CodeSystem) stated with its reason. Accepted; the orchestrator must confirm the slice.
+
+Non-blocking findings for the orchestrator:
+- Creates (rows 1 to 3) build bodies with `department_body`, `room_body`, `service_body`, not from a read of the record (no record exists yet). The goal asked for a read. The plan discloses this; accept or ask for a read-of-a-template.
+- Rate limit basis is wrong. `scheduling/domain/rate_limit_rules.py:39` sets the FHIR cap to 600 per address, but `scheduling/views/fhir/views.py:89-91` takes a hit only on GET, so writes are not counted. The walk sends 75 GETs and 48 writes. "123 is under it" holds, but the stated basis should be the 75 GETs. Fix the sentence in the run.
+- `scheduling/views/test_fhir_access_writes.py` plus `test_fhir_access_write_cases.py` at 12 cases with four callables each is near the 300-line cap; the orchestrator reads the diff line by line, so prefer one-line lambdas only where they stay readable.
+- The owner note on the hospital 405 (spec 15.4 says admin writes Organization; ADR 0008 says a hospital's Organization is 405; row basis cites ADR 0008 wrongly) stays as the plan says: name both pairs under "For the owner" in the review.
+- Process: `tests-and-docs`, as the plan says, since no behaviour changes.

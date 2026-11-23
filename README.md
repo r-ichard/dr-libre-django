@@ -64,6 +64,8 @@ docker compose down -v
 
 The working rules for changes to this repository are in `CLAUDE.md`.
 
+Run `make smoke` after `docker compose up --wait` and `seed_demo`, before a hand-over or after a deploy, to walk a visitor's hold, code and booking, then a cancel against 127.0.0.1:8000 and 8025 (it is not part of `make test`).
+
 ## FHIR API
 
 Every concept is served as FHIR R4 under `/fhir`; the CapabilityStatement is at `/fhir/metadata`.

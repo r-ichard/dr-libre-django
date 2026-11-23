@@ -7,7 +7,7 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 # DEBUG stays off in tests; start-up refuses the published development values then.
 SAFE_ENV := SECRET_KEY=test-only-key-k7Qx9vT2mWp4Zr8LbN3cYd6HfJs1UaEg5XoVt0RiKwMq2PzBn DEMO_PASSWORD=
 
-.PHONY: setup test lint gate mutate fhir-validate audit access-table
+.PHONY: setup test lint gate mutate fhir-validate audit access-table smoke
 
 setup:
 	command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
@@ -47,3 +47,7 @@ audit:
 # Not part of `make test`: scripts/test_access_table.py fails when the section is stale.
 access-table:
 	uv run python -m scripts.access_table
+
+# Not part of `make test`: needs the stack up and seeded on 127.0.0.1.
+smoke:
+	python3 scripts/smoke.py

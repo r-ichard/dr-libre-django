@@ -3,7 +3,6 @@ Pairs the product answers differently are listed with the product's answer. Reco
 walked in test_page_access_records.py."""
 
 from collections.abc import Callable, Iterator
-from typing import Literal
 from urllib.parse import urlsplit
 
 import pytest
@@ -15,10 +14,14 @@ from django.views import View
 
 from scheduling.views.pages.page_view import PageView
 from scheduling.views.pages.page_walk_support import World, client_for_role, make_world, path_of
-from scheduling.views.pages.test_page_access_rows import Answer, Row
+from scheduling.views.pages.test_page_access_rows import (
+    KNOWN_DIFFERENCES,
+    Answer,
+    Caller,
+    Row,
+)
 from scheduling.views.pages.test_page_access_table import _all_rows
 
-Caller = Literal["visitor", "patient", "clinician", "admin"]
 CALLERS: tuple[Caller, ...] = ("visitor", "patient", "clinician", "admin")
 
 pytestmark = pytest.mark.django_db
@@ -33,36 +36,6 @@ LEFT_FOR_LATER_RUN = frozenset(
         "admin-console/settings/reminders",
     }
 )
-
-# (route, caller) -> (answer in the table, answer the product gives). Each entry is a question
-# for the owner, listed under "For the owner" in the review.
-KNOWN_DIFFERENCES: dict[tuple[str, Caller], tuple[Answer, str]] = {
-    ("favicon.ico", "visitor"): (Answer.OK, "302 /static/favicon.svg"),
-    ("favicon.ico", "patient"): (Answer.OK, "302 /static/favicon.svg"),
-    ("favicon.ico", "clinician"): (Answer.OK, "302 /static/favicon.svg"),
-    ("favicon.ico", "admin"): (Answer.OK, "302 /static/favicon.svg"),
-    ("sign-in", "patient"): (Answer.OK, "302 /patient/"),
-    ("sign-in", "clinician"): (Answer.OK, "302 /clinician/"),
-    ("sign-in", "admin"): (Answer.OK, "302 /admin-console/"),
-    ("admin-console/appointments/new/service", "admin"): (
-        Answer.OK,
-        "302 /admin-console/appointments/new",
-    ),
-    ("book/<uuid:appointment_type_id>/details", "clinician"): (Answer.OK, Answer.FORBIDDEN),
-    ("book/<uuid:appointment_type_id>/details", "admin"): (Answer.OK, Answer.FORBIDDEN),
-    ("admin-console/appointments/new/<uuid:appointment_type_id>/provider", "admin"): (
-        Answer.OK,
-        "302 /admin-console/appointments/new",
-    ),
-    ("admin-console/appointments/new/<uuid:appointment_type_id>/times", "admin"): (
-        Answer.OK,
-        "302 /admin-console/appointments/new",
-    ),
-    ("admin-console/appointments/new/<uuid:appointment_type_id>/review", "admin"): (
-        Answer.OK,
-        "302 /admin-console/appointments/new",
-    ),
-}
 
 # The product's JSON API, its FHIR surface and the static files are not pages.
 NOT_PAGE_PREFIXES = ("api/", "fhir", "static/")

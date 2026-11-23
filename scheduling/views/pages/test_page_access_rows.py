@@ -3,6 +3,7 @@ debug-only style page. The types here are shared by the other test_page_access_r
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Literal
 
 
 class Answer(StrEnum):
@@ -50,3 +51,35 @@ NO_SESSION_ROWS: tuple[Row, ...] = (
 )
 
 STYLE_ROWS: tuple[Row, ...] = (Row("style", OK, OK, OK, OK, debug_only=True),)
+
+Caller = Literal["visitor", "patient", "clinician", "admin"]
+
+# (route, caller) -> (answer in the table, answer the product gives). Each entry is a question
+# for the owner, listed under "For the owner" in the review.
+KNOWN_DIFFERENCES: dict[tuple[str, Caller], tuple[Answer, str]] = {
+    ("favicon.ico", "visitor"): (Answer.OK, "302 /static/favicon.svg"),
+    ("favicon.ico", "patient"): (Answer.OK, "302 /static/favicon.svg"),
+    ("favicon.ico", "clinician"): (Answer.OK, "302 /static/favicon.svg"),
+    ("favicon.ico", "admin"): (Answer.OK, "302 /static/favicon.svg"),
+    ("sign-in", "patient"): (Answer.OK, "302 /patient/"),
+    ("sign-in", "clinician"): (Answer.OK, "302 /clinician/"),
+    ("sign-in", "admin"): (Answer.OK, "302 /admin-console/"),
+    ("admin-console/appointments/new/service", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+    ("book/<uuid:appointment_type_id>/details", "clinician"): (Answer.OK, Answer.FORBIDDEN),
+    ("book/<uuid:appointment_type_id>/details", "admin"): (Answer.OK, Answer.FORBIDDEN),
+    ("admin-console/appointments/new/<uuid:appointment_type_id>/provider", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+    ("admin-console/appointments/new/<uuid:appointment_type_id>/times", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+    ("admin-console/appointments/new/<uuid:appointment_type_id>/review", "admin"): (
+        Answer.OK,
+        "302 /admin-console/appointments/new",
+    ),
+}

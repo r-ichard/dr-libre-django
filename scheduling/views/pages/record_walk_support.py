@@ -19,8 +19,8 @@ from scheduling.views.hold_cookie import HOLD_COOKIE
 from scheduling.views.pages.booking_pages_support import FORM, details_path
 from scheduling.views.pages.browser_support import browser_client, browser_post
 from scheduling.views.pages.page_walk_support import World, fill_route
-from scheduling.views.pages.test_page_access_rows import Answer, Row
-from scheduling.views.pages.test_page_access_walk import Caller, _wanted
+from scheduling.views.pages.test_page_access_rows import Answer, Caller, Row
+from scheduling.views.pages.test_page_access_walk import _wanted
 
 Leg = Literal["own", "other", "missing"]
 UUID_PLACEHOLDER = re.compile(r"<uuid:(\w+)>")

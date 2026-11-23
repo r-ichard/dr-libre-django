@@ -17,11 +17,10 @@ from scheduling.views.pages.record_walk_support import (
     path_for,
     records_of,
 )
-from scheduling.views.pages.test_page_access_rows import Answer, Row
+from scheduling.views.pages.test_page_access_rows import Answer, Caller, Row
 from scheduling.views.pages.test_page_access_table import _all_rows
 from scheduling.views.pages.test_page_access_walk import (
     CALLERS,
-    Caller,
     _answer_of,
     _answers_get,
     _clients,

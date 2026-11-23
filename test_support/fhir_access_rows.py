@@ -148,6 +148,9 @@ FHIR_ACCESS_ROWS: tuple[FhirAccessRow, ...] = (
     FhirAccessRow("AuditEvent", "search-type", 401, 403, 403, 200, "15.4 admin; ADR 0007"),
 )
 
+# Typed tuple[KnownDifference, ...]: a difference added later fails the type check in
+# scripts/access_table.py until that renderer can write it.
+
 # Pairs the product answers otherwise than its row. Each is a finding for the review's "For the
 # owner" section; the walk holds the product's answer until the owner decides.
 KNOWN_DIFFERENCES: tuple[KnownDifference, ...] = (

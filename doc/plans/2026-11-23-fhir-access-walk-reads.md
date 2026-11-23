@@ -150,3 +150,24 @@ Behaviour names (`returns_X_when_Y`), expected values from the specification:
 
 - Builder defaults are read in the build: the rule's weekday (`builders.py:149`, weekday 1 per the make_clinic docstring "Mondays") must include 11:00 on 2030-01-07; the online type default is `is_bookable_online` True (`builders.py:145`).
 - The review (a later stage) lists every `KNOWN_DIFFERENCES` entry under "For the owner" with both answers and the section.
+
+## Architect review
+
+Verdict: approve. No missing invariant, no missing first test, no scope creep, no security hole, right layer (tests and test data only, no product file).
+
+Checked against the code and the specification:
+- Request arithmetic holds: 28 rows x 4 callers = 112, plus 5 personal types x 4 callers = 20 other-user reads, total 132; 33 per caller.
+- Slot search 400: spec 15.5 says a start range "is required"; `scheduling/use_cases/fhir_slot_reads.py:112-114` returns `invalid_input` without a window, for every caller. The corrected row and the product agree.
+- Read cells for Communication (`fhir_communication_reads.py:29-35`), AppointmentResponse (`fhir_response_reads.py:26-32`), Appointment (`fhir_appointment_reads.py:36-42`) and AuditEvent (`fhir_audit_reads.py:36-39`) give the rows' answers for the may-use and other-user records named in the plan.
+- Other-user answers: patient and clinician get 403 on every personal type; visitor 401; admin reads Patient, Appointment, AppointmentResponse and AuditEvent of others (200). Consistent with spec 12.3.
+- Rate limit: the FHIR scope is 600 per address (`scheduling/domain/rate_limit_rules.py:39`); the plan's "and user" is wrong, the rule has no per-user limit. Hits are rows (`RateLimitHit`), so they roll back per test. 132 requests stay well under 600.
+- Builders: `make_clinic` (builders.py:245), `add_clinician` (:260), `make` (:206) exist; 2030-01-07 is a Monday, so the default weekday 1 rule covers it once the start and end window is checked in the build.
+- Helpers: `token_of` (fhir_test_support.py:25) and `client_for` (:30) match the plan's line numbers; the monkeypatched clock follows `test_fhir_patient.py:21-24`.
+
+Flags for the orchestrator (none is a reason to revise):
+1. Decision 1 departs from the goal's literal rule ("where the product answers differently, keep the row and add the pair"). Here the product matches the specification and the row did not, which is the backlog item 1 rule ("write the table as the specification has it"). Confirm before the build; if rejected, the alternative is four KNOWN_DIFFERENCES entries for Slot search.
+2. KNOWN_DIFFERENCES 1 to 3 rest on ADR 0007 saying a clinician's search is an empty set, while the row's 403 cites ADR 0007 too. One ADR, two readings. Keep the entries per the goal's rule; the review's "For the owner" section must say which reading the owner holds.
+3. The new `Caller` StrEnum duplicates `Caller` in `scheduling/views/test_api_access_rows.py`, and its name also matches the use-case `Caller` type in `scheduling/use_cases/`. Prefer reusing the existing enum or a distinct name. Nit.
+4. Sequencing of the red: an import error is not a red for the right reason. The real red is the walk on the Slot search rows before block 1's correction, with the product at 400. Build in that order and say so in the run.
+5. Wording: "600 per address and user" should read "600 per address". Module docstring block 1 replaces lines 1-7; keep the "No test_ prefix" note there.
+6. Predicted differences 1 to 3 are unconfirmed until the build runs; the self-check in the walk fails if a listed entry no longer differs, so the build confirms them.

@@ -1,11 +1,16 @@
 """Each caller's answer from each /api/v1 route, per the specification. Read by the route-coverage
-test and the walk of routes that name no record. KNOWN_DIFFERENCES lists the product's
-divergences."""
+test and both walks. The booking hold routes are walked by neither. KNOWN_DIFFERENCES lists
+the product's divergences."""
 
 from dataclasses import dataclass
 from enum import StrEnum
 
 ANY_METHOD = "ANY"
+
+
+class RecordUse(StrEnum):
+    OWN = "own"
+    OTHER = "other"
 
 
 class Caller(StrEnum):
@@ -37,11 +42,13 @@ class AccessRow:
 
 @dataclass(frozen=True)
 class KnownDifference:
-    """Both answers for one caller and route. The walk asserts the product's answer."""
+    """Both answers for one caller and route. The walk asserts the product's answer. `record` is
+    None for a route that names no record, else the record the request named."""
 
     caller: Caller
     method: str
     route: str
+    record: RecordUse | None
     row_answer: int
     product_answer: int
 

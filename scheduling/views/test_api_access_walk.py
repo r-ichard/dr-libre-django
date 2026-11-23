@@ -57,6 +57,8 @@ def _walk_mismatches(world: World) -> list[str]:
 def _difference_problems() -> list[str]:
     problems: list[str] = []
     for difference in KNOWN_DIFFERENCES:
+        if difference.record is not None:
+            continue
         row = next(
             (
                 candidate

@@ -1090,3 +1090,18 @@ process fix (workflow, prompt, script) or a line in CLAUDE.md, in the same chang
 - What reading found in Haiku diffs: nothing blocking. Wording to revisit: "That date
   does not exist" without a full stop or a way forward; a fixed sentence for any export
   failure; the 405 page's text when the address is not a form.
+
+## 2026-11-23 M9 closed
+
+- Issue #9 closed with every box ticked. `main` at `5c95a6b`: lint, 5506 tests, the
+  comment and size gate, `make fhir-validate`, `make mutate` and `make audit` pass from a
+  fresh clone; `make smoke` walks a booking through the running stack.
+- The day ran about 60 pipeline runs on Haiku, one finding each. What made it slow: test-
+  heavy tasks failed at the plan stage (a third of the failures), and runs started from
+  `main` while the work they built on was not merged yet (twice, my mistake).
+- The smoke test was the most useful check of the day: against a real stack it found two
+  defects that 5400 tests had not, a slot offered inside the lead time and a slot offered
+  when every room it needs was booked.
+- The owner moved new work from fabro to Haiku sub-agents in worktrees. A sub-agent on the
+  host has no database: it stops after lint and gate, and the orchestrator runs the tests
+  in a container.

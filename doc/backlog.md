@@ -100,17 +100,17 @@ tasks.
 | 26a2 | Abuse limits as the real server and a limited visitor meet them: writes without a body, the 429 page, `Retry-After`, counters' race tests, two holds in one browser | 11, 12 | merged `0cb030b` |
 | 26b | Security: start-up checks, cookie flags, trusted proxy, logs without personal data, the access table | 11, 12 | merged `917edd1` (items 1 to 3, 8, 9) |
 | 26b2 | A limit on every public read that costs work (detail pages, slots, anonymous FHIR search); what the review of 26b left small | 11, 12 | merged `ac99dd7` |
-| 26b3 | Access proven as data: one table over every route and caller, the access section of the review document | 11, 12 | todo |
-| 26c | Gates that hold: per-test time gate, mutants without a test, the flaky test, `make audit`, docstrings | process | todo |
-| 26d | Security review written: encryption at rest, the server, the review document, the owner's questions | all | todo |
+| 26b3 | Access proven as data: one table over every route and caller, the access section of the review document | 11, 12 | merged (tables, walks, access section; 13 personal FHIR writes left after M9) |
+| 26c | Gates that hold: per-test time gate, mutants without a test, the flaky test, `make audit`, docstrings | process | merged (all but item 11a and items 17, 18, 20, after M9) |
+| 26d | Security review written: encryption at rest, the server, the review document, the owner's questions | all | merged (ADR 0011, doc/security-review.md with its access section) |
 | 27a | QA round 3, inputs: column bounds (#33), control characters (#38), text that is a number (#45), the waitlist window's last day (#41), hostile-input test derived from forms and schemas | 4, 8 | merged `4078bbd` with 27a2 and 27a3 (items 1 to 3, 6) |
 | 27a2 | The one text rule as a person fills a form: textareas take line breaks again, a page shows the rule's message, hostile-input test derived from forms and schemas, refused forms keep input | 4, 16 | merged `4078bbd` |
 | 27a3 | The mutation gate on the held branch: 17 survivors to kill or explain, tests only | process | merged `4078bbd` (repair run) |
-| 27b | QA round 3, pages: rule sentences (#34), status refusals (#35), messages (#37, #40, #43), ways on (#42, #44, #49), a reschedule that moves nothing (#39), time zone change confirmed (#36) | 5, 10, 16 | one finding per run, all merged but the second half of #44 (which week a strip opens on), running |
-| 27c | README, smoke test, hand-over document, what QA of the public and FHIR areas adds | all | todo |
+| 27b | QA round 3, pages: rule sentences (#34), status refusals (#35), messages (#37, #40, #43), ways on (#42, #44, #49), a reschedule that moves nothing (#39), time zone change confirmed (#36) | 5, 10, 16 | merged, one finding per commit |
+| 27c | README, smoke test, hand-over document, what QA of the public and FHIR areas adds | all | merged (README, make smoke, hand-over document) |
 | 27d | QA round 3, FHIR: date searches that leave records out (#51), NUL byte in a search (#50), what a write must declare (#52, and `curl -X POST` without a length), comma lists, what a 400 says, `_sort` by date | 15 | merged `069fd46` (items 1 to 3: #50, #51) |
 | 27d2 | FHIR: what a write must declare (#52, `curl -X POST` without a length), what every 400 says, reschedule by `start` alone, `_sort` by date, the specification put back | 15 | merged `cbf05a6` (all but item 3: #52) |
-| 27d3 | FHIR: a message of its own on every 400, never echoing what the client sent | 15 | todo |
+| 27d3 | FHIR: a message of its own on every 400, never echoing what the client sent | 15 | after M9 |
 
 ## Carried items
 

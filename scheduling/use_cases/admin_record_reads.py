@@ -5,12 +5,14 @@ from datetime import datetime
 from functools import reduce
 from operator import or_
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
-from django.db.models import Model, Q
+from django.db.models import Model, Q, QuerySet
 
 from scheduling.domain.appointment_status import ACTIVE_STATUSES
 from scheduling.domain.clinician_rules import WeeklyHours, availability_summary
 from scheduling.domain.search_ordering import Page, page_bounds
+from scheduling.domain.time_zone_shift import shifted_starts, zone_change_sentence
 from scheduling.domain.vocabulary import Role
 from scheduling.models import (
     Appointment,
@@ -100,12 +102,25 @@ def parent_choices(kind: str) -> list[tuple[str, str]]:
     return []
 
 
-def upcoming_appointment_count(hospital_id: UUID, now: datetime) -> int:
+def _upcoming_hospital_appointments(hospital_id: UUID, now: datetime) -> QuerySet[Appointment]:
     return Appointment.objects.filter(
         clinician__department__hospital_id=hospital_id,
         starts_at__gt=now,
         status__in=[status.value for status in ACTIVE_STATUSES],
-    ).count()
+    )
+
+
+def upcoming_appointment_count(hospital_id: UUID, now: datetime) -> int:
+    return _upcoming_hospital_appointments(hospital_id, now).count()
+
+
+def zone_change_warning(hospital_id: UUID, new_zone_key: str, now: datetime) -> str:
+    """Empty when no upcoming appointment of the hospital would show another local time."""
+    old_zone = ZoneInfo(Hospital.objects.get(pk=hospital_id).time_zone)
+    new_zone = ZoneInfo(new_zone_key)
+    starts = _upcoming_hospital_appointments(hospital_id, now).order_by("starts_at")
+    shifted = shifted_starts(list(starts.values_list("starts_at", flat=True)), old_zone, new_zone)
+    return zone_change_sentence(shifted, old_zone, new_zone) if shifted else ""
 
 
 def upcoming_for_clinician(profile_id: UUID, now: datetime) -> int:

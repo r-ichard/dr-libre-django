@@ -49,6 +49,7 @@ STALE_TEXT = (
     "Save again to replace the stored values with yours, or open the record again to start over."
 )
 UNREADABLE_VERSION = "This form is out of date or damaged. Open the record again to edit it."
+SAVE_ZONE_TEXT = "Save with the new time zone"
 
 
 class RecordPage(PageView):
@@ -260,6 +261,11 @@ class RecordFormPage(RecordPage):
             return self._form(request, record, typed, {}, None, 422, UNREADABLE_VERSION)
         if errors:
             return self._form(request, record, typed, errors, int(version), 422)
+        warning = self._zone_warning(record, values)
+        if warning and request.POST.get("confirm_time_zone") != str(values["time_zone"]):
+            return self._form(
+                request, record, typed, {}, int(version), 200, warning, SAVE_ZONE_TEXT
+            )
         result = writers.update(RecordEdit(self.kind, record.pk, values, int(version)), self.user)
         return self._answer(request, result, typed, int(version))
 
@@ -289,6 +295,7 @@ class RecordFormPage(RecordPage):
         version: int | None,
         status: int = 200,
         problem: str = "",
+        confirm_text: str = "",
     ) -> HttpResponse:
         editing = "record_id" in self.kwargs
         view = self.view
@@ -299,6 +306,8 @@ class RecordFormPage(RecordPage):
             "summary": [{"target": f"id_{name}", "message": text} for name, text in errors.items()],
             "version": version,
             "problem": problem,
+            "confirm_text": confirm_text,
+            "confirm_zone": typed.get("time_zone", ""),
             "is_stale": status == 409,
             "conflicts": self._conflicts(request, record, typed) if status == 409 else [],
             "read_texts": self._read_inputs(request, record, status),
@@ -345,6 +354,12 @@ class RecordFormPage(RecordPage):
         return (
             f"{self.view.base_path}/{self.kwargs['record_id']}" if editing else self.view.base_path
         )
+
+    def _zone_warning(self, record: Model, values: dict[str, object]) -> str:
+        if self.kind != "hospital":
+            return ""
+        now = current_request_context().now
+        return admin_record_reads.zone_change_warning(record.pk, str(values["time_zone"]), now)
 
     def _time_zone_note(self, editing: bool) -> str:
         if self.kind != "hospital" or not editing:

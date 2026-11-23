@@ -21,7 +21,8 @@
     {% endif %}
   {% endfor %}
   <div class="button-row">
-    <button class="button button--primary" type="submit">Save</button>
+    {% if confirm_text %}<button class="button button--primary" type="submit" name="confirm_time_zone" value="{{ confirm_zone }}">{{ confirm_text }}</button>
+    {% else %}<button class="button button--primary" type="submit">Save</button>{% endif %}
     <a class="button button--secondary" href="{{ back_path }}">Cancel</a>
   </div>
 </form>

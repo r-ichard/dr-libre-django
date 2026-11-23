@@ -1,0 +1,70 @@
+"""Section 12.3: who may open the patient area, the appointment confirmation and the calendar."""
+
+from scheduling.views.pages.test_page_access_rows import FORBIDDEN, OK, SIGN_IN, Row
+
+PATIENT_ROWS: tuple[Row, ...] = (
+    Row("patient/", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row("patient/appointments", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row(
+        "patient/appointments/<uuid:appointment_id>/cancel",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row(
+        "patient/appointments/<uuid:appointment_id>/reschedule",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row(
+        "patient/appointments/<uuid:appointment_id>/reschedule/review",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row("patient/waitlist", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row(
+        "patient/waitlist/<uuid:entry_id>/accept",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row("patient/notifications", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row("patient/notifications/read-all", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row(
+        "patient/notifications/<uuid:notification_id>/read",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row("patient/profile", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row("patient/profile/password", SIGN_IN, OK, FORBIDDEN, FORBIDDEN),
+    Row(
+        "appointments/<uuid:appointment_id>/confirmation",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row(
+        "appointments/<uuid:appointment_id>/calendar.ics",
+        SIGN_IN,
+        OK,
+        FORBIDDEN,
+        FORBIDDEN,
+        names_record=True,
+    ),
+    Row("account/password", SIGN_IN, FORBIDDEN, OK, OK),
+)

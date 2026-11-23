@@ -124,3 +124,12 @@ def returns_from_and_to_words_when_window_covers_several_days() -> None:
     assert _words(earliest, latest, "Europe/Berlin") == (
         "from Monday 23 November 2026 to Sunday 29 November 2026 (Europe/Berlin)"
     )
+
+
+def returns_end_day_when_end_is_one_microsecond_past_midnight() -> None:
+    earliest = datetime(2026, 11, 25, 23, 0, tzinfo=UTC)
+    latest = datetime(2026, 11, 26, 23, 0, 0, 1, tzinfo=UTC)
+
+    assert _words(earliest, latest, "Europe/Berlin") == (
+        "from Thursday 26 November 2026 to Friday 27 November 2026 (Europe/Berlin)"
+    )

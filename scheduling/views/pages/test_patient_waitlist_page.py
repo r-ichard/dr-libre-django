@@ -97,6 +97,30 @@ def returns_422_with_error_summary_when_last_day_is_before_first_day() -> None:
     assert f'value="{LAST_DAY}"' in html
 
 
+def returns_422_naming_first_day_when_first_day_is_empty() -> None:
+    clinic = make_clinic()
+    client = signed_in_patient(clinic.patient)
+
+    response = browser_post(client, PATH, _form(clinic, earliest_day=""))
+
+    html = response.content.decode()
+    assert response.status_code == 422
+    assert 'href="#id_earliest_day">Enter the first day, for example 2030-03-27.</a>' in html
+    assert "Enter the last day" not in html
+
+
+def returns_422_with_two_different_day_messages_when_both_days_are_empty() -> None:
+    clinic = make_clinic()
+    client = signed_in_patient(clinic.patient)
+
+    response = browser_post(client, PATH, _form(clinic, earliest_day="", latest_day=""))
+
+    html = response.content.decode()
+    assert response.status_code == 422
+    assert 'href="#id_earliest_day">Enter the first day, for example 2030-03-27.</a>' in html
+    assert 'href="#id_latest_day">Enter the last day, for example 2030-03-27.</a>' in html
+
+
 def returns_422_when_no_appointment_type_is_chosen() -> None:
     clinic = make_clinic()
     client = signed_in_patient(clinic.patient)

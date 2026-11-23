@@ -3,7 +3,7 @@
   <h3>{{ row.type_name }} {% include "components/badge.html" with kind=row.badge_kind text=row.badge_text %}</h3>
   <dl class="facts">
     <div><dt>Where</dt><dd>{{ row.hospital }}</dd></div>
-    <div><dt>Wanted between</dt><dd>{{ row.window }}</dd></div>
+    <div><dt>Wanted</dt><dd>{{ row.window }}</dd></div>
     <div><dt>Provider</dt><dd>{{ row.provider }}</dd></div>
     {% if row.offer %}
     <div><dt>Offered time</dt><dd>{{ row.offer.day }}, {{ row.offer.starts }}</dd></div>

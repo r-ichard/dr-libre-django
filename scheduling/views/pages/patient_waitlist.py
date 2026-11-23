@@ -35,7 +35,8 @@ from scheduling.views.pages.portal_forms import (
 NOTICES = {"joined": "You are on the waitlist."}
 CHOOSE_TYPE = "Choose a service."
 WRONG_PROVIDER = "That provider does not offer this service."
-REAL_DATE = "Enter a real date, for example 2030-03-27."
+FIRST_DAY_MESSAGE = "Enter the first day, for example 2030-03-27."
+LAST_DAY_MESSAGE = "Enter the last day, for example 2030-03-27."
 FORM_FIELDS = ("appointment_type", "provider", "earliest_day", "latest_day")
 USE_CASE_FIELDS = {"latest_at": "latest_day", "earliest_at": "earliest_day"}
 
@@ -116,9 +117,9 @@ def _join_errors(entered: dict[str, str], user: User) -> dict[str, str]:
         errors["provider"] = WRONG_PROVIDER
     first, last = day_or_none(entered["earliest_day"]), day_or_none(entered["latest_day"])
     if first is None:
-        errors["earliest_day"] = REAL_DATE
+        errors["earliest_day"] = FIRST_DAY_MESSAGE
     if last is None:
-        errors["latest_day"] = REAL_DATE
+        errors["latest_day"] = LAST_DAY_MESSAGE
     if errors or appointment_type is None or first is None or last is None:
         return errors
     zone = ZoneInfo(appointment_type.department.hospital.time_zone)

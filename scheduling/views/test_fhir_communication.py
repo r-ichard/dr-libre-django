@@ -1,4 +1,4 @@
-"""Task 24, spec 15.2, 15.4, 15.5: `Communication` is a notification, read by its recipient only,
+"""Sections 15.2, 15.4, 15.5: a `Communication` is read by its recipient only,
 and its `received` time is set once through the `mark_read` use case."""
 
 from datetime import datetime

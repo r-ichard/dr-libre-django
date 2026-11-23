@@ -1,4 +1,4 @@
-"""Task 21, items 8 to 11 and 13: the appointment export as a browser sends it. Route:
+"""Section 13: the appointment export as a browser sends it. Route:
 POST /admin-console/appointments/export, filters in the address like the list."""
 
 import csv

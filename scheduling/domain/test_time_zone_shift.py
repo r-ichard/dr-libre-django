@@ -1,4 +1,4 @@
-"""Task 27b item 10, issue #36: a zone change shifts only the starts whose wall clock differs."""
+"""Section 4: a zone change shifts only the starts whose wall clock differs."""
 
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo

@@ -1,4 +1,4 @@
-"""Task 20, items 3 and 7: the patient search of the admin booking and waitlist pages."""
+"""Section 10: the patient search of the admin booking and waitlist pages."""
 
 import pytest
 

@@ -1,4 +1,4 @@
-"""Task 04b, section 16: security headers on every response, error responses included."""
+"""Section 16: security headers on every response, error responses included."""
 
 import pytest
 from django.http.response import HttpResponseBase

@@ -1,4 +1,4 @@
-"""Task 17c: the clinician workspace defects of QA round 2, each as a browser meets it.
+"""Section 9: the clinician workspace, each defect as a browser meets it.
 Fixtures are built here, never read from the demo seed."""
 
 from __future__ import annotations

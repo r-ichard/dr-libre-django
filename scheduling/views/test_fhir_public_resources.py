@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2, 15.5: every public resource through the door, search, include, limits."""
+"""Sections 15.2, 15.5: public resources through the door: search, include, limits."""
 
 from typing import TYPE_CHECKING
 from unittest.mock import patch

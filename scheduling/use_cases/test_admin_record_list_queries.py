@@ -1,4 +1,4 @@
-"""Task 19 item 17: a list page is counted and cut in the database, not in Python."""
+"""Section 4: a list page is counted and cut in the database, not in Python."""
 
 import pytest
 from django.db import connection

@@ -1,4 +1,4 @@
-"""Task 21, #1: the figures of section 13, each as the table defines it."""
+"""Section 13: the figures, each as the table defines it."""
 
 from datetime import UTC, date, datetime
 

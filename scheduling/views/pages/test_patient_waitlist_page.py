@@ -1,4 +1,4 @@
-"""Task 15: the waitlist page as a browser sends it. Each test states the behaviour in words."""
+"""Sections 5.8, 8: waitlist page as a browser sends it. Each test names its behaviour."""
 
 from __future__ import annotations
 

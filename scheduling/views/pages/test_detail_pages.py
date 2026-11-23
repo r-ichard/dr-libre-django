@@ -1,4 +1,4 @@
-"""Task 11: provider, hospital and specialty pages, open to everyone, fetched as a browser does
+"""Section 6.6: provider, hospital and specialty pages, open to all, as a browser fetches
 (cross-site check enforced, Origin set)."""
 
 from __future__ import annotations

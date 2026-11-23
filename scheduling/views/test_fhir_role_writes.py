@@ -1,4 +1,4 @@
-"""Task 24c: admin writes of PractitionerRole as a FHIR client sends them (bearer token, no cookie,
+"""Section 15.4: admins write PractitionerRole as clients send them (bearer token, no cookie,
 no Origin). Expected values come from the plan and spec 15.4."""
 
 from datetime import timedelta

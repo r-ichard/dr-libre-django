@@ -1,4 +1,4 @@
-"""Task 23a, point 9: two clients book the same slot over FHIR at once, each in its own
+"""Section 15.6: two clients book the same slot over FHIR at once, each in its own
 connection and transaction. One gets 201, the other 409, the database holds one appointment.
 Rows are committed, so cleanup is the one of the placement races."""
 

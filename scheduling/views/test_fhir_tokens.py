@@ -1,4 +1,4 @@
-"""Task 22, spec 15.4: a bearer token gives exactly its user's rights under /fhir; a bad one is
+"""Section 15.4: a bearer token gives exactly its user's rights under /fhir; a bad one is
 401 and never the answer of no token; the session cookie and the address never authenticate."""
 
 import logging

@@ -1,4 +1,4 @@
-"""Task 14: the patient's appointment lists, cancel step and ownership, as a browser sends them."""
+"""Section 8: appointment lists, cancel step and ownership, as a browser sends them."""
 
 from __future__ import annotations
 

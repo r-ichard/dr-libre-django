@@ -1,4 +1,4 @@
-"""Task 17b, #15 and #20: the hold request names the field it was sent under, and a phone is
+"""Section 7.1: the hold request names the field it was sent under, and a phone is
 7 to 20 characters of digits, spaces and + ( ) - wherever it is typed (section 8)."""
 
 from __future__ import annotations

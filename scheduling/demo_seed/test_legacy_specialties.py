@@ -1,4 +1,4 @@
-"""Task 20, item 15: the seed touches only the five `demo-<code>` specialties it once made."""
+"""The seed touches only the five `demo-<code>` specialties it once made."""
 
 import pytest
 

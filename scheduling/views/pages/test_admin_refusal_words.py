@@ -1,4 +1,4 @@
-"""Task 20, item 5: every refusal names what is wrong in words, with a status and a way back."""
+"""Section 4: every refusal names what is wrong in words, with a status and a way back."""
 
 import pytest
 from django.http import HttpResponse

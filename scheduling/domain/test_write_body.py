@@ -1,4 +1,4 @@
-"""Task 27d2: the one rule for "does a write carry a body, and does it say JSON"."""
+"""Section 14: the one rule for "does a write carry a body, and does it say JSON"."""
 
 import pytest
 

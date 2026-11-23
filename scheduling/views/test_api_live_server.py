@@ -1,4 +1,4 @@
-"""Task 26a2 item 2: the next difference between the test client and the server is seen by a test.
+"""Section 14: a test sees the next difference between the test client and the server.
 These requests cross a socket to Django's WSGIServer, the class runserver uses."""
 
 import socket

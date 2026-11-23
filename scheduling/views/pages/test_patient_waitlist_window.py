@@ -1,4 +1,4 @@
-"""Task 27a, finding #41: the list shows the last day chosen, not the day after it."""
+"""Section 5.8: the list shows the last day chosen, not the day after it."""
 
 from datetime import UTC, datetime
 

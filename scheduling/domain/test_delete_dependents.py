@@ -1,4 +1,4 @@
-"""Task 18, section 10: what blocks deleting a record, as a pure decision over counts."""
+"""Section 10: what blocks deleting a record, as a pure decision over counts."""
 
 import pytest
 

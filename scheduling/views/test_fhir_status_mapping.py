@@ -1,4 +1,4 @@
-"""Task 24d, spec 15.3: every appointment status and every waitlist status read through FHIR as
+"""Section 15.3: every appointment status and every waitlist status read through FHIR as
 the section's tables say. The expected values are the specification's, held here as data."""
 
 from dataclasses import dataclass

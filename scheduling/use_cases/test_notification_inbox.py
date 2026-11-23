@@ -1,4 +1,4 @@
-"""Task 15: a patient reads and marks only their own notifications; marking is audited."""
+"""Section 11: patients read and mark only their own notifications; marking is audited."""
 
 import uuid
 from contextlib import AbstractContextManager

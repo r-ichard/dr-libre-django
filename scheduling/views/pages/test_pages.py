@@ -1,4 +1,4 @@
-"""Task 05a: sign-in screen, role homes, sign-out, error pages, layout, style page."""
+"""Sections 12, 16: sign-in, role homes, sign-out, error pages, layout and style page."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Task 18, item 11 and section 12.3: only an admin reaches the admin console. The routes come from
+"""Section 12.3: only an admin reaches the admin console. The routes come from
 the URL configuration, so a route added later is covered without touching this file."""
 
 import re

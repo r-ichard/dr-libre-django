@@ -1,4 +1,4 @@
-"""Task 23, spec 15.5: date search values with prefixes become half-open ranges."""
+"""Section 15.5: date search values with prefixes become half-open ranges."""
 
 import os
 import time

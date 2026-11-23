@@ -1,4 +1,4 @@
-"""Task 22a, point 10: the database counts and cuts the page; no query loads every match."""
+"""Section 15.5: the database counts and cuts the page; no query loads every match."""
 
 import pytest
 from django.db import connection

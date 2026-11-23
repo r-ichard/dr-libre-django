@@ -1,4 +1,4 @@
-"""Task 15: change password. A wrong current password is a failed sign-in for the lockout."""
+"""Section 12.1: change password; a wrong current password is a failed sign-in for lockout."""
 
 from datetime import UTC, datetime
 from uuid import UUID

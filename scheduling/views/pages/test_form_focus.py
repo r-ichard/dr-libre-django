@@ -1,4 +1,4 @@
-"""Task 17b, #19: focus moves to the first invalid control of every form, once, in the shared
+"""Section 16: focus moves to the first invalid control of every form, once, in the shared
 component. The script looks for the invalid mark every component sets; the pages mark it."""
 
 from __future__ import annotations

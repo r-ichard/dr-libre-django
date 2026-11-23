@@ -1,4 +1,4 @@
-"""Task 14: ordering, paging, wording and the reschedule steps of the patient portal, as a browser
+"""Section 8: ordering, paging, wording and reschedule steps of the portal, as a browser
 sends them. Each test states the behaviour in words, not the shape of the code."""
 
 from __future__ import annotations

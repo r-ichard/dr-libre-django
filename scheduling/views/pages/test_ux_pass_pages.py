@@ -1,4 +1,4 @@
-"""Task 25: wording and order on the sign-in pages, the lockout window, the favicon, the waitlist
+"""Sections 12, 16: wording and order of sign-in pages, lockout window, favicon, waitlist
 accept notice and the time grid's column width. Each test states the behaviour in words."""
 
 from __future__ import annotations

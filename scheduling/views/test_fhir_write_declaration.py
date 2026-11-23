@@ -1,4 +1,4 @@
-"""Task 27d2, items 1, 4, 5, 6: a FHIR write says it is JSON, a reschedule changes only `start`,
+"""Section 15.4: a FHIR write says it is JSON, a reschedule changes only `start`,
 `_sort` serves the date parameters, and a search value reads FHIR's escape for the comma."""
 
 from datetime import timedelta

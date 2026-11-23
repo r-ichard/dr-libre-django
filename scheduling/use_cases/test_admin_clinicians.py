@@ -1,4 +1,4 @@
-"""Task 19, section 10: attach, edit and delete a clinician profile; public search follows."""
+"""Section 10: attach, edit and delete a clinician profile; public search follows."""
 
 from datetime import timedelta
 

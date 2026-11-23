@@ -1,4 +1,4 @@
-"""Task 26b2 items 1 and 2: public reads that compute schedules share one counter per caller
+"""Section 6: public reads that compute schedules share one counter per caller
 (1200 an hour), anonymous FHIR reads another (600). A caller with a session or a token is counted
 by user id, never against its address."""
 

@@ -1,4 +1,4 @@
-"""Task 17e: the seed survives a person using the demo world between two runs."""
+"""Section 16: the seed survives a person using the demo world between two runs."""
 
 from contextlib import AbstractContextManager
 from datetime import UTC, date, datetime, timedelta

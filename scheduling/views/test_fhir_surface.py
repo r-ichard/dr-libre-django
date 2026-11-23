@@ -1,4 +1,4 @@
-"""Task 24d, spec 15.2, 15.4, 15.5: section 15 as data (`fhir_spec_tables`) against the
+"""Sections 15.2, 15.4 and 15.5: section 15 as data (`fhir_spec_tables`) against the
 CapabilityStatement and the running routes, both ways: what the spec names is served, nothing
 else is. A difference from the letter needs an ADR that says so."""
 

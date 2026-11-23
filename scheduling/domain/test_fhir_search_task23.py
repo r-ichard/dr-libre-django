@@ -1,4 +1,4 @@
-"""Task 23, spec 15.5: Slot search needs a start range and a service type."""
+"""Section 15.5: Slot search needs a start range and a service type."""
 
 from scheduling.domain.failure import Failure
 from scheduling.domain.fhir_declaration import declaration_for

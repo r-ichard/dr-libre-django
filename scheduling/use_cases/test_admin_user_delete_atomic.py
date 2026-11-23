@@ -1,4 +1,4 @@
-"""Task 20, item 14: a refused delete of a user changes nothing, even the clean-up before it."""
+"""Section 4: a refused delete of a user changes nothing, even the clean-up before it."""
 
 from collections.abc import Callable
 from uuid import UUID

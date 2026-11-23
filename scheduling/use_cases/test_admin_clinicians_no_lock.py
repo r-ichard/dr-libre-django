@@ -1,4 +1,4 @@
-"""Task 21, item 16: checking a form that is not saved takes no row lock."""
+"""Checking a form that is not saved takes no row lock."""
 
 import pytest
 from django.db import connection

@@ -1,4 +1,4 @@
-"""Task 17f: blocks that share a column get lanes; touching blocks do not share."""
+"""Section 9: blocks that share a column get lanes; touching blocks do not share."""
 
 
 def _lanes(intervals: list[tuple[int, int]]) -> list[tuple[int, int]]:

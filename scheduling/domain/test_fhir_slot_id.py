@@ -1,4 +1,4 @@
-"""Task 23, spec 15.6: a slot id is built from schedule, type and start only, and parses back."""
+"""Section 15.6: slot id built from schedule, type and start only, and parses back."""
 
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4

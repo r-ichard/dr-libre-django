@@ -1,4 +1,4 @@
-"""Task 21, item 10: the export's read and its audit entry are one transaction."""
+"""Section 13: the export's read and its audit entry are one transaction."""
 
 import pytest
 

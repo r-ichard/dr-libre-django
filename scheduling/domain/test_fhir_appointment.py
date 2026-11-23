@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.3: the three origins of an `Appointment`, stated as exact bodies."""
+"""Section 15.3: the three origins of an `Appointment`, stated as exact bodies."""
 
 import time
 from datetime import UTC, datetime, timedelta, timezone

@@ -1,4 +1,4 @@
-"""Task 18, section 10: a dependent that appears after the count and before the delete."""
+"""Section 10: a dependent that appears after the count and before the delete."""
 
 from uuid import UUID
 

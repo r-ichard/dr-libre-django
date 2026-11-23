@@ -1,4 +1,4 @@
-"""Task 26a2 items 6 and 7: one browser that makes two holds in two tabs completes both. The cookie
+"""Section 7.5: one browser that makes two holds in two tabs completes both. The cookie
 proves every hold its browser made that has not expired, stays HttpOnly and stays small."""
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""Task 24c: a clinician's token updates the own PractitionerRole.notAvailable and nothing else
+"""Section 15.4: a clinician's token updates own PractitionerRole.notAvailable, nothing else
 (spec 15.4). Time off is recorded and removed, never edited."""
 
 from datetime import timedelta

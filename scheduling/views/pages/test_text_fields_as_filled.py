@@ -1,4 +1,4 @@
-"""Task 27a2, item 2: every post form the product renders, signed out and as each role. A
+"""Section 16: every post form the product renders, signed out and as each role. A
 textarea takes `\\r\\n`, an empty line and a tab without a refusal; a one-line input refuses a
 line break on that field and says it takes one line."""
 

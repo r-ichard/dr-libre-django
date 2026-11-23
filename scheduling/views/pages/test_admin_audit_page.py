@@ -1,4 +1,4 @@
-"""Task 20, items 9, 10 and 12: the read-only audit list, and its speed on a log of 50 000."""
+"""Section 10: the read-only audit list, and its speed on a log of 50 000."""
 
 import re
 import time

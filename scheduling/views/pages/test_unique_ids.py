@@ -1,4 +1,4 @@
-"""Task 17c, #28: an id is unique on every page the product renders. Each page route needs a
+"""Section 16: an id is unique on every page the product renders. Each page route needs a
 fixture here, so a new page cannot skip the check."""
 
 from __future__ import annotations

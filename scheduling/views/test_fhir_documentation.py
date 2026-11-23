@@ -1,4 +1,4 @@
-"""Task 24d, items 4 and 5: every open point of ADR 0005 to 0007 is closed or is a question for the
+"""Section 17: every open point of ADR 0005 to 0007 is closed or is a question for the
 owner, collected at the end of ADR 0007; the README shows the FHIR API with commands that run."""
 
 import re

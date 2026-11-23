@@ -1,4 +1,4 @@
-"""Task 21, #14: the audited record types come from one registry."""
+"""Section 4: the audited record types come from one registry."""
 
 
 def returns_lists_sign_in_link_among_audited_entity_types() -> None:

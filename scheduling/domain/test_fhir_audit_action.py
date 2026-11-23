@@ -1,4 +1,4 @@
-"""Task 24a, point 1: `AuditEvent.action` is a code of the R4 value set AuditEventAction."""
+"""Section 15.2: `AuditEvent.action` is a code of the R4 value set AuditEventAction."""
 
 import pytest
 

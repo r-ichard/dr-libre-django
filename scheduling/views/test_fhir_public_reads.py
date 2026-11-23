@@ -1,4 +1,4 @@
-"""Task 22, spec 15.1, 15.2, 15.4: the public FHIR door, read and search, no token."""
+"""Sections 15.1, 15.2 and 15.4: the public FHIR door, read and search, no token."""
 
 from typing import TYPE_CHECKING
 

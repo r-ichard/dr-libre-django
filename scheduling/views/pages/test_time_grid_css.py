@@ -1,4 +1,4 @@
-"""Task 17c, #25 and #30: no browser in the sandbox, so the alignment and containment of the time
+"""Section 16: no browser in the sandbox, so the alignment and containment of the time
 grid are proved from the rendered markup and the style sheet. Pixels stay unmeasured."""
 
 import re

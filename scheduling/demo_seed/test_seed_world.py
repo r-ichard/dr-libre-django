@@ -1,4 +1,4 @@
-"""Task 17d: the seeded world obeys the rules the product enforces."""
+"""Section 16: the seeded world obeys the rules the product enforces."""
 
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo

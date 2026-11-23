@@ -1,4 +1,4 @@
-"""Task 17b, #17: a caller with no session, and a patient, see only what the public search shows.
+"""Section 6: a caller with no session, and a patient, see only what public search shows.
 Staff keep the types that are not bookable online (section 10, "Book for a patient")."""
 
 from datetime import UTC, datetime, time

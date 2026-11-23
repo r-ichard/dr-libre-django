@@ -1,4 +1,4 @@
-"""Task 26a item 5: public search is limited per network address (120 an hour, the mechanism of
+"""Section 6: public search is limited per network address (120 an hour, the mechanism of
 task 12) and its query count does not grow with the catalogue. The address is REMOTE_ADDR, so
 callers behind one proxy share a count; proxy trust is task 26."""
 

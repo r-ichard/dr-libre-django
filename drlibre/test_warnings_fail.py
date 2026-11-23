@@ -1,4 +1,4 @@
-"""Task 10a: a warning raised in any test fails the suite, so the next one is caught early."""
+"""A warning raised in any test fails the suite, so the next one is caught early."""
 
 import subprocess
 import sys

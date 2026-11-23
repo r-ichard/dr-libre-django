@@ -1,4 +1,4 @@
-"""Task 24c2: the first coding's code of a concept, as the location kind and the department
+"""Section 15.2: a concept's first coding code, as the location kind and the department
 type read it. Expected values come from FHIR R4 CodeableConcept: `coding` is a list, the
 first entry is the one read, a missing or malformed part reads as no code."""
 

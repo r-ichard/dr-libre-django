@@ -1,4 +1,4 @@
-"""Task 21, #4 and #3: the dates of a report range and what today is."""
+"""Section 13: the dates of a report range and what today is."""
 
 from datetime import UTC, date, datetime
 

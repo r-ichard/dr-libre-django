@@ -1,4 +1,4 @@
-"""Task 09 item 8: each job runs in its own transaction, correlation id and instant, logs one JSON
+"""Section 4: each job has its own transaction, correlation id and instant, and logs one JSON
 line with its counts, and a failure neither escapes nor touches the next job."""
 
 import json

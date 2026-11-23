@@ -1,4 +1,4 @@
-"""Task 26a (#47): an answer that depends on who asks is never stored and says what it varies on."""
+"""Section 14: an answer varying by caller is never stored, and says what it varies on."""
 
 from datetime import UTC, datetime
 

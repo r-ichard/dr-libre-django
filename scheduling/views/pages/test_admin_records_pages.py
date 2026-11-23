@@ -1,4 +1,4 @@
-"""Task 18, section 10: the admin record pages as a browser uses them (cross-site check on,
+"""Section 10: the admin record pages as a browser uses them (cross-site check on,
 `Origin` set). One flow serves five records, so the cases run over the kinds where they can."""
 
 import re

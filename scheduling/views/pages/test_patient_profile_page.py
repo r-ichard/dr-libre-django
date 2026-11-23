@@ -1,4 +1,4 @@
-"""Task 15: the profile and change-password pages, as a browser sends them."""
+"""Section 8: the profile and change-password pages, as a browser sends them."""
 
 from __future__ import annotations
 

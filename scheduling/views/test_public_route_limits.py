@@ -1,4 +1,4 @@
-"""Task 26b2 item 3: every route that answers without a session or token has a limit or a reason."""
+"""Section 14: every route answering without session or token has a limit or a reason."""
 
 import re
 import uuid

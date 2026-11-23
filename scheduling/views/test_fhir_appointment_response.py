@@ -1,4 +1,4 @@
-"""Task 24, spec 15.2, 15.4, 5.8: a waitlist offer is accepted through `AppointmentResponse`, by the
+"""Sections 5.8, 15.2, 15.4: a waitlist offer accepted via `AppointmentResponse`, by the
 `accept_offer` use case, as a FHIR client sends it (bearer token, no cookie, no Origin)."""
 
 from datetime import datetime

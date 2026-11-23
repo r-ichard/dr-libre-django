@@ -1,4 +1,4 @@
-"""Task 18 and 17c: every audit action an admin record write can produce has plain words."""
+"""Section 10: every audit action an admin record write can produce has plain words."""
 
 import pytest
 

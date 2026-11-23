@@ -1,4 +1,4 @@
-"""Task 20, item 8: an offer needs the clinician, the room and the patient free, at the offer
+"""Section 5.8: an offer needs the clinician, the room and the patient free, at the offer
 and again when the job checks whether it went stale."""
 
 from collections.abc import Iterator

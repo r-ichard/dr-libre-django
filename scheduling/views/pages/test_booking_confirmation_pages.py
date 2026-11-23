@@ -1,4 +1,4 @@
-"""Task 12a, confirmation and calendar file: only for the appointment's patient."""
+"""Section 7.1: the confirmation and calendar file, only for the appointment's patient."""
 
 from __future__ import annotations
 

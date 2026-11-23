@@ -1,4 +1,4 @@
-"""Task 20, items 6 and 7: the admin waitlist as a browser uses it. Routes:
+"""Section 10: the admin waitlist as a browser uses it. Routes:
 /admin-console/waitlist[/new|/<id>/offer|/<id>/accept]."""
 
 from datetime import UTC, datetime, timedelta

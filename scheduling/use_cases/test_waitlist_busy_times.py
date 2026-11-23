@@ -1,4 +1,4 @@
-"""Task 21, item 15: busy cancelled times are left out in the query, so the first row is the
+"""Section 5.8: busy cancelled times are left out in the query, so the first row is the
 first that fits, however many unusable times come before it."""
 
 from collections.abc import Iterator

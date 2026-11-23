@@ -1,4 +1,4 @@
-"""Task 09 item 8: the email job runs with no outer transaction. Needs real commits, so the test
+"""Section 4: the email job runs outside any transaction. Needs real commits, so the test
 transaction cannot wrap it."""
 
 from datetime import UTC, datetime

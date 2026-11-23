@@ -1,4 +1,4 @@
-"""Task 23, spec 15.5: why a start is busy, and which reason wins."""
+"""Section 15.5: why a start is busy, and which reason wins."""
 
 from datetime import UTC, datetime, timedelta
 

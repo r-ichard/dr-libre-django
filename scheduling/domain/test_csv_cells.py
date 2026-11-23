@@ -1,4 +1,4 @@
-"""Task 21, #9: a spreadsheet must never read an exported cell as a formula."""
+"""Section 13: a spreadsheet never reads an exported cell as a formula."""
 
 import pytest
 

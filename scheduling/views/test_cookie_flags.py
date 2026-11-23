@@ -1,4 +1,4 @@
-"""Task 26b item 2 and 3a: with DEBUG off every cookie the product sets is Secure, HttpOnly and
+"""Sections 12.2, 16: with DEBUG off every cookie the product sets is Secure, HttpOnly and
 SameSite, whether HTTPS_ONLY is on or off. Deleting cookies carry an empty value and are skipped:
 they hold nothing a script or another site could use."""
 

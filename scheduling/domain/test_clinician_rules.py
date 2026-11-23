@@ -1,4 +1,4 @@
-"""Task 19, sections 3.2 and 10: the clinician profile rules that need no stored data."""
+"""Sections 3.2 and 10: the clinician profile rules that need no stored data."""
 
 from datetime import time
 

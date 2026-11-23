@@ -1,4 +1,4 @@
-"""Task 17a: an input the product does not expect is refused at the boundary, never a 500."""
+"""Section 4: an unexpected input is refused at the boundary, never a 500."""
 
 from __future__ import annotations
 

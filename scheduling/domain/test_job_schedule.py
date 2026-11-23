@@ -1,4 +1,4 @@
-"""Task 09: the worker's only decision, whether a job's interval has elapsed."""
+"""The worker's only decision: whether a job's interval has elapsed."""
 
 from datetime import UTC, datetime, timedelta
 

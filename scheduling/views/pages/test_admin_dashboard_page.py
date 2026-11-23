@@ -1,4 +1,4 @@
-"""Task 21, items 4 to 7 and 13: the admin dashboard as a browser uses it. Route:
+"""Sections 10 and 13: the admin dashboard as a browser uses it. Route:
 /admin-console/?range=today|7|30. NOW is 2030-01-07 06:00 UTC, a Monday, at a UTC hospital."""
 
 import re

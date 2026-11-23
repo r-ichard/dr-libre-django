@@ -1,4 +1,4 @@
-"""Task 26b item 1: with DEBUG off, start-up refuses unsafe values with one message."""
+"""With DEBUG off, start-up refuses unsafe values with one message."""
 
 import importlib
 import os

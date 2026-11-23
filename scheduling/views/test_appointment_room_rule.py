@@ -1,4 +1,4 @@
-"""Task 17b, #16: section 5.2 step 5, "Types that need no room get none", for a staff booking
+"""Section 5.2: step 5, "Types that need no room get none", for a staff booking
 that names a room."""
 
 from __future__ import annotations

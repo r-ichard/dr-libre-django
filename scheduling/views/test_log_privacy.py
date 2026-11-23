@@ -1,4 +1,4 @@
-"""Task 26b item 9, section 11: every log line of one booking, one sign-in by link, one admin user
+"""Section 16: every log line of one booking, one sign-in by link, one admin user
 edit and one FHIR patient read, read as the formatter writes it. No personal value or secret in
 any of them."""
 

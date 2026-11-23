@@ -1,4 +1,4 @@
-"""Task 15: one portal navigation on the five sections, and the refusal for a week strip."""
+"""Section 8: one portal navigation on five sections, and the refusal for a week strip."""
 
 from __future__ import annotations
 

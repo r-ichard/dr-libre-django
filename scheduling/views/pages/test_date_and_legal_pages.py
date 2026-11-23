@@ -1,4 +1,4 @@
-"""Task 25b: terms and privacy pages, the date of birth as three fields, as a browser sends them."""
+"""Terms and privacy pages, the date of birth as three fields, as a browser sends them."""
 
 from __future__ import annotations
 

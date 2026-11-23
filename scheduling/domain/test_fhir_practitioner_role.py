@@ -1,4 +1,4 @@
-"""Task 24c2: a clinician profile as a PractitionerRole. Expected values come from FHIR R4
+"""Section 15.2: a clinician profile as a PractitionerRole; expected values from FHIR R4
 `PractitionerRole.notAvailable`: `description` and `during`, a Period with start and end."""
 
 from datetime import UTC, datetime

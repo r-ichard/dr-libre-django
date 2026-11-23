@@ -1,4 +1,4 @@
-"""Task 04b, section 4: the audit writer, same transaction in both directions."""
+"""Section 4: the audit writer, same transaction in both directions."""
 
 from datetime import UTC, datetime
 

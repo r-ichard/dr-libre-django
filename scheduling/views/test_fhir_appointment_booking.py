@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.6 items 6, 7 and 11: every way to book over FHIR, and every refusal of the
+"""Section 15.6: every way to book over FHIR, and every refusal of the
 booking use case reaching the client as an OperationOutcome that names it."""
 
 from datetime import timedelta

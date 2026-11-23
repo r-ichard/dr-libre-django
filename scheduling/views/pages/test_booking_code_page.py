@@ -1,4 +1,4 @@
-"""Task 12a, code page: masked address, wrong code, expiry, resend."""
+"""Section 7.1: the code page: masked address, wrong code, expiry, resend."""
 
 from __future__ import annotations
 

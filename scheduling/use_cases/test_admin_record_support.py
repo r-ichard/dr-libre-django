@@ -1,4 +1,4 @@
-"""Task 18: shared set-up of the admin record use case tests."""
+"""Shared set-up of the admin record use case tests."""
 
 from collections.abc import Callable
 from datetime import UTC, datetime

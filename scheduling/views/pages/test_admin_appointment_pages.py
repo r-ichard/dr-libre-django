@@ -1,4 +1,4 @@
-"""Task 20, items 1, 2 and 5: the admin appointment list and the appointment page, as a browser
+"""Section 10: the admin appointment list and the appointment page, as a browser
 sends them. Routes: /admin-console/appointments[/<id>[/<action>]]."""
 
 import re

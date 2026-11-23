@@ -1,4 +1,4 @@
-"""Task 14: what a patient may do with an appointment, and the plain words when not."""
+"""Section 8: what a patient may do with an appointment, and the plain words when not."""
 
 from datetime import UTC, datetime, timedelta
 

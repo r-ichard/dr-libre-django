@@ -1,4 +1,4 @@
-"""Task 12a, details and review: the form, the hold, the patient shortcut."""
+"""Section 7.1: the details and review form, the hold, the patient shortcut."""
 
 from __future__ import annotations
 

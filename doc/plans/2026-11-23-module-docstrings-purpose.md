@@ -1,5 +1,7 @@
 # Module docstrings say what the module is for (task 26c item 14, first part)
 
+> Superseded for the section rule by `doc/plans/2026-11-23-task-26c-item-14-test-docstrings.md` (decision 5 there). Do not run this plan as written: it forbids spec sections where none was named. Its product-module scope needs a fresh plan.
+
 Slice: item 14, first part. First lines of the 114 product module docstrings that begin with a task number. Nothing else. Process: `tests-and-docs` (no behaviour change, no red gate, 27a3).
 
 ## Focal point

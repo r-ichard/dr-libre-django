@@ -1,4 +1,4 @@
-"""Task 20, items 3 to 5: an admin books for a patient and reschedules, as a browser sends it."""
+"""Section 10: an admin books for a patient and reschedules, as a browser sends it."""
 
 from datetime import UTC, datetime, timedelta
 from urllib.parse import quote

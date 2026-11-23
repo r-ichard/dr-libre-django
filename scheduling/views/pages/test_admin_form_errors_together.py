@@ -1,4 +1,4 @@
-"""Task 20, item 16: one submission reports every error, not one round per error."""
+"""Section 4: one submission reports every error, not one round per error."""
 
 import re
 

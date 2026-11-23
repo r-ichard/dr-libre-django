@@ -1,4 +1,4 @@
-"""Task 23a, point 13: a link the server writes is a request the server accepts. Following `next`
+"""Section 15.5: a link the server writes is a request it accepts. Following `next`
 from the first page collects exactly `total` entries, each once."""
 
 import pytest

@@ -1,4 +1,4 @@
-"""Task 22a, point 3: every sample /fhir can answer is free of empty arrays, objects, strings and
+"""Section 15.1: every sample /fhir answers is free of empty arrays, objects, strings and
 nulls, the rule the HL7 validator enforces in `make fhir-validate`."""
 
 import pytest

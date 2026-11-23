@@ -1,4 +1,4 @@
-"""Task 23, spec 15.2, 15.5, 15.6: Slot is computed from the shared use case, never stored. A start
+"""Sections 15.2, 15.5, 15.6: Slot is computed by the use case, never stored. A start
 range of 31 days at most is required; busy statuses are for staff; the id reads a slot back."""
 
 from datetime import UTC, datetime, time, timedelta

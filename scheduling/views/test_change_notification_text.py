@@ -1,4 +1,4 @@
-"""Task 17b, #23: the notification of a cancelled or rescheduled appointment says what happened
+"""Section 11: the notification of a cancelled or moved appointment says what happened
 and when, in the written date format of the pages. The text carries the time only (section 11)."""
 
 from __future__ import annotations

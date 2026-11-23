@@ -1,4 +1,4 @@
-"""Task 25d, item 1: a page title is plain text, no cross-site token sits outside a form, and
+"""Section 16: a page title is plain text, no cross-site token sits outside a form, and
 no two pages share a title. Each test states the behaviour in words."""
 
 from __future__ import annotations

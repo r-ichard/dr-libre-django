@@ -1,4 +1,4 @@
-"""Task 25, item 13: every page the product can render, signed out and as each role, meets the
+"""Section 16: every page the product can render, signed out and as each role, meets the
 accessibility floor of section 16. Routes come from the URL configuration, so a new page is
 walked without anyone listing it."""
 

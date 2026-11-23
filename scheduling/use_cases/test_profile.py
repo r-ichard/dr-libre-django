@@ -1,4 +1,4 @@
-"""Task 15: a patient edits phone and date of birth; the audit names fields, never values."""
+"""Section 8: a patient edits phone and birth date; the audit names fields, not values."""
 
 import json
 from datetime import UTC, date, datetime

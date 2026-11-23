@@ -1,4 +1,4 @@
-"""Task 22, spec 15.2: the mapping table, one resource at a time, stated as exact bodies."""
+"""Section 15.2: the mapping table, one resource at a time, stated as exact bodies."""
 
 from datetime import UTC, datetime, time
 from uuid import UUID

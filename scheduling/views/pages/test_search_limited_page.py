@@ -1,4 +1,4 @@
-"""Task 26a2 items 3 and 4: a limited visitor gets the search page itself with status 429, every
+"""Section 6: a limited visitor gets the search page itself with status 429, every
 way on it answers, and every 429 says in seconds when to come back."""
 
 from __future__ import annotations

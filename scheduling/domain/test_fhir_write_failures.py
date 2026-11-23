@@ -1,4 +1,4 @@
-"""Task 23, spec 4 and 15.1: one table gives every failure code its HTTP status and issue code."""
+"""Sections 4, 15.1: one table gives every failure code its HTTP status and issue code."""
 
 import pytest
 

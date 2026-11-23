@@ -1,4 +1,4 @@
-"""Task 04b, section 4: audit metadata can hold only ids, counts, statuses, field names and an
+"""Section 4: audit metadata holds only ids, counts, statuses and field names, and an
 email domain. Each forbidden kind (name, email, phone, birth date, reason, note) is tried."""
 
 from datetime import date

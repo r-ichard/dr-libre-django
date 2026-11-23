@@ -1,4 +1,4 @@
-"""Task 18, section 10: create, update and delete of the five admin records."""
+"""Section 10: create, update and delete of the five admin records."""
 
 import json
 from uuid import UUID, uuid4

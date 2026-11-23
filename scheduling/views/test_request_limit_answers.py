@@ -1,4 +1,4 @@
-"""Task 17b, leftovers of 17a: a bad Content-Length header is a value in the contract, and a
+"""Section 4: a bad Content-Length header is a value in the contract, and a
 page refused for its size answers in the product's layout with a correlation id."""
 
 from __future__ import annotations

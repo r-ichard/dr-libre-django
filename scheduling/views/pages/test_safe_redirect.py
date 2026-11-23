@@ -1,4 +1,4 @@
-"""Task 05a: the sign-in `next` parameter may only ever lead to a local path."""
+"""Section 12.1: the sign-in `next` parameter may only ever lead to a local path."""
 
 import pytest
 

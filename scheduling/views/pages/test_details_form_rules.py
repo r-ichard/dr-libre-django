@@ -1,4 +1,4 @@
-"""Task 17b, #20, #21 and #24: the details form refuses a time that is not offered before it
+"""Section 7.1: the details form refuses a time that is not offered before it
 shows, reports every error in one answer, applies the phone rule and keeps what was typed when
 the time was taken meanwhile."""
 

@@ -1,4 +1,4 @@
-"""Task 27a, finding #38: one text rule for every text a write accepts."""
+"""Section 4: one text rule for every text a write accepts."""
 
 import pytest
 

@@ -1,4 +1,4 @@
-"""Task 22, spec 15.1, 15.5: reading a search against the declaration, bundles and outcomes."""
+"""Sections 15.1, 15.5: reading a search against the declaration, bundles and outcomes."""
 
 from datetime import UTC, datetime
 from uuid import UUID

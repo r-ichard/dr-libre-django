@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.6: a write body read as one command, or the FHIR path of the first refusal."""
+"""Section 15.6: a write body read as one command, or the path of the first refusal."""
 
 from datetime import UTC, datetime
 from uuid import UUID

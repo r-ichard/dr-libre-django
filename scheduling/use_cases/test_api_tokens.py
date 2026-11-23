@@ -1,4 +1,4 @@
-"""Task 22, spec 15.4: API tokens are issued, resolved and revoked; only a hash is stored, every
+"""Section 15.4: API tokens are issued, resolved and revoked; only a hash is stored, every
 step is audited with ids only, and failed attempts are limited."""
 
 import logging

@@ -1,4 +1,4 @@
-"""Task 26a (#48): a write to /api/v1 takes JSON only; any other media type is refused before the
+"""Section 14: a write to /api/v1 takes JSON only; other media types are refused before the
 body is read, since a browser sends text/plain across sites without a preflight."""
 
 from datetime import UTC, datetime

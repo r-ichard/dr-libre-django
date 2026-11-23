@@ -1,4 +1,4 @@
-"""Task 26b3 item 1: who may call each /api/v1 route, and the answer each caller gets (visitor,
+"""Who may call each /api/v1 route (spec §14), and the answer each caller gets (visitor,
 patient, clinician, admin). Data only: nothing reads it at runtime. Own record only; another user's
 record is checked by the walk of item 3."""
 

@@ -1,4 +1,4 @@
-"""Task 18, sections 3.1 and 10: the checks of the admin forms that a column cannot say."""
+"""Sections 3.1 and 10: the checks of the admin forms that a column cannot say."""
 
 import pytest
 

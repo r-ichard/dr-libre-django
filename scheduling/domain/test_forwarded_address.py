@@ -1,4 +1,4 @@
-"""Task 26b item 3: the caller's address behind a counted number of trusted proxies."""
+"""The caller's address behind a counted number of trusted proxies."""
 
 import importlib
 

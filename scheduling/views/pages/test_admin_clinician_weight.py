@@ -1,4 +1,4 @@
-"""Task 27a, finding #33: the clinician form refuses a weight beyond its column."""
+"""Section 10: the clinician form refuses a weight beyond its column."""
 
 import pytest
 

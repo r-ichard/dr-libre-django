@@ -1,4 +1,4 @@
-"""Task 27b item 10, issue #36: saving a hospital with another time zone asks the admin first,
+"""Section 4: saving a hospital with another time zone asks the admin first,
 naming the upcoming appointments that would show another local time. Browser-shaped posts."""
 
 from datetime import UTC, datetime, timedelta

@@ -1,4 +1,4 @@
-"""Task 10a: a specialty code maps to one vendored icon, a fallback otherwise."""
+"""A specialty code maps to one vendored icon, a fallback otherwise."""
 
 
 def returns_fallback_icon_when_specialty_code_is_unknown() -> None:

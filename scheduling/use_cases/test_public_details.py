@@ -1,4 +1,4 @@
-"""Task 11: the three public details answer not found for anything search would not list, and the
+"""Section 6.6: the three public details answer not found for unlisted results, and the
 cost of a hospital does not grow with its providers."""
 
 from collections.abc import Iterator

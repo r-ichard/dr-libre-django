@@ -1,4 +1,4 @@
-"""Task 23, spec 12.3, 15.4, 15.5: Patient is personal data. Each caller reads only what the role
+"""Sections 12.3, 15.4, 15.5: Patient is personal data. Each caller reads what the role
 allows, an answer never tells whether another patient exists, every answer is no-store, and no
 record value reaches a log."""
 

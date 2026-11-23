@@ -1,4 +1,4 @@
-"""Task 22a, spec 15.1, 15.4: /fhir is a bearer-token door for a server client. The client sends
+"""Sections 15.1, 15.4: /fhir is a bearer-token door for a server client. The client sends
 a token, no cookie and no Origin; the cross-site check is enforced, as in a browser."""
 
 from typing import TYPE_CHECKING

@@ -1,4 +1,4 @@
-"""Task 25c, item 2: which fields the conflict page lists, and what each row holds. The truth
+"""Section 10: which fields the conflict page lists, and what each row holds. The truth
 table of the plan, one case per row; what the admin read may be unknown (the form posted no
 `read_` key), which is its own value and never an empty string."""
 

@@ -1,4 +1,4 @@
-"""Task 24b2, point 4: two admins write the specialty list at the same moment, each in its own
+"""Section 15.4: two admins write the specialty list at the same moment, each in its own
 connection and transaction. The list holds what one of them sent, never a mix."""
 
 import json

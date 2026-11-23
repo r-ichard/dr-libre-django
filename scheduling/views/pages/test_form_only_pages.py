@@ -1,4 +1,4 @@
-"""Task 27b item 6 (#42): a form-only address never leads a browser to a GET that refuses, and a
+"""A form-only address never leads a browser to a GET that refuses, and a
 refused method of a page answers a product page whose Allow header lists what it accepts."""
 
 from __future__ import annotations

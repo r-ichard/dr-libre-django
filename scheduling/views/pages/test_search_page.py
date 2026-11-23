@@ -1,4 +1,4 @@
-"""Task 10a: the root path is the public search, server-rendered from a plain GET form."""
+"""Section 6: the root path is the public search, rendered from a plain GET form."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Task 26b3 item 2: the access table lists every /api/v1 route, and no row names a gone route."""
+"""The /api/v1 access table (spec §14) lists every route, and no row names a gone route."""
 
 from collections.abc import Iterator
 

@@ -1,4 +1,4 @@
-"""Task 17: the shared time grid puts items on the 07:00 to 19:00 axis and keeps the rest apart."""
+"""Section 9: the time grid places items on the 07:00 to 19:00 axis; the rest stay apart."""
 
 from datetime import UTC, datetime, timedelta
 

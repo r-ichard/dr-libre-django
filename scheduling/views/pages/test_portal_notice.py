@@ -1,4 +1,4 @@
-"""Task 17b, #22: the portal's "Done" notice comes from what the server just did, shown once,
+"""Section 8: the portal's "Done" notice comes from what the server just did, shown once,
 and never from a value in the address."""
 
 from __future__ import annotations

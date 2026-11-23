@@ -1,4 +1,4 @@
-"""Task 26 item 3a, task 26a2 item 5: the hold counter (five an hour for one email address) and the
+"""Section 7.5: the hold counter (five an hour for one email address) and the
 resend counter (three an hour) are serialised, as the sign-in counter is."""
 
 import pytest

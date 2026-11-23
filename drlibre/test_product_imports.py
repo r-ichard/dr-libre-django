@@ -1,4 +1,4 @@
-"""Task 26c item 14: product code never imports the test-only support package."""
+"""Product code never imports the test-only support package."""
 
 import ast
 from pathlib import Path

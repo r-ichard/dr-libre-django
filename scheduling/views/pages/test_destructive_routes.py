@@ -1,4 +1,4 @@
-"""Task 25c, item 5: a route that destroys confirms first. A GET changes nothing; a POST without a
+"""Section 16: a destructive route confirms first. A GET changes nothing; a POST without a
 valid token, or from another site, answers 403 and changes nothing. Routes come from the URL
 configuration by last segment, so a new one is covered."""
 

@@ -1,4 +1,4 @@
-"""Task 24b: the unique code a client reads back and sends on a write, on every record resource."""
+"""Section 15.2: the unique code a client reads and sends back on any record resource."""
 
 from datetime import UTC, datetime
 from uuid import uuid4

@@ -1,4 +1,4 @@
-"""Task 19, section 10: create, edit, deactivate and delete of a user, by an admin."""
+"""Section 10: create, edit, deactivate and delete of a user, by an admin."""
 
 import logging
 from datetime import timedelta

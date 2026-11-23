@@ -1,4 +1,4 @@
-"""Task 25b: no notification or email a person reads holds an ISO date."""
+"""Sections 7.6 and 11: no notification or email a person reads holds an ISO date."""
 
 from __future__ import annotations
 

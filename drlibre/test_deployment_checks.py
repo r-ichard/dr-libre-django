@@ -1,4 +1,4 @@
-"""Task 04b, section 16: Django's deployment checks pass on production-like values, and an
+"""Section 16: deployment checks pass on production-like values, and an
 unsafe value (the development key, HTTPS off) fails them."""
 
 import os

@@ -1,4 +1,4 @@
-"""Task 21, item 17: every admin action that changes something answers with a notice that says
+"""Section 10: every admin action that changes something answers with a notice that says
 what was done and for whom, shown once. The guard lists the POST routes of the console by view
 class, so a new action without a notice fails here."""
 

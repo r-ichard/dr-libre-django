@@ -1,4 +1,4 @@
-"""Task 25d, items 2 and 3: every status is a badge with a word wherever it is rendered, and
+"""Sections 5.6 and 16: every status is a badge with a word wherever it is rendered, and
 every list page says what is missing when it has nothing to show."""
 
 from __future__ import annotations

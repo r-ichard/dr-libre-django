@@ -1,4 +1,4 @@
-"""Task 17c, #26: a period cut into the part that falls in each local day."""
+"""Section 4: a period cut into the part that falls in each local day."""
 
 from datetime import UTC, date, datetime
 

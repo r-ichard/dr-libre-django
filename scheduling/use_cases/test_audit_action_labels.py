@@ -1,4 +1,4 @@
-"""Task 17c, #27: every audit action the product writes has plain words in the history."""
+"""Section 10: every audit action the product writes has plain words in the history."""
 
 import ast
 import re

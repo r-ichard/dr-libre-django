@@ -1,4 +1,4 @@
-"""Task 05: how a session was opened is a closed list of kinds."""
+"""Section 12.2: how a session was opened is a closed list of kinds."""
 
 import pytest
 

@@ -1,4 +1,4 @@
-"""Task 24a, points 1 and 5: the product action stays in `type`, `action` is one code, and
+"""Section 15.2: the product action stays in `type`, `action` is one code, and
 `entity.detail` serves only the keys `AuditMetadata` can emit."""
 
 from datetime import UTC, datetime

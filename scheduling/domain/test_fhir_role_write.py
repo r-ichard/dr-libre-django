@@ -1,4 +1,4 @@
-"""Task 24c: the PractitionerRole write body read as profile fields and time off changes. The
+"""Section 15.4: a PractitionerRole write body read as profile and time-off changes. The
 expected values restate spec 15.2 and 15.4, not the code."""
 
 from datetime import UTC, datetime, timedelta

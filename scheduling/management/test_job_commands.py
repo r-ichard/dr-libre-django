@@ -1,4 +1,4 @@
-"""Task 09 item 8: each job is a management command that runs alone and prints its counts.
+"""Each job is a management command that runs alone and prints its counts.
 The commands read the real clock, so the rows here are built around it."""
 
 from datetime import UTC, datetime, timedelta

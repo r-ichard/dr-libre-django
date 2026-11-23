@@ -1,4 +1,4 @@
-"""Task 23, spec 15.2, 15.4: Schedule writes by the owning clinician only, through the use cases of
+"""Sections 15.2, 15.4: Schedule writes by the owning clinician only, via the use cases of
 task 17, and PractitionerRole.availableTime and the application slots following every write."""
 
 import pytest

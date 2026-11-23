@@ -1,4 +1,4 @@
-"""Task 25c, item 1: every admin table is one component. Wrappers are keyboard-reachable and
+"""Section 16: every admin table is one component. Wrappers are keyboard-reachable and
 labelled by their caption; each cell names its column for the card layout under 40rem."""
 
 import re

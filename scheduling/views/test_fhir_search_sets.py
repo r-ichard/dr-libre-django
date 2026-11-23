@@ -1,4 +1,4 @@
-"""Task 27d, slice 1, spec 15.5: a search answers the set its parameters name: dates by their
+"""Section 15.5: a search answers the set its parameters name: dates by their
 FHIR prefix, a comma as "either", a closed code list as 400, a NUL byte as 400."""
 
 from collections.abc import Callable

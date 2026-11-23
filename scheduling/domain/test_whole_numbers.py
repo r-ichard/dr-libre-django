@@ -1,4 +1,4 @@
-"""Task 27a, finding #33: every whole number has the bounds of its column."""
+"""Every whole number has the bounds of its column."""
 
 import pytest
 

@@ -1,4 +1,4 @@
-"""Task 25b: one way to write a moment for a person, the zone always named."""
+"""Section 4: one way to write a moment for a person, the zone always named."""
 
 from datetime import UTC, datetime
 from zoneinfo import ZoneInfo

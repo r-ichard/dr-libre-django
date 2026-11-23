@@ -1,4 +1,4 @@
-"""Task 26b item 3: a forwarded header changes the scheme or the rate-limit address only when a
+"""Section 16: a forwarded header changes the scheme or the rate-limit address only when a
 trusted proxy count says a proxy wrote it. The two untrusted cases guard what already holds."""
 
 from datetime import UTC, datetime

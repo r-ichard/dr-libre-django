@@ -1,4 +1,4 @@
-"""Task 10a: vendored icons with their source recorded, and the spacing the booking pages need."""
+"""Vendored icons with their source recorded, and the spacing the booking pages need."""
 
 import re
 from pathlib import Path

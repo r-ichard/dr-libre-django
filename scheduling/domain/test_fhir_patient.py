@@ -1,4 +1,4 @@
-"""Task 23, spec 15.4, 15.5, 15.2: a patient changes phone and birth date only; any other element
+"""Sections 15.2, 15.4, 15.5: a patient changes phone and birth date only; any other element
 that differs from the stored record is named."""
 
 from datetime import date

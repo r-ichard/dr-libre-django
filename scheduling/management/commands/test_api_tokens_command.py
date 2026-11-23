@@ -1,4 +1,4 @@
-"""Task 22, spec 15.4: the token command shows the token once and never again."""
+"""Section 15.4: the token command shows the token once and never again."""
 
 import logging
 from io import StringIO

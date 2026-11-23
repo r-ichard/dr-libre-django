@@ -1,4 +1,4 @@
-"""Task 27d: reading a search value: "either" by comma, closed code lists, NUL characters."""
+"""Section 15.5: a search value: "either" by comma, closed code lists, NUL characters."""
 
 import pytest
 

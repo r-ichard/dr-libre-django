@@ -1,4 +1,4 @@
-"""Task 24c3: admin writes of Practitioner as a FHIR client sends them (bearer token, no cookie,
+"""Section 15.4: admins write Practitioner as clients send them (bearer token, no cookie,
 no Origin). Expected values come from the plan, ADR 0009 and spec 15.4."""
 
 from typing import TYPE_CHECKING

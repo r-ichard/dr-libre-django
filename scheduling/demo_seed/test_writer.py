@@ -1,4 +1,4 @@
-"""Task 03: what the seeded world contains, and that running it again changes nothing."""
+"""Section 16: what the seeded world contains, and that a rerun changes nothing."""
 
 from datetime import date, timedelta
 from zoneinfo import ZoneInfo

@@ -1,4 +1,4 @@
-"""Task 24, spec 15.2, 15.4, 15.5: `AuditEvent` is the audit log, read by an admin only and
+"""Sections 15.2, 15.4 and 15.5: `AuditEvent` is the audit log, read by an admin only and
 never written."""
 
 import json

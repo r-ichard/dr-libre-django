@@ -1,4 +1,4 @@
-"""Task 19, section 10: the user and clinician pages as a browser uses them (cross-site check
+"""Section 10: the user and clinician pages as a browser uses them (cross-site check
 on, `Origin` set), the deactivation step, the read-only calendar and the password page."""
 
 import logging

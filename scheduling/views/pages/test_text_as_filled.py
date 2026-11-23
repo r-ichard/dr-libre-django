@@ -1,4 +1,4 @@
-"""Task 27a2: a text as a browser sends it from a form (`\\r\\n` line breaks), and the message a
+"""Section 4: text a browser sends from a form, `\\r\\n` line breaks, and the message a
 refusal shows."""
 
 from __future__ import annotations

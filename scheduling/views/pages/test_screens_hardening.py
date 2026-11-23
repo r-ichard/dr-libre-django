@@ -1,4 +1,4 @@
-"""Task 05b: page cookie renewal, favicon, lockout wording, CSRF cookie, table region."""
+"""Sections 12, 16: cookie renewal, favicon, lockout wording, CSRF cookie, table region."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Task 20, item 11: the booking policy as the rules read it, and the reminder button."""
+"""Section 10: the booking policy as the rules read it, and the reminder button."""
 
 from datetime import UTC, datetime, timedelta
 

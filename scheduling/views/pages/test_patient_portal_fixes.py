@@ -1,4 +1,4 @@
-"""Task 15: fixes carried from the task 14 browser check, as the server renders them."""
+"""Section 8: patient portal pages as the server renders them."""
 
 from __future__ import annotations
 

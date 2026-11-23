@@ -1,4 +1,4 @@
-"""Task 18, item 8: what the public search and the booking pages offer follows the admin records
+"""Sections 6, 10: what public search and booking pages offer follows the admin records
 at once, through the same loading. Admin edits go through the use case, reads through HTTP."""
 
 from datetime import UTC, datetime, time

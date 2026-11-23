@@ -1,4 +1,4 @@
-"""Task 12a, times: a week of free slots in the hospital's zone."""
+"""Section 7.1: a week of free slots in the hospital's zone."""
 
 from __future__ import annotations
 

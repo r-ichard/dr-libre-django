@@ -1,4 +1,4 @@
-"""Task 25b: three typed parts of a date of birth become one date or one error for the group."""
+"""Three typed parts of a date of birth become one date or one error for the group."""
 
 from datetime import date
 

@@ -1,4 +1,4 @@
-"""Task 24c: edges of a clinician's notAvailable write. Expected values come from spec 15.4 and
+"""Section 15.4: edges of a clinician's notAvailable write. Expected values: spec 15.4 and
 the console: a stored period is only repeated, never edited, and one clinician's time off is
 never recorded on another's profile."""
 

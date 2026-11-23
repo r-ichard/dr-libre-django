@@ -1,4 +1,4 @@
-"""Task 17f: what a block of the clinician calendar shows and says, read from the rendered page."""
+"""Section 9: what a clinician calendar block shows and says, read from the rendered page."""
 
 import re
 from datetime import UTC, datetime

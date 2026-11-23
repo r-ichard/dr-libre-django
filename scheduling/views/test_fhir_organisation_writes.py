@@ -1,4 +1,4 @@
-"""Task 24b: admin writes of Organization, Location and HealthcareService, as a FHIR client sends
+"""Section 15.4: admins write Organization, Location and HealthcareService, as clients send
 them (bearer token, no cookie, no Origin). Expected values come from the plan and spec 15.4."""
 
 from typing import TYPE_CHECKING

@@ -1,4 +1,4 @@
-"""Task 23, spec 15.1 and 4: the product code of a failure rides in the OperationOutcome so a
+"""Sections 15.1 and 4: the product code of a failure rides in the OperationOutcome so a
 client can act on it."""
 
 from scheduling.domain.failure import Failure, FailureCode, FieldMessage

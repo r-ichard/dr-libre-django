@@ -1,4 +1,4 @@
-"""Task 19 item 19: every demo specialty shows its vendored icon, and every icon is used."""
+"""Every demo specialty shows its vendored icon, and every icon is used."""
 
 from pathlib import Path
 

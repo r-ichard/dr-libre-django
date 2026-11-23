@@ -1,4 +1,4 @@
-"""Task 23a, spec 15.2 to 15.6: Appointment over FHIR. Reads follow the caller's role, a clinical
+"""Sections 15.2-15.6: Appointment over FHIR. Reads follow the caller's role, a clinical
 note reaches its own clinician only, the three origins are one resource type, and a booking runs
 the same use cases as the screens."""
 

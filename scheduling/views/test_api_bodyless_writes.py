@@ -1,4 +1,4 @@
-"""Task 26a2 item 1: a write without a body is never refused as unreadable, whatever its type says.
+"""Section 14: a write without a body is never refused as unreadable, whatever its type.
 wsgiref fills CONTENT_TYPE with text/plain when the header is absent, so every write route of the
 URL configuration is sent that way."""
 

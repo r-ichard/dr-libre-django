@@ -1,4 +1,4 @@
-"""Task 25c, item 2: a save over a newer version shows, field by field, what the admin read, what
+"""Section 10: a save over a newer version shows field by field what the admin read, what
 is stored now and what the admin typed. As a browser posts: cross-site check on, `Origin` set."""
 
 import re

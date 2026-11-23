@@ -1,4 +1,4 @@
-"""Task 21, item 14: a record type the product audits can always be filtered in the audit log.
+"""Section 10: a record type the product audits can always be filtered in the audit log.
 The source is read, so a new audited type with no entry in the registry fails here."""
 
 import ast

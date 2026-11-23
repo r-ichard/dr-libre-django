@@ -1,4 +1,4 @@
-"""Task 24: `decode_update` refuses a `received` that is not a date-time, whatever its type."""
+"""Section 15.2: `decode_update` refuses a non-date-time `received`, whatever its type."""
 
 from datetime import UTC, datetime
 from uuid import uuid4

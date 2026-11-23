@@ -1,4 +1,4 @@
-"""Task 23a, point 12: a booking, a reschedule and a cancellation over FHIR leave what the same
+"""Section 15.6: a booking, a reschedule and a cancellation over FHIR leave what the same
 change on the screens leaves: audit entry, notification, email, portal row. Two identical
 clinics, one changed by a screen, one by FHIR; the results are compared."""
 

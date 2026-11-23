@@ -1,4 +1,4 @@
-"""Task 22a: no FHIR resource carries an empty array, object or string, or a null."""
+"""Section 15.1: no FHIR resource carries an empty array, object or string, or a null."""
 
 import importlib
 

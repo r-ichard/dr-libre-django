@@ -1,4 +1,4 @@
-"""Task 24d, spec 15.6: the whole booking journey through FHIR only, as a FHIR client sends it
+"""Section 15.6: the whole booking journey through FHIR only, as a FHIR client sends it
 (bearer token, no cookie, no Origin), then the audit trail of each step, read by an admin."""
 
 from datetime import UTC, datetime, timedelta

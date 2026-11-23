@@ -1,4 +1,4 @@
-"""Task 25d, item 2: every status value of the domain vocabulary has one kind and one word in
+"""Sections 5.6, 16: every status value of the vocabulary has one kind and one word in
 one table, so no screen shows a status by colour alone."""
 
 from __future__ import annotations

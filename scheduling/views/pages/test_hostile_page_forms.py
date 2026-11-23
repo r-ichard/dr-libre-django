@@ -1,4 +1,4 @@
-"""Task 26c, item 16, page forms: every field of every post form a page renders, found by the
+"""Hostile page-form values (spec §4): every field of every post form a page renders, found by the
 walk and not by a fixed list of names, gets each hostile value, and none answers 500."""
 
 from __future__ import annotations

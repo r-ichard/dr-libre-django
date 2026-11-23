@@ -1,4 +1,4 @@
-"""Task 27a, finding #45: a text field of `/api/v1` refuses a number, as it refuses a boolean."""
+"""Section 14: a text field of `/api/v1` refuses a number, as it refuses a boolean."""
 
 from datetime import UTC, datetime
 

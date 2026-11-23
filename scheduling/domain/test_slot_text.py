@@ -1,4 +1,4 @@
-"""Task 10a: slot text in the hospital's zone."""
+"""Section 4: slot text in the hospital's zone."""
 
 from datetime import UTC, datetime
 

@@ -1,4 +1,4 @@
-"""Task 27d2, item 5: `_sort` on each date parameter orders by that time, in both directions, on
+"""Section 15.5: `_sort` on a date parameter orders by that time, in both directions, on
 every type that declares one, and `next` links keep the sort."""
 
 from collections.abc import Sequence

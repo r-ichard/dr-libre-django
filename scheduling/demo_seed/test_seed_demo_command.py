@@ -1,4 +1,4 @@
-"""Task 03: the seed_demo command, its guards, its accounts and its audit entry."""
+"""Section 16: the seed_demo command, its guards, its accounts and its audit entry."""
 
 import json
 import re

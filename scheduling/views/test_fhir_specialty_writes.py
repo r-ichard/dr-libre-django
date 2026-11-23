@@ -1,4 +1,4 @@
-"""Task 24b2: an admin writes the specialty list as one CodeSystem, as a FHIR client sends it
+"""Section 15.4: admins write the specialty list as one CodeSystem, as clients send it
 (bearer token, no cookie, no Origin). Expected values come from the plan and spec 15.4."""
 
 import pytest

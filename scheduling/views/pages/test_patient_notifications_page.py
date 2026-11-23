@@ -1,4 +1,4 @@
-"""Task 15: the notification list, mark as read and the unread count, as a browser sends them."""
+"""Section 11: notification list, mark as read and unread count, as a browser sends them."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Task 11, section 14: GET /hospitals/{id}, /providers/{id}, /specialties/{id}. Public, explicit
+"""Section 14: GET /hospitals/{id}, /providers/{id}, /specialties/{id}. Public, explicit
 field lists, and only what search would list."""
 
 import json

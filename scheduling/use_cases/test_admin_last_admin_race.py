@@ -1,4 +1,4 @@
-"""Task 19, item 3: two admins who deactivate each other at the same moment leave one admin."""
+"""Section 10: two admins who deactivate each other at the same moment leave one admin."""
 
 from collections.abc import Callable
 from threading import Barrier, Thread

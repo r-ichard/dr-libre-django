@@ -1,4 +1,4 @@
-"""Task 22a: a test of an API route gets a client that enforces the cross-site check from
+"""Section 14: an API route test gets a client that enforces the cross-site check from
 `scheduling/views/api_clients.py`; none builds `Client(` itself. `pages/` keeps its own."""
 
 import ast

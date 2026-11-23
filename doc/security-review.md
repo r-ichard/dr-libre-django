@@ -1,0 +1,274 @@
+# Security review
+
+Date: 2026-11-23. Task 26d, items 18 and 19. Owner text: `drlibre-specs.md`, sections 4, 11 and 12. Not edited.
+
+## Scope and method
+
+- Read: `drlibre-specs.md` sections 4, 11, 12; ADR 0004 in full; open points of ADRs 0005 to 0010;
+  `doc/backlog.md` lines marked "Owner to confirm" and the open points of ADR 0006 and ADR 0010.
+- Read by hand: each source file named below, at the function named. Each test name was found by
+  `grep` in the repository and its body read where the row depends on what it asserts.
+- Not run: no test, lint or gate result is evidence for this document. Its claims rest on reading.
+- Items 16 and 17 (encryption at rest, the server) and the access table (item 10) are other runs'
+  work and are not in this file.
+
+## Access
+
+The access table (item 10) is written by another run. Until it lands, the view-by-view rules are
+only in part 12.3 below, which names the page classes and the access declarations it read.
+
+## Section 4: rules that apply everywhere
+
+"Held by" names a test that asserts the rule. Where no test holds a rule, the row says so.
+
+| Rule (spec text) | Enforced in | Held by |
+| --- | --- | --- |
+| Unknown fields are rejected on writes, at every depth | `scheduling/views/schemas.py` `StrictSerializer.to_internal_value`, `unknown_fields`; `validate_body` | `scheduling/views/test_schemas.py::returns_400_naming_nested_field_when_nested_object_has_unknown_key`; `scheduling/views/test_booking_api.py::returns_400_invalid_input_when_body_has_an_unknown_field` |
+| Unusable page address (page number, filter, date) falls back to the default | `scheduling/views/pages/admin_filters.py` `page_number`; `scheduling/views/pages/patient_appointments.py` `page_number`; `scheduling/domain/search_query.py` `parse_search_query` | `scheduling/domain/test_search_query.py::returns_defaults_when_every_value_is_unusable`; `scheduling/views/pages/test_admin_audit_page.py::returns_the_default_log_when_the_filters_are_unusable`; `scheduling/views/pages/test_patient_notifications_page.py::returns_ten_per_page_and_page_one_when_page_is_not_a_number` |
+| Identity comes from the session, never the body | `scheduling/views/access.py` `signed_in_user`; `scheduling/views/authentication.py` `SessionCookieAuthentication.authenticate` | `scheduling/views/test_access_rules.py::returns_user_from_cookie_when_body_names_another_user_id` |
+| Every write is audited in the same transaction | `scheduling/use_cases/audit.py` `record_audit` (raises `TransactionRequiredError` outside `transaction.atomic`) | `scheduling/use_cases/test_audit.py::returns_unchanged_row_when_audit_write_fails`; `scheduling/use_cases/test_audit.py::returns_no_audit_entry_when_change_fails`; `scheduling/use_cases/test_audit.py::raises_transaction_required_error_when_recorded_outside_transaction` |
+| If the audit entry cannot be written, the write does not happen | same as above; the exception rolls back the change | `scheduling/use_cases/test_audit.py::returns_unchanged_row_when_audit_write_fails` |
+| Audit metadata holds ids, counts, status values, field names, email domain only | `scheduling/domain/audit_metadata.py` `AuditMetadata.__post_init__`, `to_json`, `email_domain` (typed sections, no free text) | `scheduling/domain/test_audit_metadata.py::rejects_birth_date_when_passed_as_value`; `::rejects_phone_number_when_passed_as_id`; `::rejects_free_text_status_when_a_plain_string_is_given`; `::rejects_email_domain_with_clinical_note_text` |
+| No reason or clinical note in audit, notification, email or log | `scheduling/domain/email_content.py` `patient_email` (no field for a reason); `scheduling/views/json_logging.py` (field allowlist) | `scheduling/views/test_appointment_reason.py::returns_no_reason_in_audit_notification_email_or_log_when_booking_with_reason`; `scheduling/views/test_log_privacy.py::returns_no_personal_value_in_any_log_line_when_the_four_flows_run` |
+| One transaction per logical change, with its audit and notifications | `scheduling/use_cases/placement.py` booking (`transaction.atomic`); `scheduling/use_cases/appointment_changes.py` `cancel_appointment`, `reschedule_appointment`; `scheduling/use_cases/notifications.py` `_notify` (row inside the caller's transaction; email in `transaction.on_commit`) | `scheduling/use_cases/test_admin_user_delete_atomic.py::returns_has_dependents_and_keeps_clean_up_rows_when_a_dependent_appears_before_the_delete`; `scheduling/views/test_appointment_emails.py::returns_no_email_and_no_notification_when_the_change_is_refused`; `scheduling/views/test_appointment_emails.py::returns_pending_notification_and_kept_change_when_mail_server_is_down` |
+| Expected failures are results, not crashes, with the listed codes | `scheduling/domain/failure.py` `Failure` constructors and `FailureCode`; `scheduling/views/failure_response.py` (status per code) | `scheduling/domain/test_failure.py::returns_exactly_the_twelve_specified_codes_when_failure_codes_are_listed` (see drift, below); `scheduling/views/test_failure_response.py::returns_400_invalid_input_naming_each_unknown_field_when_write_has_extra_keys` |
+| Times in the hospital's time zone; the page states it | `scheduling/use_cases/notifications.py` `notify_patient` and `notify_waitlist_patient` (`ZoneInfo(hospital.time_zone)`); `scheduling/domain/placement_rules.py` text builders | `scheduling/views/pages/test_admin_appointment_pages.py::returns_the_time_in_the_hospital_zone_named_when_the_list_is_opened`; `scheduling/domain/test_placement_rules.py::returns_text_with_hospital_local_time_only_when_booked` |
+| Weekly availability in local wall-clock time, correct across daylight saving | `scheduling/domain/free_slots.py` (not read in full for this review) | `scheduling/domain/test_free_slots_daylight_saving.py::returns_no_slot_for_local_starts_that_do_not_exist_when_clocks_spring_forward`; `::returns_ambiguous_local_start_once_at_first_occurrence_when_clocks_fall_back` |
+| Clock read once per request, from the request context | `scheduling/views/middleware.py` `RequestContextMiddleware.__call__`; `scheduling/views/clock.py` (the only wall-clock read) | `scheduling/use_cases/test_no_wall_clock.py::returns_no_wall_clock_read_when_domain_and_use_case_sources_are_scanned`; `scheduling/views/test_middleware.py::returns_one_instant_when_context_is_read_twice_in_a_request` |
+| Correlation id from `x-correlation-id` or generated; returned, stored on audit and logs | `scheduling/views/middleware.py` `RequestContextMiddleware.__call__`; `scheduling/domain/request_context.py` `is_sane_correlation_id`; `scheduling/use_cases/audit.py` `record_audit` | `scheduling/views/test_middleware.py::returns_same_correlation_id_when_header_is_sane`; `::returns_generated_id_when_header_is_too_long_or_has_bad_characters`; `scheduling/views/test_json_logging.py::returns_one_json_object_per_line_with_time_level_logger_message_correlation_id`; `scheduling/use_cases/test_audit.py::returns_entry_with_context_values_when_recorded_inside_transaction` |
+| Admin lists show 20 rows per page with a total | `PAGE_SIZE = 20` in `scheduling/use_cases/admin_appointments.py`, `admin_record_reads.py`, `admin_waitlist.py`, `admin_audit.py` | `scheduling/views/pages/test_admin_appointment_pages.py::returns_twenty_rows_newest_first_with_the_total_when_the_list_is_opened` (only this list is held by a test named here) |
+
+Rows that rest on a single test, or on code only read: the list-size rule is held for appointments
+only; the other three lists are read, not tested by name here.
+
+## Section 11: notifications
+
+Each row: the event, the kind and title the table gives, the caller that makes it, and the test.
+The text of every in-app notification is built by a `*_notification_text` function in
+`scheduling/domain/placement_rules.py`, which carries the time only.
+
+| Event (spec) | Kind; title | Caller (file, function) | Held by |
+| --- | --- | --- | --- |
+| Appointment booked | `SCHEDULE_CHANGED`; "Appointment booked" | `scheduling/use_cases/placement.py` `_record_booking` (only when `announce` is set; the waitlist path sets it false) | `scheduling/use_cases/test_placement.py::returns_notification_with_title_and_time_only_when_booked` |
+| Appointment rescheduled | `SCHEDULE_CHANGED`; "Appointment rescheduled" | `scheduling/use_cases/appointment_changes.py` `reschedule_appointment` | `scheduling/views/test_appointment_actions.py::returns_rescheduled_notification_and_audit_entry_when_rescheduling` |
+| Appointment cancelled | `APPOINTMENT_CANCELLED`; "Appointment cancelled" | `scheduling/use_cases/appointment_changes.py` `cancel_appointment` | `scheduling/views/test_appointment_actions.py::returns_cancelled_notification_with_time_only_text_when_cancelling` |
+| Waitlist slot offered | `WAITLIST_OFFERED`; "Waitlist slot offered" | `scheduling/use_cases/waitlist.py` `_offer` → `notify_waitlist_offer` | `scheduling/use_cases/test_waitlist.py::returns_waitlist_slot_offered_title_when_manual_offer_made` |
+| Waitlist offer accepted | `WAITLIST_BOOKED`; "Waitlist slot booked" | `scheduling/use_cases/waitlist.py` `accept_offer` | `scheduling/use_cases/test_waitlist.py::returns_waitlist_slot_booked_title_and_one_email_when_offer_is_accepted` |
+| Reminder job | `APPOINTMENT_REMINDER`; "Appointment reminder" | `scheduling/use_cases/reminders.py` `_remind` (one per appointment: database constraint `notification_one_reminder_per_appointment` in `scheduling/models/booking.py`) | `scheduling/use_cases/test_reminders.py::returns_one_reminder_when_booked_appointment_starts_in_two_hours`; `::returns_nobody_reminded_twice_when_run_twice` |
+
+Rules of section 11 beyond the table:
+
+- "Created in the same transaction as the event": `scheduling/use_cases/notifications.py` `_notify`
+  saves the row inside the caller's `transaction.atomic`. Held by
+  `scheduling/views/test_appointment_emails.py::returns_pending_notification_and_kept_change_when_mail_server_is_down`.
+- "Each notification is also sent by email (7.6)": `_notify` registers `transaction.on_commit`;
+  `scheduling/use_cases/email_delivery.py` `send_notification_email` sends and leaves the row pending
+  on failure. Held by
+  `scheduling/views/test_appointment_emails.py::returns_no_email_before_commit_and_one_after_when_cancelling`
+  and `scheduling/use_cases/test_background_mail.py::returns_no_mail_when_transaction_never_commits`.
+- "In-app text carries the time only": `scheduling/domain/placement_rules.py`
+  `booked_notification_text`, `cancelled_notification_text`, `rescheduled_notification_text`. Held by
+  `scheduling/domain/test_placement_rules.py::returns_written_cancelled_text_in_the_hospital_zone_when_appointment_is_cancelled`.
+- Email content (7.6): `scheduling/domain/email_content.py` `patient_email` has fields for time,
+  hospital and provider only. Held by
+  `scheduling/domain/test_email_content.py::returns_hospital_provider_and_sign_in_link_on_their_own_lines`
+  and `scheduling/views/test_appointment_emails.py::returns_no_reason_or_note_in_any_email_when_cancelling_and_rescheduling`.
+
+## Section 12: sign-in, sessions and access
+
+### 12.1 Sign-in with a password
+
+| Rule (spec text) | Enforced in | Held by |
+| --- | --- | --- |
+| Slow salted hash | Django's default PBKDF2 hasher (`drlibre/settings.py`, no override); `scheduling/use_cases/sign_in.py` `_run_hasher_once` | `drlibre/test_settings.py::returns_default_pbkdf2_hasher_when_product_settings_are_loaded` (tests themselves use MD5, see limits) |
+| Wrong email and wrong password: same answer, same time | `scheduling/use_cases/sign_in.py` `sign_in_with_password`, `_run_hasher_once` (one hasher call on every path) | `scheduling/use_cases/test_sign_in.py::returns_equal_unauthenticated_when_email_is_unknown_or_password_is_wrong`; `::returns_one_hasher_call_when_email_is_unknown`; `::returns_one_hasher_call_when_password_is_wrong`; `::returns_one_hasher_call_when_address_is_locked` |
+| Inactive user cannot sign in | `sign_in.py` `sign_in_with_password` (`not user.is_active` branch) | `scheduling/use_cases/test_sign_in.py::returns_unauthenticated_when_user_is_inactive_and_password_is_right` |
+| 10 failures in 15 minutes lock the address; success clears | `scheduling/domain/lockout_rules.py` (`LOCKOUT_FAILURES = 10`, `LOCKOUT_WINDOW`); `sign_in.py` `_record_failure`, `is_locked_out` | `scheduling/domain/test_lockout_rules.py::returns_locked_when_ten_failures_counted`; `scheduling/use_cases/test_sign_in.py::returns_unauthenticated_when_tenth_failure_is_followed_by_correct_password`; `::returns_signed_in_when_ninth_failure_is_followed_by_correct_password`; `::returns_zero_failures_when_sign_in_succeeds` |
+| Failure, lockout and success audited with the email domain only | `sign_in.py` `_audit`, `_audit_lockout_once`; `scheduling/domain/audit_metadata.py` `email_domain` | `scheduling/use_cases/test_sign_in.py::returns_login_audit_with_actor_and_domain_only_when_password_is_right`; `::returns_failure_audit_with_actor_when_password_is_wrong`; `::returns_one_lockout_entry_when_a_locked_address_tries_five_more_times` |
+| Lands on the role's home | `scheduling/domain/sign_in_rules.py` `home_for` | `scheduling/domain/test_sign_in_rules.py::returns_home_of_the_role`; `scheduling/use_cases/test_sign_in.py::returns_home_and_session_when_password_is_right` |
+| Patients may sign in by email link; admins and clinicians may not | `scheduling/use_cases/sign_in_link.py` `ask_for_link` (sends only when `user.role == Role.PATIENT`), `use_link` / `_usable` (patient role check) | `scheduling/use_cases/test_sign_in_link.py::returns_same_success_and_creates_nothing_when_email_is_not_an_active_patient`; `scheduling/use_cases/test_sign_in_link_use.py::returns_same_refusal_and_no_session_when_link_cannot_be_used` |
+
+The lockout key is an HMAC of the lower-cased address with `SECRET_KEY` (`sign_in.py` `hash_email`).
+The address is never stored readable: `scheduling/use_cases/test_sign_in.py::returns_no_readable_address_when_failure_is_recorded`.
+
+### 12.2 Sessions
+
+| Rule (spec text) | Enforced in | Held by |
+| --- | --- | --- |
+| Random token; server stores a hash | `scheduling/use_cases/session.py` `open_session` (`secrets.token_urlsafe`), `hash_token` (SHA-256) | `scheduling/use_cases/test_session.py::returns_hash_of_token_when_session_is_stored`; `::returns_different_tokens_when_two_sessions_are_opened` |
+| Cookie unreadable by scripts, same-site only, HTTPS outside development | `scheduling/views/session_cookie.py` `set_session_cookie` (`httponly=True`, `samesite="Strict"`, `secure=cookie_secure()`); `cookie_secure` is `HTTPS_ONLY or not DEBUG` | `scheduling/views/test_cookie_flags.py::returns_secure_httponly_samesite_on_every_cookie_when_debug_is_off` |
+| Password session: 12 h for admins, 7 days for others | `scheduling/domain/session_rules.py` `session_lifetime` | `scheduling/domain/test_session_rules.py::returns_twelve_hours_when_admin_opens_password_session`; `::returns_seven_days_when_clinician_or_patient_opens_password_session` |
+| Extended to a full lifetime when less than half remains (password sessions only) | `session_rules.py` `extended_expiry`; `scheduling/use_cases/session.py` `resolve_session` | `scheduling/domain/test_session_rules.py::returns_new_expiry_when_less_than_half_remains`; `::returns_no_change_when_exactly_half_remains`; `scheduling/use_cases/test_session.py::returns_longer_expiry_when_clock_moves_to_under_half_remaining` |
+| Link or code session: 24 h, never extended | `session_rules.py` `session_lifetime` (non-password kinds), `extended_expiry` returns None | `scheduling/domain/test_session_rules.py::returns_no_change_when_session_opened_by_link_or_code`; `scheduling/use_cases/test_session.py::returns_session_expiring_in_twenty_four_hours_when_open_session_is_called_for_link_or_code` |
+| Sign-out deletes the session | `scheduling/use_cases/session.py` `sign_out`; `scheduling/views/pages/sign_out.py` `SignOutPage` (POST only) | `scheduling/use_cases/test_session.py::returns_logout_audit_with_actor_when_session_is_signed_out`; `scheduling/views/test_auth.py::returns_204_and_clears_cookie_when_logout_has_session` |
+| Deactivated user's sessions stop at once | `session.py` `resolve_session` (`not session.user.is_active`) | `scheduling/use_cases/test_session.py::returns_unauthenticated_when_user_is_deactivated` |
+
+### 12.3 Access rules
+
+| Rule (spec text) | Enforced in | Held by |
+| --- | --- | --- |
+| Public: search, public pages, booking steps to verification, sign-in link request | Page classes with no `allowed_roles`: `SearchPage`, `ServicePage`, `ProviderChoicePage`, `TimesPage`, `DetailsPage`, `CodePage`, `ResendPage`, `SignInPage`, `CheckEmailPage`, `LinkContinuePage`, `ProviderPage`, `HospitalPage`, `SpecialtyPage`, `TermsPage`, `PrivacyPage`. API views declare `public()` in `scheduling/views/access.py` | `scheduling/views/test_access_rules.py::returns_closed_when_view_declares_no_access` (the default); public API routes not each named here |
+| Every other page needs a session; otherwise sign-in | `scheduling/views/pages/page_view.py` `PageView._guarded_dispatch` (redirect to `SIGN_IN_PATH`) | `scheduling/views/pages/test_admin_access.py::returns_sign_in_redirect_to_a_visitor_on_every_console_route` (console routes only) |
+| Another role's area gives "forbidden" | `page_view.py` `_guarded_dispatch` (`errors/403.html`, status 403); `scheduling/views/access.py` `roles`; API `HasRole` | `scheduling/views/pages/test_admin_access.py::returns_forbidden_page_to_patient_and_clinician_on_every_console_route`; `scheduling/views/test_access_rules.py::returns_403_when_patient_calls_admin_view` |
+| Server checks every read and write | `scheduling/views/access.py` (`DenyUnlessDeclared` is the default in `drlibre/settings.py` `DEFAULT_PERMISSION_CLASSES`); each API view declares its rule | `scheduling/views/test_access_rules.py::returns_closed_when_view_declares_no_access` |
+| Missing record: `not_found`; someone else's: `forbidden` | `scheduling/use_cases/record_access.py` `guard_record` | `scheduling/use_cases/test_record_access.py::returns_not_found_when_record_is_missing`; `::returns_forbidden_when_record_belongs_to_someone_else` |
+| State-changing request from another origin is refused | API: `scheduling/views/api_view.py` `ApiView.initial` → `refuse_foreign_origin` (only when an `Origin` header is sent, see limits). Pages: Django `CsrfViewMiddleware` (`drlibre/settings.py` middleware list) | `scheduling/views/test_auth.py::returns_403_forbidden_when_login_post_has_foreign_origin`; `scheduling/views/test_auth.py::returns_403_when_post_has_origin_null`; `scheduling/views/pages/test_browser_forms.py::returns_403_when_form_is_posted_with_null_or_other_site_origin` |
+
+## ADR 0004: limits
+
+### Its own stated gaps (ADR 0004, Consequences)
+
+- Log message text is not scrubbed; callers must not interpolate sensitive data. Only the field
+  allowlist of `scheduling/views/json_logging.py` and the test
+  `returns_no_email_token_or_clinical_note_when_logged_through_args_extra_and_exception_message` stand
+  between a careless call and a log line.
+- Nested serializers are not strict. Reading showed the walk in `unknown_fields` does recurse, so
+  nested keys are refused when the top level is a `StrictSerializer` checked through `validate_body`.
+  A nested `Serializer` used outside that path is not covered; the probe schemas in
+  `scheduling/views/probe_views.py` are plain `Serializer`s.
+- Non-API paths under `DEBUG` show Django's technical 404 and 500 pages (`CLAUDE.md`, error pages).
+
+### Drift found while reading
+
+- The spec's failure table (section 4) lists ten codes. `scheduling/domain/failure.py` `FailureCode`
+  holds twelve: `rate_limited` (line 19) and `mail_unavailable` (line 20) are not in spec section 4.
+  ADR 0004's table has `rate_limited` (amendment, task 12) and no `mail_unavailable`; no ADR names it.
+  `mail_unavailable` answers 503 in `scheduling/views/failure_response.py`.
+- `scheduling/domain/test_failure.py::returns_exactly_the_twelve_specified_codes_when_failure_codes_are_listed`
+  compares the enum with a hand-written set that includes the two codes above. Its name says
+  "specified", but it holds the code against itself, not against the spec. It does not hold spec
+  section 4.
+- ADR 0004 says the API never answers 405, 406 or 415. ADR 0009 says a refused `POST /fhir/Practitioner`
+  is 405; ADR 0010 proposes 415 for a FHIR write without JSON. The FHIR door is a separate surface
+  (`scheduling/views/fhir/views.py` `_answer` returns 406 and 405 itself). This review states the
+  difference and does not call either ADR wrong.
+- The HTML page limit "6 digits" (ADR 0004, amendment 17b) and the API's page maximum of 1,000,000
+  (`scheduling/views/booking_schemas.py` `AppointmentsQuery`) differ; the API answers 400 for a page
+  above the maximum, the HTML pages fall back to page 1. Spec section 4 speaks of page addresses only.
+
+### Limits found while reading (not in ADR 0004)
+
+- **Cross-origin check is conditional.** `refuse_foreign_origin` refuses only a write that carries an
+  `Origin` header. A cookie write without one passes: `scheduling/views/test_auth.py::returns_204_when_logout_post_has_no_origin`.
+  `SessionCookieAuthentication` does not enforce a CSRF token. The reliance is on `SameSite=Strict`
+  in current browsers, which this review did not test.
+- **`csrf_exempt` on two routes.** `scheduling/views/fhir/views.py` `fhir_entry` (reads no cookie; a
+  bearer token is required; ADR 0005) and `scheduling/views/pages/admin_audit.py` (`AuditPage` has
+  `http_method_names = ["get"]` and one route, so no POST exists today; a future POST would be exempt
+  without anyone noticing).
+- **Writes outside the audit.** The spec says every write is audited. Three writes are not:
+  `scheduling/use_cases/session.py` `resolve_session` (a session's expiry moves, no audit);
+  `scheduling/use_cases/api_tokens.py` `_touch` (a token's last-used time moves, no audit);
+  `scheduling/use_cases/rate_limits.py` `take_hit` (an accepted request writes a `RateLimitHit` row,
+  no audit). These are for the owner to rule on (see the list).
+- **Post-commit email errors are logged, not returned.** `scheduling/use_cases/notifications.py`
+  `_send_in_context` and `email_delivery.py` `send_notification_email` catch and log. This is
+  deliberate (the change has committed), but it is a swallow in the sense of CLAUDE.md §9.
+- **Rate limits and the network address.** `scheduling/views/network_address.py` reads `REMOTE_ADDR`
+  unless `TRUSTED_PROXY_COUNT` is set (`drlibre/settings.py`, default 0). Behind one proxy every
+  visitor shares one address for the rate limits (backlog, review of 12).
+- **Lockout and rate keys are HMACs of `SECRET_KEY`.** `sign_in.py` `hash_email` and
+  `use_cases/rate_limits.py` `key_hash`. Rotating `SECRET_KEY` resets every lockout and rate count.
+- **Timing rows prove call counts, not elapsed time.** Root `conftest.py:47` sets the MD5 hasher for the
+  test suite, so the `returns_one_hasher_call_when_*` tests count calls on a counting subclass. They
+  do not measure time, and the database work on each path (audit rows, lock queries) is not equal.
+
+## Not reviewed
+
+- Encryption at rest for clinical notes and booking holds (item 16) and the server, `DEBUG` off
+  (item 17): other runs.
+- Access table (item 10): another run.
+- Dependency pins and `make audit`. The container image's dev group (backlog).
+- Templates and escaping for XSS. Static files and JavaScript. The CSP in `drlibre/settings.py` was
+  read, not tested.
+- Migrations. Deployment: TLS termination, `docker-compose.yml`, the image's user and groups.
+- The demo seed (`scheduling/demo_seed/`).
+- FHIR authorization beyond the rules cited above (section 15 is not in the spec sections read).
+- Every write in every use case. The rule "every write is audited" was checked flow by flow for the
+  named flows, not for all write sites.
+- The notice cookie (backlog, review of 17b).
+- Free slots and availability maths beyond the DST tests named.
+- No test was run for this review. Its rows are claims about what the code and the named tests say.
+
+## For the owner
+
+One list. Each entry: the question, where it came from, the choice the product makes today (read from
+the cited code or ADR), and what changing it would cost. Nothing here is decided by this review.
+
+Items from `doc/backlog.md` marked "Owner to confirm", and the open points of ADRs 0005 to 0010:
+
+1. **Named room that is inactive or in another department** (`doc/backlog.md` section 5.2 step 2).
+   Today: `not_found` 404. `scheduling/use_cases/placement.py` `_select` returns `not_found` when
+   `scheduling/use_cases/placement_locks.py` `lock_rooms` finds no room. Changing it: one branch in
+   `_select` and `lock_rooms`, and its tests in `scheduling/use_cases/test_placement.py`. A new code
+   would also change the spec table.
+2. **Time on a status change** (`doc/backlog.md` section 5.6). Today: no time check.
+   `scheduling/domain/appointment_status.py` `may_change_status` checks role and ownership only, so
+   check-in, complete and no-show are allowed on any day (the demo seed does this). Changing it: a
+   time rule with `now` in the domain, its caller in `scheduling/use_cases/appointment_changes.py`,
+   and `scheduling/domain/test_appointment_status.py`,
+   `test_staff_actions.py`.
+3. **Patient joins a waitlist for a type not bookable online** (`doc/backlog.md` section 5.8).
+   Today: yes. `scheduling/use_cases/waitlist.py` `join_waitlist` calls
+   `active_appointment_type(..., online_only=False)` for every actor. Changing it: pass
+   `online_only=True` for patients, and `scheduling/use_cases/test_waitlist.py`.
+4. **FHIR day search without a time** (`doc/backlog.md`; ADR 0005). Today: the whole UTC day, so a
+   search crosses hospitals and an appointment at 00:30 in Berlin is found under the day before.
+   Changing it: each candidate needs its own hospital's day bounds; `scheduling/domain/fhir_dates.py`
+   and the search that calls it, with `scheduling/domain/test_fhir_dates.py` and `test_fhir_search.py`.
+5. **ADR 0010 "proposed": accept or amend** (`doc/backlog.md`; ADR 0010 "For the owner"). Today the
+   code already applies it as written: `_sort` on date parameters (`scheduling/domain/fhir_bundle.py`,
+   `fhir_capability.py`), the 415 rule (`scheduling/domain/write_body.py`), and the search-value rules.
+   Changing it: those modules and their tests. The ADR's status line still says "proposed".
+6. **Reason of a booking: one line or free text** (`doc/backlog.md`, review of 27a2). Today: the API
+   takes up to 200 characters (`scheduling/views/booking_schemas.py`, `VISIT_REASON_MAXIMUM`); the
+   pages take one line. Tightening the API refuses text clients may send today.
+7. **Staff rate limits** (`doc/backlog.md`, review of 12 and 17). Today: per signed-in user, 1200
+   schedule reads, 600 FHIR, 120 searches an hour (`scheduling/domain/rate_limit_rules.py`). Changing
+   it: constants and `scheduling/domain/test_rate_limit_rules.py`.
+8. **Wrong method under `/api/v1` answers 404, not 405** (`doc/backlog.md`, QA round 3; ADR 0004).
+   Today: `not_found` 404 with no `Allow` header. A method code would add a `FailureCode`, a status in
+   `failure_response.py`, a spec-table row (the owner's text) and an ADR 0004 amendment. The exact-set
+   test in `test_failure.py` changes with it.
+9. **Busy slot readable by its id** (ADR 0006 point 1; ADR 0007 question 3). Today: only a free slot
+   is readable. Changing it: the slot mapping in `scheduling/domain/fhir_slot_id.py` and the reads in
+   `scheduling/use_cases/fhir_slot_reads.py`, with `scheduling/views/test_fhir_slots.py`.
+10. **`Patient` search by email, phone and birth date in the query** (ADR 0006 point 2; ADR 0007
+    question 4). Today: served; the server logs no query string, a client or proxy may. Changing it:
+    remove the parameters from the Patient search declaration in `scheduling/domain/fhir_declaration.py`,
+    with `scheduling/views/test_fhir_patient.py`.
+11. **Which clinicians are public over FHIR** (ADR 0007 question 1). Today: a public caller sees what
+    the public search and `GET /api/v1/slots` show; staff tokens see all. Changing it: the visibility
+    rule in the FHIR reads, with `scheduling/views/test_fhir_public_resources.py`.
+12. **Token expiry or scopes** (ADR 0007 question 2). Today: a token is exactly its user's rights until
+    revoked; no expiry, no scope (`scheduling/use_cases/api_tokens.py`, `ApiClient` in
+    `scheduling/models/access.py`). Changing it: a migration on `ApiClient`, the issue and resolve
+    paths, the management command, and `scheduling/use_cases/test_api_tokens.py`.
+13. **Decline a waitlist offer over FHIR** (ADR 0007 question 5). Today: an `AppointmentResponse` is
+    accepted only with `accepted` (`scheduling/domain/fhir_appointment_response.py`). Declining needs a
+    status the spec does not give; the decline use case would be new.
+14. **Three writes outside the audit log** (spec section 4 says every write is audited; this review, limits). Session
+    expiry moves in `session.py` `resolve_session`; a token's last-used time moves in `api_tokens.py`
+    `_touch`; rate-limit hits are inserted in `rate_limits.py` `take_hit`. None is audited today.
+    Options: write an audit per move (volume: one row per request for active sessions), or state in
+    spec section 4 that counters and bookkeeping are not writes. Cost of the first: a transaction and
+    an audit call in each of the three functions, and their tests.
+15. **Are API query values "page addresses"?** (spec section 4). Today: HTML pages fall back to page 1;
+    the API answers 400 above 1,000,000 (`booking_schemas.py` `AppointmentsQuery`;
+    `scheduling/views/test_input_limits.py::returns_400_invalid_input_naming_page_when_page_is_huge`).
+    Changing the API: `AppointmentsQuery.page` and that test.
+16. **`rate_limited` and `mail_unavailable` are not in spec section 4's table** (this review, drift).
+    Today: twelve codes in `failure.py`. Changing it: a spec edit by the owner only; no code change.
+
+Open points, by ADR:
+
+- **ADR 0005**: open points are "collected as Questions for the owner at the end of ADR 0007"
+  (`doc/adr/0005-fhir-conventions.md`, section "Open points for the owner"). Covered by items 9 to 13.
+- **ADR 0006**: the same, by reference to ADR 0007 (`doc/adr/0006-fhir-schedule-slot-patient-writes.md`).
+  Its two points are items 9 and 10.
+- **ADR 0007**: questions 1 to 5 are items 9 to 13.
+- **ADR 0008 and ADR 0009**: no open-points section (checked by `grep -i` for "owner", "open point",
+  "question"). Nothing to list.
+- **ADR 0010**: "For the owner" is item 5 (`_sort` widened beyond spec 15.1, the 415 code, the
+  search-value rules).
+- **ADR 0011**: does not exist yet. It is written by the run for items 16 and 17.

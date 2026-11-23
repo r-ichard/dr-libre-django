@@ -171,3 +171,14 @@ Non-blocking findings for the orchestrator:
 - `scheduling/views/test_fhir_access_writes.py` plus `test_fhir_access_write_cases.py` at 12 cases with four callables each is near the 300-line cap; the orchestrator reads the diff line by line, so prefer one-line lambdas only where they stay readable.
 - The owner note on the hospital 405 (spec 15.4 says admin writes Organization; ADR 0008 says a hospital's Organization is 405; row basis cites ADR 0008 wrongly) stays as the plan says: name both pairs under "For the owner" in the review.
 - Process: `tests-and-docs`, as the plan says, since no behaviour changes.
+
+## Write stage notes
+
+Written as planned, with these differences, each forced by the code or the tests:
+
+- `expected_answer` is named `_expected_answer`. The conftest collects only `test_*` functions and rejects a public function in a `test_*.py` module; the reads walk already imports `_send` and `_path_of` the same way.
+- `WriteCase` has `reads_back` (default `("name",)`, `("concept",)` for the specialty list) instead of a per-case `accepted` function. The server adds fields to a read (`meta`, coding `display`), and returns the concepts sorted by code, so the walk compares only the fields the case changes, with lists compared as sets.
+- Delete cases name their `table` too, so an accepted delete must remove exactly one row. Create cases check one row added; refused writes check no row and no audit change.
+- The test client always sends `Content-Type: application/octet-stream` on DELETE (Django's default). Not "no Content-Type" as the plan says. The product reads a zero-length body as no body (`carries_body`), so the answer is the same; a real FHIR client that sends no Content-Type is not exercised.
+- Request count checked by a counting wrapper on the test client: 123 `/fhir` requests, no failures, the walk's records as in the table above.
+- Proofs run (temporary edits, all reverted): a row changed from 403 to 201 gave `create Organization as patient: expected 201, got 403`; an audit line removed in `scheduling/use_cases/admin_records.py:76` gave 4 audit problems (the first `update Organization as admin`); a refused create made a Department first gave `the table changed by (1, 0), expected (0, 0)`; dropping a case or a pending pair, or listing a walked pair as pending, named the pair in the coverage test.

@@ -1,5 +1,5 @@
 """/fhir access per interaction and caller, by drlibre-specs.md 15.4 and ADRs 0005 to 0010.
-Read by the route-coverage test and the reads-and-searches walk. Data only.
+Read by the route-coverage test, the reads-and-searches walk and the writes walk. Data only.
 
 No test_ prefix: pytest must not collect this data module."""
 
@@ -36,13 +36,17 @@ class FhirAccessRow:
 
 @dataclass(frozen=True)
 class KnownDifference:
-    """Both answers for one caller and interaction. The walk asserts the product's answer."""
+    """Both answers for one caller and interaction. The walk asserts the product's answer.
+
+    `record` is "" for every record of the resource and interaction, else the record kind the
+    pair holds for (`"hospital"`), for a pair that differs by kind of record."""
 
     resource: str
     interaction: str
     caller: Caller
     row_answer: int
     product_answer: int
+    record: str = ""
 
 
 # Cells are HTTP statuses. Basis cites drlibre-specs.md 15.4 and the ADR that fills it in.
@@ -158,4 +162,6 @@ KNOWN_DIFFERENCES: tuple[KnownDifference, ...] = (
     KnownDifference("Communication", "search-type", Caller.CLINICIAN, 403, 200),
     KnownDifference("Communication", "search-type", Caller.ADMIN, 403, 200),
     KnownDifference("AppointmentResponse", "search-type", Caller.CLINICIAN, 403, 200),
+    KnownDifference("Organization", "update", Caller.ADMIN, 200, 405, record="hospital"),
+    KnownDifference("Organization", "delete", Caller.ADMIN, 200, 405, record="hospital"),
 )

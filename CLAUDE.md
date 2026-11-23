@@ -36,6 +36,10 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   (`ANTHROPIC_MODEL` in each `workflow.toml`); a task is one finding or one item, small
   enough that the orchestrator reviews its diff; a commit names the issue it addresses
   and no other (no milestone number on every commit).
+- **Sub-agents instead of fabro** (owner, 2026-11-23): new work goes to Claude Code
+  sub-agents on Haiku, each in its own git worktree, one finding or item each; fabro
+  runs already started may finish. The orchestrator still reads every product line, runs
+  the five gates from a fresh clone and lands each change as its own commit.
 - **No more QA rounds** (owner, 2026-11-23): the `qa` workflow stays in the repository,
   but no round is launched unless the owner asks for one.
 - **Owner decisions, fixed:** latest stable Django + Django REST Framework; PostgreSQL,

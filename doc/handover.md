@@ -93,6 +93,14 @@ details, take the code from the inbox, confirm. The clinician's calendar shows i
 
 ## The pipeline
 
+Since 2026-11-23 (owner's decision) new work goes to Claude Code sub-agents on Haiku, each
+in its own git worktree (`Agent` tool, `model: haiku`, `isolation: worktree`), one finding
+or item each, with the task's rules in the prompt: test first, this card, no background
+process, no edit of `drlibre-specs.md`. The sub-agent leaves its change committed on its
+worktree branch; the orchestrator reads it, runs the gates below and lands it. Fabro, as
+described next, stays usable by anyone who prefers it.
+
+
 `fabro` (0.408, `~/.fabro/bin/fabro`) runs one workflow per task in its own sandbox,
 cloned from GitHub: `.fabro/workflows/conventions-auto/workflow.fabro`. Stages: plan,
 plan review, failing tests, proof they fail, code, proof they pass, proof the tests

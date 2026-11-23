@@ -18,6 +18,7 @@ from scheduling.domain.slot_search import (
     QueryTooWide,
     SlotOffer,
     free_slots_by_start,
+    starts_with_free_room,
 )
 from scheduling.domain.vocabulary import AppointmentStatus
 
@@ -108,3 +109,53 @@ def returns_clinician_uuids_in_uuid_order_when_both_are_free() -> None:
     low, high = UUID(int=3), UUID(int=11)
     schedules = {high: _schedule(time(9, 0), time(9, 30)), low: _schedule(time(9, 0), time(9, 30))}
     assert _search(schedules) == [SlotOffer(_utc(8, 0), (low, high))]
+
+
+ROOM_A = UUID(int=21)
+ROOM_B = UUID(int=22)
+EIGHT_OCLOCK_OFFERS = [SlotOffer(_utc(8, 0), (UUID(int=1),))]
+
+
+def returns_no_offer_when_the_only_room_is_booked_over_the_whole_start() -> None:
+    booked = [(ROOM_A, TimeRange(_utc(8, 0), _utc(8, 30)))]
+    assert starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 1, booked) == []
+
+
+def returns_offer_when_the_only_room_booking_ends_exactly_at_the_start() -> None:
+    booked = [(ROOM_A, TimeRange(_utc(7, 30), _utc(8, 0)))]
+    kept = starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 1, booked)
+    assert kept == EIGHT_OCLOCK_OFFERS
+
+
+def returns_offer_when_the_only_room_booking_starts_exactly_at_the_end_of_the_start() -> None:
+    booked = [(ROOM_A, TimeRange(_utc(8, 30), _utc(9, 0)))]
+    kept = starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 1, booked)
+    assert kept == EIGHT_OCLOCK_OFFERS
+
+
+def returns_no_offer_when_the_only_room_booking_starts_inside_the_start() -> None:
+    booked = [(ROOM_A, TimeRange(_utc(8, 15), _utc(9, 0)))]
+    assert starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 1, booked) == []
+
+
+def returns_offer_when_a_second_room_is_free_over_the_start() -> None:
+    booked = [(ROOM_A, TimeRange(_utc(8, 0), _utc(8, 30)))]
+    kept = starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 2, booked)
+    assert kept == EIGHT_OCLOCK_OFFERS
+
+
+def returns_no_offer_when_every_room_is_booked_over_the_start() -> None:
+    booked = [
+        (ROOM_A, TimeRange(_utc(8, 0), _utc(8, 30))),
+        (ROOM_B, TimeRange(_utc(8, 0), _utc(8, 30))),
+    ]
+    assert starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 2, booked) == []
+
+
+def returns_offer_when_one_room_has_two_bookings_over_the_start_and_another_is_free() -> None:
+    booked = [
+        (ROOM_A, TimeRange(_utc(7, 45), _utc(8, 15))),
+        (ROOM_A, TimeRange(_utc(8, 15), _utc(8, 45))),
+    ]
+    kept = starts_with_free_room(EIGHT_OCLOCK_OFFERS, HALF_HOUR.duration, 2, booked)
+    assert kept == EIGHT_OCLOCK_OFFERS

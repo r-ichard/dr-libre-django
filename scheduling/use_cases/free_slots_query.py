@@ -5,14 +5,18 @@ from datetime import timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
+from django.db.models import FilteredRelation, Q
+
+from scheduling.domain.appointment_status import ACTIVE_STATUSES
 from scheduling.domain.booking_rules import earliest_offered_start
 from scheduling.domain.failure import Failure, FieldMessage, Result, Success
-from scheduling.domain.free_slots import TimeRange
+from scheduling.domain.free_slots import SlotType, TimeRange
 from scheduling.domain.slot_search import (
     MAXIMUM_QUERY_DAYS,
     QueryTooWide,
     SlotOffer,
     free_slots_by_start,
+    starts_with_free_room,
 )
 from scheduling.models import AppointmentType, Room
 from scheduling.use_cases.request_context import current_request_context
@@ -22,6 +26,8 @@ from scheduling.use_cases.schedule_loading import (
     load_schedules,
     slot_type_of,
 )
+
+RoomRow = tuple[UUID, TimeRange | None]
 
 
 @dataclass(frozen=True)
@@ -41,8 +47,11 @@ def find_free_slots(
         return Failure.not_found()
     slot_type = slot_type_of(appointment_type)
     time_zone_name = appointment_type.department.hospital.time_zone
-    if _lacks_room(appointment_type):
-        return Success(FoundSlots([], slot_type.duration, time_zone_name))
+    room_rows: list[RoomRow] = []
+    if appointment_type.needs_room:
+        room_rows = _room_rows(appointment_type, window, slot_type.duration)
+        if not room_rows:
+            return Success(FoundSlots([], slot_type.duration, time_zone_name))
     clinicians = department_clinicians(appointment_type, clinician_id, online_only)
     clinician_ids = list(clinicians.values_list("pk", flat=True))
     if clinician_id is not None and not clinician_ids:
@@ -55,13 +64,42 @@ def find_free_slots(
     )
     if isinstance(offers, QueryTooWide):
         return _too_wide()
+    if appointment_type.needs_room:
+        offers = _with_free_room(offers, slot_type, room_rows)
     return Success(FoundSlots(offers, slot_type.duration, time_zone_name))
 
 
-def _lacks_room(appointment_type: AppointmentType) -> bool:
-    """A type that needs a room has nothing to offer while its department has no active room."""
-    active_rooms = Room.objects.filter(department_id=appointment_type.department_id, is_active=True)
-    return appointment_type.needs_room and not active_rooms.exists()
+def _room_rows(
+    appointment_type: AppointmentType, window: TimeRange, duration: timedelta
+) -> list[RoomRow]:
+    """One row per active room of the department, with each booking that could overlap a start in
+    the window. No rows means the department has no active room."""
+    rooms = Room.objects.filter(
+        department_id=appointment_type.department_id, is_active=True
+    ).annotate(
+        booked=FilteredRelation(
+            "appointment",
+            condition=Q(
+                appointment__status__in=ACTIVE_STATUSES,
+                appointment__starts_at__lt=window.ends_at + duration,
+                appointment__ends_at__gt=window.starts_at,
+            ),
+        )
+    )
+    rows = rooms.values_list("pk", "booked__starts_at", "booked__ends_at")
+    return [
+        (room_id, None if starts is None else TimeRange(starts, ends))
+        for room_id, starts, ends in rows
+    ]
+
+
+def _with_free_room(
+    offers: list[SlotOffer], slot_type: SlotType, room_rows: list[RoomRow]
+) -> list[SlotOffer]:
+    """Placement refuses a start when every active room is booked over it, so the offer must too."""
+    room_count = len({room_id for room_id, _ in room_rows})
+    booked = [(room_id, span) for room_id, span in room_rows if span is not None]
+    return starts_with_free_room(offers, slot_type.duration, room_count, booked)
 
 
 def _too_wide() -> Failure:

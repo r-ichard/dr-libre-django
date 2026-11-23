@@ -11,9 +11,16 @@ from scheduling.domain.failure import Failure, FieldMessage, Success
 from scheduling.domain.free_slots import TimeRange
 from scheduling.domain.request_context import RequestContext
 from scheduling.domain.slot_search import SlotOffer
-from scheduling.models.builders import STARTS_AT, add_clinician, make, make_clinic
+from scheduling.models import Room
+from scheduling.models.builders import STARTS_AT, Clinic, add_clinician, make, make_clinic
 from scheduling.use_cases.free_slots_query import find_free_slots
 from scheduling.use_cases.request_context import bind_request_context
+from scheduling.use_cases.test_booking_support import (
+    _create,
+    _held,
+    _last_code,
+    _verify,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -23,6 +30,10 @@ MONDAY = TimeRange(datetime(2030, 1, 7, 0, 0, tzinfo=UTC), datetime(2030, 1, 8, 
 # the 120 minute lead time from 06:00 UTC; 08:00 is exactly at its edge and stays offered.
 LEAD_TIME_RULE = {"start_time": time(8, 0), "end_time": time(10, 0), "slot_step_minutes": 30}
 HOUR_OF_SLOTS = {"start_time": time(11, 0), "end_time": time(12, 0), "slot_step_minutes": 30}
+# 09:00 Berlin is 08:00 UTC; one 30 minute start, shared by both cardiologists.
+NINE_OCLOCK_RULE = {"start_time": time(9, 0), "end_time": time(9, 30), "slot_step_minutes": 30}
+NINE_OCLOCK = datetime(2030, 1, 7, 8, 0, tzinfo=UTC)
+SECOND_VISITOR_EMAIL = "second.visitor@example.test"
 
 
 @pytest.fixture(autouse=True)
@@ -33,6 +44,37 @@ def request_context() -> Iterator[None]:
 
 def _starts(offers: Sequence[SlotOffer]) -> list[datetime]:
     return [offer.start for offer in offers]
+
+
+def _cardiology_with_one_room(extra_room_code: str | None = None) -> Clinic:
+    """Two cardiologists sharing one room, Heart, and a room-needing 30 minute type."""
+    clinic = make_clinic(type_fields={"needs_room": True}, rule_fields=NINE_OCLOCK_RULE)
+    add_clinician(clinic.department, NINE_OCLOCK_RULE)
+    make("Room", department=clinic.department, code="heart")
+    if extra_room_code is not None:
+        make("Room", department=clinic.department, code=extra_room_code)
+    return clinic
+
+
+def _first_visitor_books_nine_oclock(clinic: Clinic) -> None:
+    hold = _held(clinic, clinician_id=None, starts_at=NINE_OCLOCK)
+    assert isinstance(_verify(hold.pk, _last_code()), Success)
+
+
+def _booking_in_heart(
+    clinic: Clinic, starts_at: datetime, status: str = "BOOKED", cancellation_reason: str = ""
+) -> None:
+    make(
+        "Appointment",
+        clinician=clinic.clinician,
+        appointment_type=clinic.appointment_type,
+        room=Room.objects.get(department=clinic.department, code="heart"),
+        starts_at=starts_at,
+        ends_at=starts_at + timedelta(minutes=30),
+        status=status,
+        cancellation_reason=cancellation_reason,
+        cancelled_at=NINE_OCLOCK if cancellation_reason else None,
+    )
 
 
 def returns_union_one_entry_per_start_when_no_clinician_named() -> None:
@@ -215,3 +257,48 @@ def returns_start_60_minutes_away_when_caller_is_staff() -> None:
         datetime(2030, 1, 7, 8, 0, tzinfo=UTC),
         datetime(2030, 1, 7, 8, 30, tzinfo=UTC),
     ]
+
+
+def returns_no_offer_and_no_room_when_first_booking_takes_the_only_room() -> None:
+    clinic = _cardiology_with_one_room()
+    _first_visitor_books_nine_oclock(clinic)
+
+    offered = find_free_slots(clinic.appointment_type.pk, None, MONDAY, online_only=False)
+    second = _create(clinic, clinician_id=None, starts_at=NINE_OCLOCK, email=SECOND_VISITOR_EMAIL)
+
+    assert isinstance(offered, Success)
+    assert NINE_OCLOCK not in _starts(offered.value.offers)
+    assert second == Failure.no_room_available()
+
+
+def returns_no_offer_at_nine_when_the_only_room_has_a_later_booking_too() -> None:
+    clinic = _cardiology_with_one_room()
+    _first_visitor_books_nine_oclock(clinic)
+    _booking_in_heart(clinic, datetime(2030, 1, 7, 13, 0, tzinfo=UTC))
+
+    offered = find_free_slots(clinic.appointment_type.pk, None, MONDAY, online_only=False)
+
+    assert isinstance(offered, Success)
+    assert NINE_OCLOCK not in _starts(offered.value.offers)
+
+
+def returns_nine_oclock_offer_when_the_only_room_booking_is_cancelled() -> None:
+    clinic = _cardiology_with_one_room()
+    _booking_in_heart(clinic, NINE_OCLOCK, "CANCELLED", "Cannot come")
+
+    offered = find_free_slots(clinic.appointment_type.pk, None, MONDAY, online_only=False)
+
+    assert isinstance(offered, Success)
+    assert NINE_OCLOCK in _starts(offered.value.offers)
+
+
+def returns_nine_oclock_offer_and_second_hold_when_second_room_is_free() -> None:
+    clinic = _cardiology_with_one_room(extra_room_code="lab")
+    _first_visitor_books_nine_oclock(clinic)
+
+    offered = find_free_slots(clinic.appointment_type.pk, None, MONDAY, online_only=False)
+    second = _create(clinic, clinician_id=None, starts_at=NINE_OCLOCK, email=SECOND_VISITOR_EMAIL)
+
+    assert isinstance(offered, Success)
+    assert NINE_OCLOCK in _starts(offered.value.offers)
+    assert isinstance(second, Success)

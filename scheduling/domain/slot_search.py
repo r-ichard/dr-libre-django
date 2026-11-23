@@ -60,3 +60,29 @@ def free_slots_by_start(
         for start in starts:
             free_clinicians.setdefault(start, []).append(clinician_id)
     return [SlotOffer(start, tuple(ids)) for start, ids in sorted(free_clinicians.items())]
+
+
+def starts_with_free_room(
+    offers: list[SlotOffer],
+    duration: timedelta,
+    room_count: int,
+    booked_rooms: Sequence[tuple[UUID, TimeRange]],
+) -> list[SlotOffer]:
+    """A start stays offered while fewer rooms are booked over its whole length than exist."""
+    return [
+        offer
+        for offer in offers
+        if _rooms_booked_over(offer.start, duration, booked_rooms) < room_count
+    ]
+
+
+def _rooms_booked_over(
+    start: datetime, duration: timedelta, booked_rooms: Sequence[tuple[UUID, TimeRange]]
+) -> int:
+    return len(
+        {
+            room_id
+            for room_id, span in booked_rooms
+            if span.starts_at < start + duration and span.ends_at > start
+        }
+    )

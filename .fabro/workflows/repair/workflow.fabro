@@ -22,10 +22,11 @@ digraph Repair {
     gates [label="Mutation and FHIR gates", script="sh scripts/final_gates.sh", on_failure="route"]
     check [label="Lint, tests, comment gate", script="make lint && make test && make gate", on_failure="route"]
 
-    start -> setup -> gates
+    // Lint and tests first: a gate the suite holds (a guard test) fails there, not in the last gates.
+    start -> setup -> check
+    check -> gates  [label="Clean", condition="outcome=succeeded"]
+    check -> repair [label="Fix"]
     gates -> exit   [label="Clean", condition="outcome=succeeded"]
     gates -> repair [label="A gate failed"]
     repair -> check
-    check -> gates  [label="Clean", condition="outcome=succeeded"]
-    check -> repair [label="Fix"]
 }

@@ -27,7 +27,8 @@ describes.
   and hand-over, is open (GitHub issue #9).
 - From a fresh clone of `main`: `make lint`, `make test` (about 4900 tests, 40 to 65
   seconds), `make gate`, `make mutate` and `make fhir-validate` (115 samples) pass.
-- Three QA rounds ran. Round 3 filed 20 issues, no P0. Open: #44, its second half.
+- Three QA rounds ran; round 3 filed 20 issues, no P0, all closed. No further round
+  unless the owner asks for one.
 - Try it: see "Run it" below.
 
 ## In flight when this was written

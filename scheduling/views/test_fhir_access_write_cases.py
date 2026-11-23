@@ -79,16 +79,21 @@ def _fresh_appointment_type(world: World, _caller: Caller) -> str:
     return _path("HealthcareService", appointment_type.pk)
 
 
+# The builders' names are fixed, so each create renames its body: a create that stores another
+# name than the one sent then fails the read-back.
 def _department_created(world: World, caller: Caller, _current: object) -> dict[str, object]:
-    return department_body(world.room.department.hospital, f"cardio-{caller}")
+    body = department_body(world.room.department.hospital, f"cardio-{caller}")
+    return {**body, "name": f"Cardiology {caller}"}
 
 
 def _room_created(world: World, caller: Caller, _current: object) -> dict[str, object]:
-    return room_body(world.room.department, f"room-{caller}")
+    body = room_body(world.room.department, f"room-{caller}")
+    return {**body, "name": f"Room {caller}"}
 
 
 def _service_created(world: World, caller: Caller, _current: object) -> dict[str, object]:
-    return service_body(world.room.department, f"intake-{caller}")
+    body = service_body(world.room.department, f"intake-{caller}")
+    return {**body, "name": f"Intake {caller}"}
 
 
 def _renamed(_world: World, _caller: Caller, current: object) -> dict[str, object]:

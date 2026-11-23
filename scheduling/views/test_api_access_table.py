@@ -1,4 +1,4 @@
-"""The /api/v1 access table (spec §14) lists every route, and no row names a gone route."""
+"""The access table lists every /api/v1 route, and no row names a route that no longer exists."""
 
 from collections.abc import Iterator
 

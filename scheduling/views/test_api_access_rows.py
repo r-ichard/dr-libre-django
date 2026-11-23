@@ -1,10 +1,18 @@
-"""Who may call each /api/v1 route (spec §14), and the answer each caller gets (visitor,
-patient, clinician, admin). Data only: nothing reads it at runtime. Own record only; another user's
-record is checked by the walk of item 3."""
+"""Each caller's answer from each /api/v1 route, per the specification. Read by the route-coverage
+test and the walk of routes that name no record. KNOWN_DIFFERENCES lists the product's
+divergences."""
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 ANY_METHOD = "ANY"
+
+
+class Caller(StrEnum):
+    VISITOR = "visitor"
+    PATIENT = "patient"
+    CLINICIAN = "clinician"
+    ADMIN = "admin"
 
 
 @dataclass(frozen=True)
@@ -17,6 +25,28 @@ class AccessRow:
     admin: int
     basis: str
 
+    def answer_for(self, caller: Caller) -> int:
+        answers = {
+            Caller.VISITOR: self.visitor,
+            Caller.PATIENT: self.patient,
+            Caller.CLINICIAN: self.clinician,
+            Caller.ADMIN: self.admin,
+        }
+        return answers[caller]
+
+
+@dataclass(frozen=True)
+class KnownDifference:
+    """Both answers for one caller and route. The walk asserts the product's answer."""
+
+    caller: Caller
+    method: str
+    route: str
+    row_answer: int
+    product_answer: int
+
+
+KNOWN_DIFFERENCES: tuple[KnownDifference, ...] = ()
 
 # Cells are HTTP statuses; basis cites drlibre-specs.md. Rows follow URL-configuration order.
 # Cells assume a valid body and the caller's own credentials. Visitor gets 401 on signed-in routes.

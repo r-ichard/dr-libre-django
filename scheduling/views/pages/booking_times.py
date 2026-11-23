@@ -9,6 +9,7 @@ from scheduling.domain.booking_week import next_week_start, previous_week_start
 from scheduling.domain.failure import Failure
 from scheduling.domain.rate_limit_rules import RateLimitScope
 from scheduling.use_cases.booking_page_data import WeekOfSlots, week_of_slots
+from scheduling.use_cases.request_context import current_request_context
 from scheduling.use_cases.schedule_loading import online_only_for
 from scheduling.views.pages.booking_links import (
     clock_label,
@@ -75,10 +76,14 @@ def week_strip(
         ]
         days.append({"heading": heading, "slots": slots})
     last_day = week.week_start + timedelta(days=DAYS_PER_WEEK - 1)
+    today = current_request_context().now.astimezone(week.time_zone).date()
+    # The previous week ends the day before this one starts, so it is past once that day is gone.
+    previous_is_past = week.week_start <= today
+    previous_href = None if previous_is_past else week_href(previous_week_start(week.week_start))
     return {
         "days": days,
         "has_slots": bool(week.days),
         "week_label": f"{day_label(week.week_start)} to {day_label(last_day)}",
-        "previous_href": week_href(previous_week_start(week.week_start)),
+        "previous_href": previous_href,
         "next_href": week_href(next_week_start(week.week_start)),
     }

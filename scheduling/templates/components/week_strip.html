@@ -1,7 +1,7 @@
 {% comment %}Parameters: days (heading, slots with label, href, day), week_label, has_slots, previous_href, next_href. One week, Monday to Sunday.{% endcomment %}
 <section class="week-strip" aria-labelledby="week-strip-title">
   <nav class="week-strip__nav" aria-label="Weeks">
-    <a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous week</a>
+    {% if previous_href %}<a class="button button--secondary" href="{{ previous_href }}" rel="prev">Previous week</a>{% endif %}
     <h2 class="week-strip__title" id="week-strip-title">{{ week_label }}</h2>
     <a class="button button--secondary" href="{{ next_href }}" rel="next">Next week</a>
   </nav>

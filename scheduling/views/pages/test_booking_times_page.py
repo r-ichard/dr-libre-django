@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 from django.test import Client
@@ -49,13 +49,39 @@ def returns_links_to_details_with_provider_and_start_when_slot_is_listed() -> No
     assert "11:00" in html
 
 
-def returns_previous_and_next_week_links() -> None:
+def returns_next_week_link_and_no_previous_when_previous_week_is_past() -> None:
     clinic = make_clinic()
 
     html = Client().get(times_path(clinic, "?week=2030-01-09")).content.decode()
 
     assert "week=2030-01-14" in html
-    assert "week=2029-12-31" in html
+    assert 'rel="prev"' not in html
+
+
+def returns_no_previous_link_when_previous_week_ends_before_today_in_hospital_zone(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # 23:30 UTC on Sunday is 00:30 on Monday in Berlin: the week before today ends on Sunday.
+    monkeypatch.setattr(clock, "now_utc", lambda: datetime(2030, 1, 6, 23, 30, tzinfo=UTC))
+    clinic = make_clinic()
+
+    html = Client().get(times_path(clinic, "?week=2030-01-07")).content.decode()
+
+    assert 'rel="prev"' not in html
+
+
+def returns_previous_link_when_previous_week_still_contains_today(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Sunday 13 January: the week of 7 to 13 January still contains today, so its link stays.
+    monkeypatch.setattr(clock, "now_utc", lambda: datetime(2030, 1, 13, 12, 0, tzinfo=UTC))
+    clinic = make_clinic()
+
+    html = Client().get(times_path(clinic, "?week=2030-01-14")).content.decode()
+
+    previous = re.search(r'href="([^"]+)" rel="prev"', html)
+    assert previous is not None
+    assert "week=2030-01-07" in previous.group(1)
 
 
 def returns_first_available_slots_when_no_provider_given() -> None:

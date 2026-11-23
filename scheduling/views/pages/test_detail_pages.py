@@ -102,7 +102,7 @@ def returns_hospital_zone_name_on_every_page() -> None:
         assert "Europe/Berlin" in _html(_path(kind, clinician)), kind
 
 
-def returns_week_strip_monday_to_sunday_with_previous_and_next_links_on_the_provider_page() -> None:
+def returns_week_strip_monday_to_sunday_with_next_link_on_the_provider_page() -> None:
     clinician, appointment_type = _planted()
     base = f"/providers/{clinician.pk}"
 
@@ -110,14 +110,25 @@ def returns_week_strip_monday_to_sunday_with_previous_and_next_links_on_the_prov
 
     days = re.findall(r'<h3 class="week-strip__heading">([^<]+)</h3>', html)
     assert [day.split()[0] for day in days] == ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    previous = re.search(r'href="([^"]+)" rel="prev"', html)
     following = re.search(r'href="([^"]+)" rel="next"', html)
-    assert previous is not None and following is not None
-    for link in (previous.group(1), following.group(1)):
-        assert link.startswith(f"{base}?")
-        assert f"type={appointment_type.pk}" in link
+    assert following is not None
+    assert following.group(1).startswith(f"{base}?")
+    assert f"type={appointment_type.pk}" in following.group(1)
     assert "week=2030-01-14" in following.group(1)
-    assert "week=2029-12-31" in previous.group(1)
+    assert 'rel="prev"' not in html
+
+
+def returns_previous_link_with_type_on_the_provider_page_when_week_follows_today() -> None:
+    clinician, appointment_type = _planted()
+    base = f"/providers/{clinician.pk}"
+
+    html = _html(f"{base}?week=2030-01-14")
+
+    previous = re.search(r'href="([^"]+)" rel="prev"', html)
+    assert previous is not None
+    assert previous.group(1).startswith(f"{base}?")
+    assert f"type={appointment_type.pk}" in previous.group(1)
+    assert "week=2030-01-07" in previous.group(1)
 
 
 def returns_the_asked_week_when_week_is_given() -> None:

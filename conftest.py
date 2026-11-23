@@ -4,6 +4,7 @@ import pytest
 from django.conf import settings as django_settings
 
 from drlibre.collection_guard import uncollected_test_names
+from drlibre.time_gate import MAXIMUM_TEST_SECONDS, over_limit_message
 
 
 @pytest.hookimpl(wrapper=True)
@@ -20,6 +21,19 @@ def pytest_make_collect_report(
     if names:
         report.outcome = "failed"
         report.longrepr = f"not collected and not private (prefix _): {', '.join(names)}"
+    return report
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_makereport(
+    item: pytest.Item, call: pytest.CallInfo[None]
+) -> Generator[None, pytest.TestReport, pytest.TestReport]:
+    report = yield
+    message = over_limit_message(item.nodeid, call.when, call.duration, MAXIMUM_TEST_SECONDS)
+    # A phase that already failed keeps its own message; the gate only fails a passing phase.
+    if message is not None and report.passed:
+        report.outcome = "failed"
+        report.longrepr = message
     return report
 
 

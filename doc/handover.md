@@ -56,7 +56,6 @@ that died early), or `fabro rewind <id> <last good stage>` (a run that died late
 7. `26d-security-review-written.md`: ADR 0011 and `doc/security-review.md`.
 8. `27c`: README (how to run, a first walk), a smoke test, this document made final.
    Only a row in `doc/backlog.md` so far: write the task file first.
-9. Then one more QA round over every area (`.fabro/workflows/qa/areas/*.md`), close M9.
 
 A run takes a slice it can finish and names the rest under "Left for the orchestrator"
 in its review (`doc/reviews/`): write that rest as a new task file before moving on.

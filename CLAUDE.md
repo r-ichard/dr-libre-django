@@ -36,6 +36,8 @@ Skills live in `.claude/skills/`, vendored and read-only (§13.1).
   (`ANTHROPIC_MODEL` in each `workflow.toml`); a task is one finding or one item, small
   enough that the orchestrator reviews its diff; a commit names the issue it addresses
   and no other (no milestone number on every commit).
+- **No more QA rounds** (owner, 2026-11-23): the `qa` workflow stays in the repository,
+  but no round is launched unless the owner asks for one.
 - **Owner decisions, fixed:** latest stable Django + Django REST Framework; PostgreSQL,
   tests too. Front end: server-rendered Django templates, hand-written CSS, no CSS
   framework, no Node build; specialty icons from healthicons.org vendored as SVG. Local

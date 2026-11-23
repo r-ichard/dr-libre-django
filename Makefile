@@ -7,7 +7,7 @@ export PATH := $(HOME)/.local/bin:$(PATH)
 # DEBUG stays off in tests; start-up refuses the published development values then.
 SAFE_ENV := SECRET_KEY=test-only-key-k7Qx9vT2mWp4Zr8LbN3cYd6HfJs1UaEg5XoVt0RiKwMq2PzBn DEMO_PASSWORD=
 
-.PHONY: setup test lint gate mutate fhir-validate
+.PHONY: setup test lint gate mutate fhir-validate audit
 
 setup:
 	command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/$(UV_VERSION)/install.sh | sh
@@ -38,3 +38,7 @@ mutate:
 # Not part of `make test`: fetches a pinned HL7 validator and a Java runtime.
 fhir-validate:
 	sh scripts/fhir_validate.sh
+
+# Not part of `make test`: queries a vulnerability service over the network (§11).
+audit:
+	sh scripts/audit.sh

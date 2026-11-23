@@ -2,6 +2,8 @@
 
 Appointment scheduling for several hospitals. Setup and the working rules are in `CLAUDE.md`.
 
+Run `make audit` before a hand-over and after any change to `uv.lock`. It queries a vulnerability service over the network, so it is not part of `make test`.
+
 ## FHIR API
 
 Every concept is served as FHIR R4 under `/fhir`; the CapabilityStatement is at `/fhir/metadata`.
